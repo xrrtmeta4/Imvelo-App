@@ -200,7 +200,7 @@ const CreateListing = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="quantity">Inani (Optional)</Label>
+                <Label htmlFor="quantity">Linani (Optional)</Label>
                 <Input
                   id="quantity"
                   type="number"
@@ -213,7 +213,7 @@ const CreateListing = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="location">Indawo (Optional)</Label>
+                <Label htmlFor="location">Indzawo (Optional)</Label>
                 <Input
                   id="location"
                   value={formData.location}
@@ -225,7 +225,7 @@ const CreateListing = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Incazelo (Optional)</Label>
+                <Label htmlFor="description">Inchazelo (Optional)</Label>
                 <Textarea
                   id="description"
                   value={formData.description}

@@ -4,9 +4,11 @@ import MarketplaceFeed from '@/components/MarketplaceFeed';
 import BestPractices from '@/components/BestPractices';
 import ExtensionServices from '@/components/ExtensionServices';
 import AIChatbot from '@/components/AIChatbot';
+import { useNotifications } from '@/hooks/useNotifications';
 import { Sprout } from 'lucide-react';
 
 const Index = () => {
+  useNotifications();
   return (
     <div className="min-h-screen bg-background pb-20">
       <header className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground py-8 px-4">
@@ -17,7 +19,7 @@ const Index = () => {
             </div>
           </div>
           <h1 className="text-3xl font-bold mb-2">Imvelo</h1>
-          <p className="text-primary-foreground/90">Sita emalimi ngetindaba</p>
+          <p className="text-primary-foreground/90">sisita balimi ngelwati lolujulile</p>
         </div>
       </header>
 

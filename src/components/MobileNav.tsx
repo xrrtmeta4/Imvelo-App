@@ -8,7 +8,7 @@ const MobileNav = () => {
     { to: '/marketplace', icon: ShoppingCart, label: 'Imakethe' },
     { to: '/scanner', icon: Bug, label: 'Bonatilokwatana' },
     { to: '/messages', icon: MessageCircle, label: 'Imilayeto' },
-    { to: '/profile', icon: User, label: 'Mina' },
+    { to: '/profile', icon: User, label: 'Mine' },
   ];
 
   return (

@@ -60,7 +60,7 @@ const AIChatbot = () => {
         <div className="h-64 overflow-y-auto space-y-2 border rounded-lg p-2">
           {messages.length === 0 ? (
             <p className="text-xs text-muted-foreground text-center py-8">
-              Buza umbuzo ngelimo!
+              buta ngetekulima
             </p>
           ) : (
             messages.map((msg, idx) => (
@@ -84,7 +84,7 @@ const AIChatbot = () => {
         </div>
         <div className="flex gap-2">
           <Input
-            placeholder="Bhala umbuzo wakho..."
+            placeholder="Bhala Umbuto Wakho..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
