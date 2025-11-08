@@ -1,29 +1,34 @@
-import Hero from "@/components/Hero";
-import WeatherWidget from "@/components/WeatherWidget";
-import PestIdentification from "@/components/PestIdentification";
-import Marketplace from "@/components/Marketplace";
-import ExtensionServices from "@/components/ExtensionServices";
-import BestPractices from "@/components/BestPractices";
+import WeatherCard from '@/components/WeatherCard';
+import PestScanner from '@/components/PestScanner';
+import MarketplaceFeed from '@/components/MarketplaceFeed';
+import BestPractices from '@/components/BestPractices';
+import ExtensionServices from '@/components/ExtensionServices';
+import { Sprout } from 'lucide-react';
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <Hero />
-      
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <WeatherWidget />
-            <Marketplace />
-            <BestPractices />
+    <div className="min-h-screen bg-background pb-20">
+      <header className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground py-8 px-4">
+        <div className="max-w-screen-sm mx-auto text-center">
+          <div className="flex justify-center mb-4">
+            <div className="bg-primary-foreground/10 p-3 rounded-full">
+              <Sprout className="w-10 h-10" />
+            </div>
           </div>
-          
-          <div className="space-y-6">
-            <PestIdentification />
-            <ExtensionServices />
-          </div>
+          <h1 className="text-3xl font-bold mb-2">Imvelo</h1>
+          <p className="text-primary-foreground/90">Sita emalimi ngetindaba</p>
         </div>
-      </main>
+      </header>
+
+      <div className="max-w-screen-sm mx-auto px-4 py-6 space-y-6">
+        <WeatherCard />
+        <PestScanner />
+        <MarketplaceFeed />
+        <div className="grid grid-cols-1 gap-6">
+          <ExtensionServices />
+          <BestPractices />
+        </div>
+      </div>
     </div>
   );
 };
