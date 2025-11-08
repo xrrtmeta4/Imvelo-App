@@ -14,161 +14,7 @@ export type Database = {
   }
   public: {
     Tables: {
-      marketplace_listings: {
-        Row: {
-          category: string
-          created_at: string
-          description: string | null
-          id: string
-          image_url: string | null
-          location: string | null
-          price: number
-          product_name: string
-          quantity: number | null
-          seller_id: string
-          status: string | null
-          unit: string
-          updated_at: string
-        }
-        Insert: {
-          category: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          image_url?: string | null
-          location?: string | null
-          price: number
-          product_name: string
-          quantity?: number | null
-          seller_id: string
-          status?: string | null
-          unit: string
-          updated_at?: string
-        }
-        Update: {
-          category?: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          image_url?: string | null
-          location?: string | null
-          price?: number
-          product_name?: string
-          quantity?: number | null
-          seller_id?: string
-          status?: string | null
-          unit?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      messages: {
-        Row: {
-          content: string
-          created_at: string
-          id: string
-          listing_id: string | null
-          read: boolean | null
-          receiver_id: string
-          sender_id: string
-        }
-        Insert: {
-          content: string
-          created_at?: string
-          id?: string
-          listing_id?: string | null
-          read?: boolean | null
-          receiver_id: string
-          sender_id: string
-        }
-        Update: {
-          content?: string
-          created_at?: string
-          id?: string
-          listing_id?: string | null
-          read?: boolean | null
-          receiver_id?: string
-          sender_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "messages_listing_id_fkey"
-            columns: ["listing_id"]
-            isOneToOne: false
-            referencedRelation: "marketplace_listings"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      pest_reports: {
-        Row: {
-          confidence: number | null
-          created_at: string
-          id: string
-          image_url: string
-          location: string | null
-          notes: string | null
-          pest_name: string | null
-          treatment: string | null
-          user_id: string
-        }
-        Insert: {
-          confidence?: number | null
-          created_at?: string
-          id?: string
-          image_url: string
-          location?: string | null
-          notes?: string | null
-          pest_name?: string | null
-          treatment?: string | null
-          user_id: string
-        }
-        Update: {
-          confidence?: number | null
-          created_at?: string
-          id?: string
-          image_url?: string
-          location?: string | null
-          notes?: string | null
-          pest_name?: string | null
-          treatment?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
-      profiles: {
-        Row: {
-          avatar_url: string | null
-          created_at: string
-          full_name: string
-          id: string
-          location: string | null
-          phone_number: string | null
-          role: Database["public"]["Enums"]["app_role"]
-          updated_at: string
-        }
-        Insert: {
-          avatar_url?: string | null
-          created_at?: string
-          full_name: string
-          id: string
-          location?: string | null
-          phone_number?: string | null
-          role?: Database["public"]["Enums"]["app_role"]
-          updated_at?: string
-        }
-        Update: {
-          avatar_url?: string | null
-          created_at?: string
-          full_name?: string
-          id?: string
-          location?: string | null
-          phone_number?: string | null
-          role?: Database["public"]["Enums"]["app_role"]
-          updated_at?: string
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Views: {
       [_ in never]: never
@@ -177,7 +23,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      app_role: "farmer" | "trader" | "extension_officer"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -304,8 +150,6 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {
-      app_role: ["farmer", "trader", "extension_officer"],
-    },
+    Enums: {},
   },
 } as const
