@@ -1,39 +1,50 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, TrendingUp } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const BestPractices = () => {
+  const navigate = useNavigate();
+
+  const practices = [
+    {
+      title: "Sicuketfo Sekutsala Ngekuhamba Kweminyaka",
+      description: "Fundza sikhatsi lesihle sekutsala tijalo takho",
+      path: "/planting-guide"
+    },
+    {
+      title: "Emacebiso Ekuphata Inhlabati",
+      description: "Gcina inhlabati iphilile kusita kuvuna lokukhulu",
+      path: "/soil-management"
+    },
+    {
+      title: "Kulondvolota Emanti",
+      description: "Emasu ekumisela emanti ngendlela lefanele",
+      path: "/water-conservation"
+    }
+  ];
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <BookOpen className="w-5 h-5 text-primary" />
-          Best Practices
+          Tindlela Letinhle
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="flex items-start gap-3 p-3 rounded-lg bg-accent/50 hover:bg-accent transition-colors cursor-pointer">
-          <TrendingUp className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-          <div>
-            <p className="font-medium text-sm">Seasonal Planting Guide</p>
-            <p className="text-xs text-muted-foreground mt-1">Learn the best times to plant your crops</p>
+        {practices.map((practice) => (
+          <div 
+            key={practice.path}
+            onClick={() => navigate(practice.path)}
+            className="flex items-start gap-3 p-3 rounded-lg bg-accent/50 hover:bg-accent transition-colors cursor-pointer"
+          >
+            <TrendingUp className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="font-medium text-sm">{practice.title}</p>
+              <p className="text-xs text-muted-foreground mt-1">{practice.description}</p>
+            </div>
           </div>
-        </div>
-        
-        <div className="flex items-start gap-3 p-3 rounded-lg bg-accent/50 hover:bg-accent transition-colors cursor-pointer">
-          <TrendingUp className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-          <div>
-            <p className="font-medium text-sm">Soil Management Tips</p>
-            <p className="text-xs text-muted-foreground mt-1">Maintain healthy soil for better yields</p>
-          </div>
-        </div>
-        
-        <div className="flex items-start gap-3 p-3 rounded-lg bg-accent/50 hover:bg-accent transition-colors cursor-pointer">
-          <TrendingUp className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-          <div>
-            <p className="font-medium text-sm">Water Conservation</p>
-            <p className="text-xs text-muted-foreground mt-1">Efficient irrigation techniques</p>
-          </div>
-        </div>
+        ))}
       </CardContent>
     </Card>
   );

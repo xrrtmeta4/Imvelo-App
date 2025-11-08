@@ -12,6 +12,7 @@ const MarketplaceFeed = () => {
   const navigate = useNavigate();
   const [listings, setListings] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [locationFilter, setLocationFilter] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -39,10 +40,14 @@ const MarketplaceFeed = () => {
     }
   };
 
-  const filteredListings = listings.filter(listing =>
-    listing.product_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    listing.category.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredListings = listings.filter(listing => {
+    const matchesSearch = listing.product_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      listing.category.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesLocation = !locationFilter || 
+      listing.location?.toLowerCase().includes(locationFilter.toLowerCase()) ||
+      listing.profiles?.location?.toLowerCase().includes(locationFilter.toLowerCase());
+    return matchesSearch && matchesLocation;
+  });
 
   return (
     <Card>
@@ -61,13 +66,20 @@ const MarketplaceFeed = () => {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <div className="space-y-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Funa tintfo"
+              className="pl-10"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
           <Input
-            placeholder="Funa tintfo"
-            className="pl-10"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Funisela ngendawo..."
+            value={locationFilter}
+            onChange={(e) => setLocationFilter(e.target.value)}
           />
         </div>
         
@@ -79,6 +91,13 @@ const MarketplaceFeed = () => {
           ) : (
             filteredListings.map((listing) => (
               <div key={listing.id} className="p-3 rounded-lg bg-accent/50 border border-border">
+                {listing.image_url && (
+                  <img
+                    src={listing.image_url}
+                    alt={listing.product_name}
+                    className="w-full h-32 object-cover rounded-lg mb-2"
+                  />
+                )}
                 <div className="flex justify-between items-start mb-2">
                   <div className="flex-1">
                     <p className="font-medium">{listing.product_name}</p>

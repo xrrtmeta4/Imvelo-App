@@ -1,1 +1,10 @@
 project_id = "ufoketygwxdlusngppef"
+
+[functions.identify-pest]
+verify_jwt = false
+
+[functions.get-weather]
+verify_jwt = false
+
+[functions.ai-assistant]
+verify_jwt = false

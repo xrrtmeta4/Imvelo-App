@@ -8,16 +8,16 @@ const ExtensionServices = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Users className="w-5 h-5 text-primary" />
-          Extension Services
+          Tinsita Tekulima
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-sm text-muted-foreground">
-          Connect with agricultural experts
+          Chumana nabocwephesha
         </p>
         <Button className="w-full" variant="default">
           <Phone className="w-4 h-4 mr-2" />
-          Contact Extension Officer
+          Chumana Nehhhovisi
         </Button>
       </CardContent>
     </Card>

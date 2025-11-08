@@ -67,7 +67,7 @@ const PestScanner = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Bug className="w-5 h-5 text-primary" />
-          Khangela Isipho
+          Bona Tilwakatana
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -108,9 +108,6 @@ const PestScanner = () => {
           </div>
         )}
 
-        <p className="text-xs text-muted-foreground text-center pt-2">
-          Uma unesibhudlupho, xhumana nomhlengikati wakho
-        </p>
       </CardContent>
     </Card>
   );

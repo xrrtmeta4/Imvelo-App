@@ -70,7 +70,7 @@ const WeatherCard = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-foreground">
           <Cloud className="w-5 h-5" />
-          Sikhatsi
+          Simoselitulu
         </CardTitle>
       </CardHeader>
       <CardContent>

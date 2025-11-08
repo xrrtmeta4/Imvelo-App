@@ -3,6 +3,7 @@ import PestScanner from '@/components/PestScanner';
 import MarketplaceFeed from '@/components/MarketplaceFeed';
 import BestPractices from '@/components/BestPractices';
 import ExtensionServices from '@/components/ExtensionServices';
+import AIChatbot from '@/components/AIChatbot';
 import { Sprout } from 'lucide-react';
 
 const Index = () => {
@@ -29,6 +30,7 @@ const Index = () => {
           <BestPractices />
         </div>
       </div>
+      <AIChatbot />
     </div>
   );
 };

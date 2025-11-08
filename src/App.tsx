@@ -11,6 +11,10 @@ import Marketplace from "./pages/Marketplace";
 import Messages from "./pages/Messages";
 import Profile from "./pages/Profile";
 import CreateListing from "./pages/CreateListing";
+import OfficerDashboard from "./pages/OfficerDashboard";
+import PlantingGuide from "./pages/PlantingGuide";
+import SoilManagement from "./pages/SoilManagement";
+import WaterConservation from "./pages/WaterConservation";
 import NotFound from "./pages/NotFound";
 import MobileNav from "./components/MobileNav";
 
@@ -93,6 +97,38 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <CreateListing />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/officer-dashboard"
+              element={
+                <ProtectedRoute>
+                  <OfficerDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/planting-guide"
+              element={
+                <ProtectedRoute>
+                  <PlantingGuide />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/soil-management"
+              element={
+                <ProtectedRoute>
+                  <SoilManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/water-conservation"
+              element={
+                <ProtectedRoute>
+                  <WaterConservation />
                 </ProtectedRoute>
               }
             />
