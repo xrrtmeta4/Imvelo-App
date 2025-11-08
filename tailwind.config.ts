@@ -57,6 +57,10 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        earth: "hsl(var(--earth))",
+        "earth-light": "hsl(var(--earth-light))",
+        sky: "hsl(var(--sky))",
+        harvest: "hsl(var(--harvest))",
       },
       borderRadius: {
         lg: "var(--radius)",
