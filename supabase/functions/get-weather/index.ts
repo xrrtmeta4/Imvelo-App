@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { latitude, longitude } = await req.json();
+    const { latitude, longitude, user_id } = await req.json();
     console.log('Fetching weather for:', latitude, longitude);
 
     // Using Open-Meteo free weather API (no API key required)
@@ -59,6 +59,77 @@ serve(async (req) => {
         precipitation: data.daily.precipitation_sum[0]
       }
     };
+
+    // Check for extreme weather conditions and create alerts
+    if (user_id) {
+      const extremeConditions = [];
+      
+      // Check for storms (thunderstorms, heavy rain)
+      if (weatherCode === 95 || weatherCode === 96) {
+        extremeConditions.push({
+          type: 'storm',
+          message: 'Sikhukhula! Vikela timbali takho.',
+          severity: 'high'
+        });
+      }
+      
+      // Check for heavy rain
+      if (weatherCode === 65 || data.daily.precipitation_sum[0] > 50) {
+        extremeConditions.push({
+          type: 'heavy_rain',
+          message: 'Imvula enamandla! Hlola tindzawo tekumila.',
+          severity: 'medium'
+        });
+      }
+      
+      // Check for extreme heat (potential drought conditions)
+      if (data.current.temperature_2m > 35) {
+        extremeConditions.push({
+          type: 'extreme_heat',
+          message: 'Kushisa kakhulu! Ncipheta timbali takho.',
+          severity: 'high'
+        });
+      }
+      
+      // Check for drought conditions (no rain and high temp)
+      const totalPrecipitation = data.daily.precipitation_sum.reduce((a: number, b: number) => a + b, 0);
+      if (totalPrecipitation < 5 && data.daily.temperature_2m_max[0] > 30) {
+        extremeConditions.push({
+          type: 'drought',
+          message: 'Kumisile! Hlela tindlela tekuncipheta.',
+          severity: 'high'
+        });
+      }
+      
+      // Check for strong winds
+      if (data.current.wind_speed_10m > 40) {
+        extremeConditions.push({
+          type: 'strong_wind',
+          message: 'Umoya lomkhulu! Vikela timbali takho.',
+          severity: 'medium'
+        });
+      }
+
+      // Create alerts for extreme conditions
+      if (extremeConditions.length > 0) {
+        const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.38.4');
+        const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+        const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        for (const condition of extremeConditions) {
+          await supabase.from('weather_alerts').insert({
+            user_id,
+            alert_type: condition.type,
+            message: condition.message,
+            severity: condition.severity,
+            weather_data: result
+          });
+        }
+        
+        console.log(`Created ${extremeConditions.length} weather alerts for user ${user_id}`);
+      }
+    }
 
     return new Response(
       JSON.stringify(result),

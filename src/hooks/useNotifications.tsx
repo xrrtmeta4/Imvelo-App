@@ -44,9 +44,37 @@ export const useNotifications = () => {
       )
       .subscribe();
 
+    const weatherChannel = supabase
+      .channel('weather-notifications')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'weather_alerts',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload: any) => {
+          const alert = payload.new;
+          const severity = alert.severity === 'high' ? 'error' : 'warning';
+          
+          if (severity === 'error') {
+            toast.error('Silumkiso Sesimoselitulu!', {
+              description: alert.message
+            });
+          } else {
+            toast.warning('Silumkiso Sesimoselitulu', {
+              description: alert.message
+            });
+          }
+        }
+      )
+      .subscribe();
+
     return () => {
       supabase.removeChannel(messageChannel);
       supabase.removeChannel(marketChannel);
+      supabase.removeChannel(weatherChannel);
     };
   }, [user]);
 };

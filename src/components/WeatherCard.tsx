@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Cloud, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/hooks/useAuth';
 
 const WeatherCard = () => {
+  const { user } = useAuth();
   const [weather, setWeather] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -20,7 +22,7 @@ const WeatherCard = () => {
             const { latitude, longitude } = position.coords;
             
             const { data, error } = await supabase.functions.invoke('get-weather', {
-              body: { latitude, longitude }
+              body: { latitude, longitude, user_id: user?.id }
             });
 
             if (error) throw error;
@@ -44,7 +46,7 @@ const WeatherCard = () => {
 
   const fetchDefaultWeather = async () => {
     const { data, error } = await supabase.functions.invoke('get-weather', {
-      body: { latitude: -26.3054, longitude: 31.1367 } // Mbabane, Eswatini
+      body: { latitude: -26.3054, longitude: 31.1367, user_id: user?.id } // Mbabane, Eswatini
     });
 
     if (!error) {

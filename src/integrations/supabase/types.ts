@@ -169,6 +169,39 @@ export type Database = {
         }
         Relationships: []
       }
+      weather_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string
+          id: string
+          message: string
+          read: boolean
+          severity: string
+          user_id: string
+          weather_data: Json | null
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string
+          id?: string
+          message: string
+          read?: boolean
+          severity: string
+          user_id: string
+          weather_data?: Json | null
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string
+          id?: string
+          message?: string
+          read?: boolean
+          severity?: string
+          user_id?: string
+          weather_data?: Json | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
