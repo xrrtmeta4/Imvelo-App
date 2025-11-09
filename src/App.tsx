@@ -15,6 +15,7 @@ import OfficerDashboard from "./pages/OfficerDashboard";
 import PlantingGuide from "./pages/PlantingGuide";
 import SoilManagement from "./pages/SoilManagement";
 import WaterConservation from "./pages/WaterConservation";
+import SellerAnalytics from "./pages/SellerAnalytics";
 import NotFound from "./pages/NotFound";
 import MobileNav from "./components/MobileNav";
 
@@ -129,6 +130,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <WaterConservation />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/seller-analytics"
+              element={
+                <ProtectedRoute>
+                  <SellerAnalytics />
                 </ProtectedRoute>
               }
             />

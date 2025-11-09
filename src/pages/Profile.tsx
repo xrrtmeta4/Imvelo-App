@@ -208,10 +208,19 @@ const Profile = () => {
         {/* User's Marketplace Listings */}
         <Card className="mt-6">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Package className="w-5 h-5" />
-              Tintfo Tami Temakethe
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Package className="w-5 h-5" />
+                Tintfo Tami Temakethe
+              </CardTitle>
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={() => navigate('/seller-analytics')}
+              >
+                Buka Tibalo
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             {listings.length === 0 ? (

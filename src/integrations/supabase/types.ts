@@ -22,6 +22,7 @@ export type Database = {
           id: string
           image_url: string | null
           location: string | null
+          messages_received: number | null
           price: number
           product_name: string
           quantity: number | null
@@ -29,6 +30,7 @@ export type Database = {
           status: string | null
           unit: string
           updated_at: string
+          views: number | null
         }
         Insert: {
           category: string
@@ -37,6 +39,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           location?: string | null
+          messages_received?: number | null
           price: number
           product_name: string
           quantity?: number | null
@@ -44,6 +47,7 @@ export type Database = {
           status?: string | null
           unit: string
           updated_at?: string
+          views?: number | null
         }
         Update: {
           category?: string
@@ -52,6 +56,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           location?: string | null
+          messages_received?: number | null
           price?: number
           product_name?: string
           quantity?: number | null
@@ -59,6 +64,7 @@ export type Database = {
           status?: string | null
           unit?: string
           updated_at?: string
+          views?: number | null
         }
         Relationships: []
       }
@@ -207,7 +213,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_listing_messages: {
+        Args: { listing_id: string }
+        Returns: undefined
+      }
+      increment_listing_views: {
+        Args: { listing_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "farmer" | "trader" | "extension_officer"

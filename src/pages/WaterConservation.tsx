@@ -99,7 +99,7 @@ const WaterConservation = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Emacebiso Lamcoka</CardTitle>
+            <CardTitle>Lokumcoka</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             {tips.map((tip, idx) => (

@@ -109,13 +109,13 @@ const Messages = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MessageCircle className="w-5 h-5" />
-                Tincoko
+                Imilayeto Yemakhasimende
               </CardTitle>
             </CardHeader>
             <CardContent>
               {conversations.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-4">
-                  Akukho tincoko
+                  Awunato imilayeto
                 </p>
               ) : (
                 <div className="space-y-2">

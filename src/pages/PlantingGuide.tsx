@@ -28,7 +28,7 @@ const PlantingGuide = () => {
   return (
     <div className="min-h-screen bg-background pb-20">
       <header className="bg-primary text-primary-foreground py-4 px-4">
-        <h1 className="text-xl font-bold">Sicuketfo Sekutsala</h1>
+        <h1 className="text-xl font-bold">Sicuketfo Sekutjala</h1>
       </header>
 
       <div className="max-w-screen-sm mx-auto px-4 py-6 space-y-6">
@@ -36,12 +36,12 @@ const PlantingGuide = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Calendar className="w-5 h-5" />
-              Kutsala Ngekuhamba Kweminyaka
+              Kutjala ngekuhamba kwemnyaka
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
-              Khetha sikhatsi lesifanele sekutsala tijalo takho kusita kuvuna lokukhulu nelikhulu.
+              Khetha sikhatsi lesifanele sekutjala tijalo takho kusita kuvuna lokukhulu nelikhulu.
             </p>
 
             <div className="space-y-6">
@@ -73,14 +73,14 @@ const PlantingGuide = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Emacebiso Lamcoka</CardTitle>
+            <CardTitle>Lokumcoka</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
-            <p>• Hlola inhlabati yakho ngaphambi kwekutsala</p>
-            <p>• Cala ngekutsala lapho imvula isicale khona</p>
-            <p>• Gcina inhlabati imanzi kodvwa hhayi kutsi imanji kakhulu</p>
-            <p>• Landzelela imiyaleto yekutsala yalelo jalo</p>
-            <p>• Sebentisa umanyolo lofanele wekuvundza inhlabati</p>
+            <p>• Hlola umhlabatsi wakho ngaphambi kwekutjala</p>
+            <p>• Cala ngekutjala lapho imvula isicale khona</p>
+            <p>• Gcina umhlabatsi umanzi kodvwa hhayi kutsi umanji kakhulu</p>
+            <p>• Landzelela imiyaleto yekutjala yalelo jalo</p>
+            <p>• Sebentisa umanyolo lofanele wekuvundza umhlabatsi</p>
           </CardContent>
         </Card>
       </div>

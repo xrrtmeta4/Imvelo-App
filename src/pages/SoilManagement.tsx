@@ -4,13 +4,13 @@ import { Leaf, Droplets, TestTube, Recycle } from 'lucide-react';
 const SoilManagement = () => {
   const tips = [
     {
-      title: "Kuhlola Inhlabati",
+      title: "kuhlola Umhlabatsi",
       icon: TestTube,
-      description: "Hlola inhlabati yakho njalo kusita kwati kutsi inemitselo muni",
+      description: "Hlola umhlabatsi wakho njalo kusita kwati kutsi unemitselo muni",
       details: [
         "Hlola pH level (4.5-7.5 lehle kulilimo)",
         "Bona ematselo ladzingekako (N, P, K)",
-        "Hlola kutsi inhlabati iteseka kahle yini"
+        "Hlola kutsi umhlabatsi uteseka kahle yini"
       ]
     },
     {
@@ -48,17 +48,17 @@ const SoilManagement = () => {
   return (
     <div className="min-h-screen bg-background pb-20">
       <header className="bg-primary text-primary-foreground py-4 px-4">
-        <h1 className="text-xl font-bold">Kuphata Inhlabati</h1>
+        <h1 className="text-xl font-bold">Kuphata Umhlabatsi</h1>
       </header>
 
       <div className="max-w-screen-sm mx-auto px-4 py-6 space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>Tindlela Tekuphata Inhlabati</CardTitle>
+            <CardTitle>Tindlela tekuphatsa umhlabatsi</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
-              Inhlabati lephilile yisisekelo sekuvuna lokukhulu. Landzelela lawo macebiso kulondza inhlabati yakho iphilile.
+              Umhlabatsi lophilile uyisisekelo sekuvuna lokukhulu. Landzelela lawo macebiso kulondza umhlabatsi wakho uphilile.
             </p>
           </CardContent>
         </Card>

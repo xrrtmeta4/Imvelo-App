@@ -105,7 +105,14 @@ const MarketplaceFeed = () => {
                       E{listing.price}/{listing.unit}
                     </p>
                   </div>
-                  <Button variant="default" size="sm">
+                  <Button 
+                    variant="default" 
+                    size="sm"
+                    onClick={async () => {
+                      await supabase.rpc('increment_listing_views', { listing_id: listing.id });
+                      fetchListings();
+                    }}
+                  >
                     Buka
                   </Button>
                 </div>
@@ -123,10 +130,13 @@ const MarketplaceFeed = () => {
                     variant="outline" 
                     size="sm" 
                     className="w-full mt-2"
-                    onClick={() => navigate(`/messages?seller=${listing.seller_id}`)}
+                    onClick={async () => {
+                      await supabase.rpc('increment_listing_messages', { listing_id: listing.id });
+                      navigate(`/messages?seller=${listing.seller_id}&listing=${listing.id}`);
+                    }}
                   >
                     <MessageCircle className="w-3 h-3 mr-1" />
-                    Thumela Umlayeto
+                    Xhumana Nemtengiselisi
                   </Button>
                 )}
               </div>

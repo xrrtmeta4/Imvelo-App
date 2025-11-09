@@ -7,13 +7,13 @@ const BestPractices = () => {
 
   const practices = [
     {
-      title: "Sicuketfo Sekutsala Ngekuhamba Kweminyaka",
-      description: "Fundza sikhatsi lesihle sekutsala tijalo takho",
+      title: "Sicuketfo Sekutjala Ngekuhamba Kweminyaka",
+      description: "Fundza sikhatsi lesihle sekutjala tijalo takho",
       path: "/planting-guide"
     },
     {
-      title: "Emacebiso Ekuphata Inhlabati",
-      description: "Gcina inhlabati iphilile kusita kuvuna lokukhulu",
+      title: "Emacebiso Ekuphata Umhlabatsi",
+      description: "Gcina umhlabatsi uphilile kusita kuvuna lokukhulu",
       path: "/soil-management"
     },
     {
