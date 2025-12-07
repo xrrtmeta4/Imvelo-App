@@ -8,3 +8,9 @@ verify_jwt = false
 
 [functions.ai-assistant]
 verify_jwt = false
+
+[functions.identify-animal-disease]
+verify_jwt = false
+
+[functions.estimate-produce]
+verify_jwt = false

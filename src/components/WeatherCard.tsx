@@ -76,7 +76,7 @@ const WeatherCard = () => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-2">
+        <div className="space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">Namuhla</span>
             <div className="flex items-center gap-2">
@@ -84,10 +84,29 @@ const WeatherCard = () => {
             </div>
           </div>
           <p className="text-sm text-muted-foreground">{weather.current.weather_description}</p>
-          <div className="flex justify-between text-xs text-muted-foreground pt-2">
+          
+          {weather.current.feels_like && (
+            <p className="text-xs text-muted-foreground">
+              Kutiva njenge: {weather.current.feels_like}°
+            </p>
+          )}
+          
+          <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground pt-2 border-t">
             <span>Iphakeme: {weather.daily.max_temp}°</span>
             <span>Liphansi: {weather.daily.min_temp}°</span>
+            {weather.current.humidity && (
+              <span>Umswakama: {weather.current.humidity}%</span>
+            )}
+            {weather.daily.precipitation_probability && (
+              <span>Imvula: {weather.daily.precipitation_probability}%</span>
+            )}
           </div>
+          
+          {weather.current.wind_speed > 0 && (
+            <p className="text-xs text-muted-foreground">
+              Umoya: {weather.current.wind_speed} km/h
+            </p>
+          )}
         </div>
       </CardContent>
     </Card>
