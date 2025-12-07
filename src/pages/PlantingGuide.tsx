@@ -28,7 +28,7 @@ const PlantingGuide = () => {
   return (
     <div className="min-h-screen bg-background pb-20">
       <header className="bg-primary text-primary-foreground py-4 px-4">
-        <h1 className="text-xl font-bold">Sicuketfo Sekutjala</h1>
+        <h1 className="text-xl font-bold">Kuhlanyela ngekuhamba kwemnyaka</h1>
       </header>
 
       <div className="max-w-screen-sm mx-auto px-4 py-6 space-y-6">
