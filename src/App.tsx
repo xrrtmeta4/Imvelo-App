@@ -11,6 +11,7 @@ import Marketplace from "./pages/Marketplace";
 import Messages from "./pages/Messages";
 import Profile from "./pages/Profile";
 import CreateListing from "./pages/CreateListing";
+import ProductDetail from "./pages/ProductDetail";
 import OfficerDashboard from "./pages/OfficerDashboard";
 import PlantingGuide from "./pages/PlantingGuide";
 import SoilManagement from "./pages/SoilManagement";
@@ -138,6 +139,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <SellerAnalytics />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/product/:id"
+              element={
+                <ProtectedRoute>
+                  <ProductDetail />
                 </ProtectedRoute>
               }
             />

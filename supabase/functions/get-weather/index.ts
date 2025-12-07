@@ -14,8 +14,8 @@ serve(async (req) => {
     const { latitude, longitude, user_id } = await req.json();
     console.log('Fetching weather for:', latitude, longitude);
 
-    // Using Open-Meteo free weather API (no API key required)
-    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=auto`;
+    // Using Open-Meteo free weather API with extended parameters for better accuracy
+    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,wind_direction_10m&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,uv_index_max&hourly=temperature_2m,precipitation_probability&forecast_days=7&timezone=auto`;
     
     const response = await fetch(weatherUrl);
     
@@ -49,15 +49,27 @@ serve(async (req) => {
     const result = {
       current: {
         temperature: Math.round(data.current.temperature_2m),
+        feels_like: Math.round(data.current.apparent_temperature),
+        humidity: data.current.relative_humidity_2m,
         weather_description: weatherDescription,
         wind_speed: data.current.wind_speed_10m,
+        wind_direction: data.current.wind_direction_10m,
+        precipitation: data.current.precipitation,
         weather_code: weatherCode
       },
       daily: {
         max_temp: Math.round(data.daily.temperature_2m_max[0]),
         min_temp: Math.round(data.daily.temperature_2m_min[0]),
-        precipitation: data.daily.precipitation_sum[0]
-      }
+        precipitation: data.daily.precipitation_sum[0],
+        precipitation_probability: data.daily.precipitation_probability_max[0],
+        uv_index: data.daily.uv_index_max[0]
+      },
+      forecast: data.daily.temperature_2m_max.slice(0, 7).map((maxTemp: number, i: number) => ({
+        max_temp: Math.round(maxTemp),
+        min_temp: Math.round(data.daily.temperature_2m_min[i]),
+        precipitation: data.daily.precipitation_sum[i],
+        precipitation_probability: data.daily.precipitation_probability_max[i]
+      }))
     };
 
     // Check for extreme weather conditions and create alerts

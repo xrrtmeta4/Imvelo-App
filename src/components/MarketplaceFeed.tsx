@@ -118,10 +118,7 @@ const MarketplaceFeed = () => {
                   <Button 
                     variant="default" 
                     size="sm"
-                    onClick={async () => {
-                      await supabase.rpc('increment_listing_views', { listing_id: listing.id });
-                      fetchListings();
-                    }}
+                    onClick={() => navigate(`/product/${listing.id}`)}
                   >
                     Buka
                   </Button>
