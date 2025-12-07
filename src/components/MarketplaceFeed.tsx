@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ShoppingCart, Search, Plus, User, MessageCircle } from 'lucide-react';
+import { ShoppingCart, Search, User, MessageCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
@@ -52,18 +52,10 @@ const MarketplaceFeed = () => {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <ShoppingCart className="w-5 h-5 text-primary" />
-            Imakethe
-          </CardTitle>
-          {user && (
-            <Button size="sm" onClick={() => navigate('/create-listing')}>
-              <Plus className="w-4 h-4 mr-1" />
-              Faka
-            </Button>
-          )}
-        </div>
+        <CardTitle className="flex items-center gap-2">
+          <ShoppingCart className="w-5 h-5 text-primary" />
+          Imakethe
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">

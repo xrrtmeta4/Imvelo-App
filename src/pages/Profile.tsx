@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { User, LogOut, Package, Edit, Trash2 } from 'lucide-react';
+import { User, LogOut, Package, Edit, Trash2, Plus } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
@@ -213,13 +213,22 @@ const Profile = () => {
                 <Package className="w-5 h-5" />
                 Tintfo Tami Temakethe
               </CardTitle>
-              <Button 
-                size="sm" 
-                variant="outline"
-                onClick={() => navigate('/seller-analytics')}
-              >
-                Buka Tibalo
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  size="sm" 
+                  onClick={() => navigate('/create-listing')}
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Faka
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={() => navigate('/seller-analytics')}
+                >
+                  Buka Tibalo
+                </Button>
+              </div>
             </div>
           </CardHeader>
           <CardContent>
