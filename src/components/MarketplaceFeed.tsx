@@ -21,18 +21,36 @@ const MarketplaceFeed = () => {
 
   const fetchListings = async () => {
     try {
-      const { data, error } = await supabase
+      // Fetch listings first
+      const { data: listingsData, error: listingsError } = await supabase
         .from('marketplace_listings')
-        .select(`
-          *,
-          profiles:seller_id (full_name, location)
-        `)
+        .select('*')
         .eq('status', 'active')
         .order('created_at', { ascending: false })
         .limit(10);
 
-      if (error) throw error;
-      setListings(data || []);
+      if (listingsError) throw listingsError;
+
+      if (listingsData && listingsData.length > 0) {
+        // Get unique seller IDs
+        const sellerIds = [...new Set(listingsData.map(l => l.seller_id))];
+        
+        // Fetch profiles for those sellers
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, full_name, location')
+          .in('id', sellerIds);
+
+        // Merge profiles into listings
+        const listingsWithProfiles = listingsData.map(listing => ({
+          ...listing,
+          profiles: profilesData?.find(p => p.id === listing.seller_id) || null
+        }));
+
+        setListings(listingsWithProfiles);
+      } else {
+        setListings([]);
+      }
     } catch (error) {
       console.error('Error fetching listings:', error);
     } finally {
