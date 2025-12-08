@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -105,7 +105,7 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary to-primary/80 p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-primary to-primary/80 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
@@ -207,6 +207,22 @@ const Auth = () => {
           </div>
         </CardContent>
       </Card>
+      
+      {/* Footer Links for Google Ads Compliance */}
+      <div className="mt-6 flex flex-wrap justify-center gap-4 text-sm">
+        <Link to="/about" className="text-primary-foreground/80 hover:text-primary-foreground underline">
+          Mayelana Natsi
+        </Link>
+        <Link to="/contact" className="text-primary-foreground/80 hover:text-primary-foreground underline">
+          Sitsintse
+        </Link>
+        <Link to="/privacy-policy" className="text-primary-foreground/80 hover:text-primary-foreground underline">
+          Inqubomgomo Yobumfihlo
+        </Link>
+        <Link to="/terms-of-service" className="text-primary-foreground/80 hover:text-primary-foreground underline">
+          Imigomo Nekusebentisa
+        </Link>
+      </div>
     </div>
   );
 };
