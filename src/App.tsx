@@ -17,6 +17,10 @@ import PlantingGuide from "./pages/PlantingGuide";
 import SoilManagement from "./pages/SoilManagement";
 import WaterConservation from "./pages/WaterConservation";
 import SellerAnalytics from "./pages/SellerAnalytics";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
+import Contact from "./pages/Contact";
+import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 import MobileNav from "./components/MobileNav";
 
@@ -150,6 +154,10 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-of-service" element={<TermsOfService />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/about" element={<About />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
