@@ -92,7 +92,7 @@ const WeatherCard = () => {
           )}
           
           <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground pt-2 border-t">
-            <span>Iphakeme: {weather.daily.max_temp}°</span>
+            <span>Liphakeme: {weather.daily.max_temp}°</span>
             <span>Liphansi: {weather.daily.min_temp}°</span>
             {weather.current.humidity && (
               <span>Umswakama: {weather.current.humidity}%</span>

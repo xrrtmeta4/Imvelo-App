@@ -143,7 +143,7 @@ const MarketplaceFeed = () => {
                     }}
                   >
                     <MessageCircle className="w-3 h-3 mr-1" />
-                    Xhumana Nemtengiselisi
+                    Chumana nemtsengisi
                   </Button>
                 )}
               </div>

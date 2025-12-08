@@ -29,7 +29,7 @@ serve(async (req) => {
     // Map weather codes to descriptions
     const weatherCodeMap: { [key: number]: string } = {
       0: 'Lizulu lelikhanya', // Clear sky
-      1: 'Lingizimu likhanya', // Mainly clear
+      1: 'Lizulu lelikhanya', // Mainly clear
       2: 'Incenye limafu', // Partly cloudy
       3: 'Limafu', // Overcast
       45: 'Linkungu', // Fog
@@ -44,7 +44,7 @@ serve(async (req) => {
     };
 
     const weatherCode = data.current.weather_code;
-    const weatherDescription = weatherCodeMap[weatherCode] || 'Lingizimu likhanya';
+    const weatherDescription = weatherCodeMap[weatherCode] || 'Lizulu lelikhanya';
 
     const result = {
       current: {
