@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, User, MapPin, Phone, MessageCircle, Package, Calendar } from 'lucide-react';
+import { ArrowLeft, User, MapPin, Phone, MessageCircle, Package, Calendar, Eye, Users } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -14,12 +14,67 @@ const ProductDetail = () => {
   const [listing, setListing] = useState<any>(null);
   const [seller, setSeller] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [liveViewers, setLiveViewers] = useState(0);
 
   useEffect(() => {
     if (id) {
       fetchProductDetails();
+      
+      // Track live viewers using presence
+      const channel = supabase.channel(`product-${id}`, {
+        config: {
+          presence: {
+            key: user?.id || `anonymous-${Math.random().toString(36).substr(2, 9)}`,
+          },
+        },
+      });
+
+      channel
+        .on('presence', { event: 'sync' }, () => {
+          const state = channel.presenceState();
+          const viewerCount = Object.keys(state).length;
+          setLiveViewers(viewerCount);
+        })
+        .on('presence', { event: 'join' }, () => {
+          const state = channel.presenceState();
+          setLiveViewers(Object.keys(state).length);
+        })
+        .on('presence', { event: 'leave' }, () => {
+          const state = channel.presenceState();
+          setLiveViewers(Object.keys(state).length);
+        })
+        .subscribe(async (status) => {
+          if (status === 'SUBSCRIBED') {
+            await channel.track({
+              user_id: user?.id || 'anonymous',
+              online_at: new Date().toISOString(),
+            });
+          }
+        });
+
+      // Subscribe to listing updates for real-time stats
+      const listingChannel = supabase
+        .channel(`listing-updates-${id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'marketplace_listings',
+            filter: `id=eq.${id}`,
+          },
+          (payload) => {
+            setListing((prev: any) => ({ ...prev, ...payload.new }));
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+        supabase.removeChannel(listingChannel);
+      };
     }
-  }, [id]);
+  }, [id, user?.id]);
 
   const fetchProductDetails = async () => {
     try {
@@ -90,7 +145,13 @@ const ProductDetail = () => {
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-primary-foreground hover:bg-primary/80">
           <ArrowLeft className="w-5 h-5" />
         </Button>
-        <h1 className="text-xl font-bold">Imininingwane Yomkhicito</h1>
+        <h1 className="text-xl font-bold flex-1">Imininingwane Yomkhicito</h1>
+        {liveViewers > 0 && (
+          <div className="flex items-center gap-1 bg-destructive/90 text-destructive-foreground px-2 py-1 rounded-full text-xs animate-pulse">
+            <Users className="w-3 h-3" />
+            <span>{liveViewers} babuka njalo</span>
+          </div>
+        )}
       </header>
 
       <div className="max-w-screen-sm mx-auto px-4 py-6 space-y-6">
@@ -165,7 +226,7 @@ const ProductDetail = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="w-5 h-5" />
-                Umtengiselisi
+                Umtsengisi
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -203,7 +264,7 @@ const ProductDetail = () => {
               {user && user.id !== listing.seller_id && (
                 <Button className="w-full" onClick={handleContact}>
                   <MessageCircle className="w-4 h-4 mr-2" />
-                  Xhumana Nemtengiselisi
+                  Chumana nemtsengisi
                 </Button>
               )}
             </CardContent>
@@ -211,17 +272,32 @@ const ProductDetail = () => {
         )}
 
         {/* Stats */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           <Card>
             <CardContent className="pt-6 text-center">
-              <p className="text-2xl font-bold">{listing.views || 0}</p>
+              <div className="flex items-center justify-center gap-1">
+                <Eye className="w-4 h-4 text-muted-foreground" />
+                <p className="text-2xl font-bold">{listing.views || 0}</p>
+              </div>
               <p className="text-sm text-muted-foreground">Tibukeli</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6 text-center">
-              <p className="text-2xl font-bold">{listing.messages_received || 0}</p>
+              <div className="flex items-center justify-center gap-1">
+                <MessageCircle className="w-4 h-4 text-muted-foreground" />
+                <p className="text-2xl font-bold">{listing.messages_received || 0}</p>
+              </div>
               <p className="text-sm text-muted-foreground">Imilayeto</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-primary/10 border-primary/20">
+            <CardContent className="pt-6 text-center">
+              <div className="flex items-center justify-center gap-1">
+                <Users className="w-4 h-4 text-primary animate-pulse" />
+                <p className="text-2xl font-bold text-primary">{liveViewers}</p>
+              </div>
+              <p className="text-sm text-muted-foreground">Babuka njalo</p>
             </CardContent>
           </Card>
         </div>

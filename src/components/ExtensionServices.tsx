@@ -12,12 +12,9 @@ const ExtensionServices = () => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <p className="text-sm text-muted-foreground">
-          Chumana nabocwephesha
-        </p>
         <Button className="w-full" variant="default">
           <Phone className="w-4 h-4 mr-2" />
-          Chumana Nehhhovisi
+          Shayela Balimisi
         </Button>
       </CardContent>
     </Card>
