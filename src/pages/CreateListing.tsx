@@ -14,7 +14,7 @@ import { z } from 'zod';
 const listingSchema = z.object({
   product_name: z.string().min(2, 'Ligama kumele libe nezinhlamvu eziyi-2'),
   category: z.string().min(2, 'I-category iyadingeka'),
-  price: z.number().positive('Intengo kumele ibe positive'),
+  price: z.number().positive('Intsengo kumele ibe positive'),
   unit: z.string().min(1, 'I-unit iyadingeka'),
   description: z.string().optional(),
 });
@@ -123,7 +123,7 @@ const CreateListing = () => {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="image">Sitfombe Sento (Optional)</Label>
+                <Label htmlFor="image">Sitfombe Sentfo (Optional)</Label>
                 <input
                   id="image"
                   type="file"
@@ -170,7 +170,7 @@ const CreateListing = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="price">Intengo</Label>
+                  <Label htmlFor="price">Intsengo</Label>
                   <Input
                     id="price"
                     type="number"

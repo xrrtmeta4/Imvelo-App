@@ -280,7 +280,7 @@ const Messages = () => {
             <CardContent>
               {conversations.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-4">
-                  Awunato imilayeto
+                  Ute imilayeto
                 </p>
               ) : (
                 <div className="space-y-2">

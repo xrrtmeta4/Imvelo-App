@@ -23,6 +23,7 @@ import Contact from "./pages/Contact";
 import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 import MobileNav from "./components/MobileNav";
+import PWAInstallPrompt from "./components/PWAInstallPrompt";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +55,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <PWAInstallPrompt />
       <BrowserRouter>
         <AuthProvider>
           <Routes>

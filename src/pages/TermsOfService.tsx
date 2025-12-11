@@ -66,7 +66,7 @@ const TermsOfService = () => {
             </p>
             <ul className="list-disc pl-6 text-muted-foreground space-y-1">
               <li>Wena unesibopho sekuniketela imikhicito leyiyo</li>
-              <li>Intengo nekwenteka kwekutsenga kuphakati kwakho nemtsengi</li>
+              <li>Intsengo nekwenteka kwekutsenga kuphakati kwakho nemtsengi</li>
               <li>Imvelo ayisingeni ekutsengeni nekutsengisa</li>
               <li>Kufanele ulandzele imitsetfo yetemnotfo</li>
             </ul>
