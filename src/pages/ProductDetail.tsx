@@ -279,7 +279,7 @@ const ProductDetail = () => {
                 <Eye className="w-4 h-4 text-muted-foreground" />
                 <p className="text-2xl font-bold">{listing.views || 0}</p>
               </div>
-              <p className="text-sm text-muted-foreground">Tibukeli</p>
+              <p className="text-sm text-muted-foreground">Babukile</p>
             </CardContent>
           </Card>
           <Card>

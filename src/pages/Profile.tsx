@@ -298,7 +298,7 @@ const Profile = () => {
                                   />
                                 </div>
                                 <div className="space-y-2">
-                                  <Label>Intengo</Label>
+                                  <Label>Intsengo</Label>
                                   <Input
                                     type="number"
                                     step="0.01"

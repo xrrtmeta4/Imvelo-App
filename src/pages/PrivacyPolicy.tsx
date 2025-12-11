@@ -35,7 +35,7 @@ const PrivacyPolicy = () => {
               <li>Inombolo yefoni (uma uyinikile)</li>
               <li>Indzawo yakho (uma uvumile)</li>
               <li>Titfombe letifakiwe tekuhlola tifo netilokatane</li>
-              <li>Imikhicito yemakethe nelinganiselelo letintengo</li>
+              <li>Imikhicito yemakethe nekulinganisela kwetintsengo</li>
             </ul>
           </section>
 
