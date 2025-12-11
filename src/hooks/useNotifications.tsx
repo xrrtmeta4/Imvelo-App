@@ -56,16 +56,25 @@ export const useNotifications = () => {
         },
         (payload: any) => {
           const alert = payload.new;
-          const severity = alert.severity === 'high' ? 'error' : 'warning';
           
-          if (severity === 'error') {
-            toast.error('Silumkiso Sesimoselitulu!', {
-              description: alert.message
+          // Handle planting reminders differently
+          if (alert.alert_type === 'planting_reminder') {
+            toast.success('🌱 Sikhumbutso Sekutjala!', {
+              description: alert.message,
+              duration: 10000
             });
           } else {
-            toast.warning('Silumkiso Sesimoselitulu', {
-              description: alert.message
-            });
+            const severity = alert.severity === 'high' ? 'error' : 'warning';
+            
+            if (severity === 'error') {
+              toast.error('Silumkiso Sesimoselitulu!', {
+                description: alert.message
+              });
+            } else {
+              toast.warning('Silumkiso Sesimoselitulu', {
+                description: alert.message
+              });
+            }
           }
         }
       )

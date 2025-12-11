@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      crop_reminders: {
+        Row: {
+          created_at: string
+          crop_name: string
+          id: string
+          planting_end_month: number
+          planting_start_month: number
+          reminder_sent_this_season: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          crop_name: string
+          id?: string
+          planting_end_month: number
+          planting_start_month: number
+          reminder_sent_this_season?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          crop_name?: string
+          id?: string
+          planting_end_month?: number
+          planting_start_month?: number
+          reminder_sent_this_season?: boolean | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       marketplace_listings: {
         Row: {
           category: string
