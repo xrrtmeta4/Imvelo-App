@@ -102,7 +102,7 @@ const ProduceEstimator = () => {
             <p className="text-sm"><strong>Sikhatsi sekuvuna:</strong> {result.harvest_time}</p>
             {result.recommendations && (
               <div>
-                <p className="text-sm font-semibold mt-2">Emacebiso:</p>
+                <p className="text-sm font-semibold mt-2">Siboniso:</p>
                 <ul className="text-sm list-disc list-inside">
                   {result.recommendations.map((rec: string, idx: number) => (
                     <li key={idx}>{rec}</li>
@@ -110,7 +110,7 @@ const ProduceEstimator = () => {
                 </ul>
               </div>
             )}
-            <p className="text-sm"><strong>Ukuqiniseka:</strong> {result.confidence}%</p>
+            <p className="text-sm"><strong>Lizinga lekuciniseka:</strong> {result.confidence}%</p>
           </div>
         )}
       </CardContent>

@@ -100,7 +100,7 @@ const AnimalDiseaseScanner = () => {
             <p className="text-sm"><strong>Tilwane:</strong> {result.animal_type}</p>
             <p className="text-sm"><strong>Lokwelapha:</strong> {result.treatment}</p>
             <p className="text-sm"><strong>Lucwaningo:</strong> {result.prevention}</p>
-            <p className="text-sm"><strong>Ukuqiniseka:</strong> {result.confidence}%</p>
+            <p className="text-sm"><strong>Lizinga lekuciniseka:</strong> {result.confidence}%</p>
             {result.urgency === 'high' && (
               <p className="text-sm text-destructive font-semibold">⚠️ Phutfuma! Shayela udokotela wetilwane.</p>
             )}

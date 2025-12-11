@@ -36,7 +36,7 @@ const TermsOfService = () => {
               <li>Kulinganisela sivuno semkhicito</li>
               <li>Lwatiso lwelitulu langempela</li>
               <li>Imakethe yekutsenga nekutsengisa imikhicito yetemnotfo</li>
-              <li>Emacebiso ekulima nekuhlanyela</li>
+              <li>Siboniso sekulima nekuhlanyela</li>
             </ul>
           </section>
 
@@ -75,7 +75,7 @@ const TermsOfService = () => {
           <section className="space-y-3">
             <h2 className="text-lg font-semibold text-foreground">6. Lusito Lwe-AI</h2>
             <p className="text-muted-foreground">
-              Lusito lwetfu lwe-AI lwetilokatane, tifo tetilwane, nekulinganisela sivuno luniketwa njengemacebiso kuphela. Asisiniki siciniseko sekutsi imiphumela ilungile njalo. Sicela ubonane nengcweti uma unesimo lesibi.
+              Lusito lwetfu lwe-AI lwetilokatane, tifo tetilwane, nekulinganisela sivuno luniketwa njengesiboniso kuphela. Asisiniki siciniseko sekutsi imiphumela ilungile njalo. Sicela ubonane nengcweti uma unesimo lesibi.
             </p>
           </section>
 
@@ -94,7 +94,7 @@ const TermsOfService = () => {
             <ul className="list-disc pl-6 text-muted-foreground space-y-1">
               <li>Kulahlekelwa kwemkhicito</li>
               <li>Kulahleka kwemali</li>
-              <li>Emacebiso e-AI langakacondziswa</li>
+              <li>Siboniso se-AI lesingakacondziswa</li>
               <li>Kutingela emakethe</li>
             </ul>
           </section>

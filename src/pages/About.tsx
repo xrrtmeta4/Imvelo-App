@@ -100,7 +100,7 @@ const About = () => {
 
             <Card>
               <CardContent className="p-4">
-                <h4 className="font-semibold mb-2">📚 Emacebiso Ekulima</h4>
+                <h4 className="font-semibold mb-2">📚 Siboniso Sekulima</h4>
                 <p className="text-sm text-muted-foreground">
                   Funda ngekulima lokukahle, kuhlanyela, nekuphatsa umhlabatsi wakho.
                 </p>

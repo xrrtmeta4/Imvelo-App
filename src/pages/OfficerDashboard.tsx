@@ -89,7 +89,7 @@ const OfficerDashboard = () => {
                       <div>
                         <p className="text-sm font-medium">Isipho: {report.pest_name || 'Akukatfolakali'}</p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Ukuqiniseka: {report.confidence}%
+                          Lizinga lekuciniseka: {report.confidence}%
                         </p>
                       </div>
 
