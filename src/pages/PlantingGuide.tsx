@@ -9,18 +9,20 @@ const PlantingGuide = () => {
       crops: [
         { name: "Umbila", bestTime: "October - November", icon: Sprout },
         { name: "Amazambane", bestTime: "September - October", icon: Sprout },
-        { name: "Umunyu", bestTime: "October - December", icon: Sprout },
-        { name: "Tinyamatane", bestTime: "September - November", icon: Sprout }
+        { name: "Emabotjisi", bestTime: "October - December", icon: Sprout },
+        { name: "Ematsanga", bestTime: "September - November", icon: Sprout }
       ]
     },
     {
       season: "Busika (Autumn/Winter)",
       months: "March - August",
       crops: [
-        { name: "Umkhatsi", bestTime: "March - April", icon: Sun },
-        { name: "Imifino", bestTime: "April - July", icon: Cloud },
-        { name: "Tiphetfu", bestTime: "March - May", icon: Sun },
-        { name: "Tiloli", bestTime: "April - June", icon: Cloud }
+        { name: "Cabbage (Iklabishi)", bestTime: "February - April", icon: Sun },
+        { name: "Spinach (Imbuya)", bestTime: "March - July", icon: Cloud },
+        { name: "Carrots (Emakhertjisi)", bestTime: "February - May", icon: Sun },
+        { name: "Onions (Ema-anyanisi)", bestTime: "March - June", icon: Cloud },
+        { name: "Beetroot (Libhithruthi)", bestTime: "March - May", icon: Sun },
+        { name: "Lettuce (Letisi)", bestTime: "April - July", icon: Cloud }
       ]
     }
   ];
