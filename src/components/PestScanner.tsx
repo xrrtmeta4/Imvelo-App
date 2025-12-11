@@ -104,7 +104,7 @@ const PestScanner = () => {
             <h4 className="font-semibold text-sm text-primary">Imiphumela:</h4>
             <p className="text-sm"><strong>Isipho:</strong> {result.pest_name}</p>
             <p className="text-sm"><strong>Lokwelapha:</strong> {result.treatment}</p>
-            <p className="text-sm"><strong>Ukuqiniseka:</strong> {result.confidence}%</p>
+            <p className="text-sm"><strong>Lizinga lekuciniseka:</strong> {result.confidence}%</p>
           </div>
         )}
 
