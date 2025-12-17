@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, Sprout, Sun, Cloud, Bell, BellOff, Check } from 'lucide-react';
+import { Calendar, Sprout, Sun, Cloud, Bell, Check } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -20,25 +20,25 @@ const PlantingGuide = () => {
 
   const seasons = [
     {
-      season: "Ehlobo (Spring/Summer)",
+      season: "Spring/Summer",
       months: "September - February",
       crops: [
-        { name: "Umbila", bestTime: "October - November", icon: Sprout, startMonth: 10, endMonth: 11 },
-        { name: "Amazambane", bestTime: "September - October", icon: Sprout, startMonth: 9, endMonth: 10 },
-        { name: "Emabotjisi", bestTime: "October - December", icon: Sprout, startMonth: 10, endMonth: 12 },
-        { name: "Ematsanga", bestTime: "September - November", icon: Sprout, startMonth: 9, endMonth: 11 }
+        { name: "Maize", bestTime: "October - November", icon: Sprout, startMonth: 10, endMonth: 11 },
+        { name: "Potatoes", bestTime: "September - October", icon: Sprout, startMonth: 9, endMonth: 10 },
+        { name: "Beans", bestTime: "October - December", icon: Sprout, startMonth: 10, endMonth: 12 },
+        { name: "Pumpkins", bestTime: "September - November", icon: Sprout, startMonth: 9, endMonth: 11 }
       ]
     },
     {
-      season: "Busika (Autumn/Winter)",
+      season: "Autumn/Winter",
       months: "March - August",
       crops: [
-        { name: "Cabbage (Iklabishi)", bestTime: "February - April", icon: Sun, startMonth: 2, endMonth: 4 },
-        { name: "Spinach (Imbuya)", bestTime: "March - July", icon: Cloud, startMonth: 3, endMonth: 7 },
-        { name: "Carrots (Emakhertjisi)", bestTime: "February - May", icon: Sun, startMonth: 2, endMonth: 5 },
-        { name: "Onions (Ema-anyanisi)", bestTime: "March - June", icon: Cloud, startMonth: 3, endMonth: 6 },
-        { name: "Beetroot (Libhithruthi)", bestTime: "March - May", icon: Sun, startMonth: 3, endMonth: 5 },
-        { name: "Lettuce (Letisi)", bestTime: "April - July", icon: Cloud, startMonth: 4, endMonth: 7 }
+        { name: "Cabbage", bestTime: "February - April", icon: Sun, startMonth: 2, endMonth: 4 },
+        { name: "Spinach", bestTime: "March - July", icon: Cloud, startMonth: 3, endMonth: 7 },
+        { name: "Carrots", bestTime: "February - May", icon: Sun, startMonth: 2, endMonth: 5 },
+        { name: "Onions", bestTime: "March - June", icon: Cloud, startMonth: 3, endMonth: 6 },
+        { name: "Beetroot", bestTime: "March - May", icon: Sun, startMonth: 3, endMonth: 5 },
+        { name: "Lettuce", bestTime: "April - July", icon: Cloud, startMonth: 4, endMonth: 7 }
       ]
     }
   ];
@@ -62,7 +62,7 @@ const PlantingGuide = () => {
 
   const toggleReminder = async (cropName: string, startMonth: number, endMonth: number) => {
     if (!user) {
-      toast.error('Ngena kuqala kufaka tikhumbutso');
+      toast.error('Please login to set reminders');
       return;
     }
 
@@ -81,7 +81,7 @@ const PlantingGuide = () => {
         if (error) throw error;
         
         setSubscribedCrops(prev => prev.filter(c => c !== cropName));
-        toast.success(`Sikhumbutso sa-${cropName} sisusiwe`);
+        toast.success(`Reminder for ${cropName} removed`);
       } else {
         // Subscribe
         const { error } = await supabase
@@ -96,11 +96,11 @@ const PlantingGuide = () => {
         if (error) throw error;
         
         setSubscribedCrops(prev => [...prev, cropName]);
-        toast.success(`Utawutfola sikhumbutso sekutjala ${cropName}`);
+        toast.success(`You'll receive a reminder for ${cropName}`);
       }
     } catch (error) {
       console.error('Error toggling reminder:', error);
-      toast.error('Kuhlulekile. Zama futhi.');
+      toast.error('Failed. Please try again.');
     } finally {
       setLoading(null);
     }
@@ -109,7 +109,7 @@ const PlantingGuide = () => {
   return (
     <div className="min-h-screen bg-background pb-20">
       <header className="bg-primary text-primary-foreground py-4 px-4">
-        <h1 className="text-xl font-bold">Kuhlanyela ngekuhamba kwemnyaka</h1>
+        <h1 className="text-xl font-bold">Seasonal Planting Guide</h1>
       </header>
 
       <div className="max-w-screen-sm mx-auto px-4 py-6 space-y-6">
@@ -119,9 +119,9 @@ const PlantingGuide = () => {
             <div className="flex items-start gap-3">
               <Bell className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-medium text-sm">Tikhumbutso Tekutjala</p>
+                <p className="font-medium text-sm">Planting Reminders</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Cindzela inkinobho ye-bell kutfola tikhumbutso uma sikhatsi sekutjala sifikile.
+                  Click the bell button to receive reminders when planting season arrives.
                 </p>
               </div>
             </div>
@@ -132,12 +132,12 @@ const PlantingGuide = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Calendar className="w-5 h-5" />
-              Kutjala ngekuhamba kwemnyaka
+              Seasonal Planting Calendar
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
-              Khetha sikhatsi lesifanele sekutjala tijalo takho kusita kuvuna lokukhulu nelikhulu.
+              Choose the right time to plant your crops for maximum harvest yield.
             </p>
 
             <div className="space-y-6">
@@ -159,7 +159,7 @@ const PlantingGuide = () => {
                           <div className="flex-1">
                             <p className="font-medium text-sm">{crop.name}</p>
                             <p className="text-xs text-muted-foreground mt-1">
-                              Sikhatsi lesihle: {crop.bestTime}
+                              Best time: {crop.bestTime}
                             </p>
                           </div>
                           <Button
@@ -174,12 +174,12 @@ const PlantingGuide = () => {
                             ) : isSubscribed ? (
                               <>
                                 <Check className="w-4 h-4 mr-1" />
-                                <span className="text-xs">Khutsata</span>
+                                <span className="text-xs">Subscribed</span>
                               </>
                             ) : (
                               <>
                                 <Bell className="w-4 h-4 mr-1" />
-                                <span className="text-xs">Khumbutsa</span>
+                                <span className="text-xs">Remind Me</span>
                               </>
                             )}
                           </Button>
@@ -199,7 +199,7 @@ const PlantingGuide = () => {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm flex items-center gap-2">
                 <Bell className="w-4 h-4 text-green-600" />
-                Tikhumbutso Takho ({subscribedCrops.length})
+                Your Reminders ({subscribedCrops.length})
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -214,7 +214,7 @@ const PlantingGuide = () => {
                 ))}
               </div>
               <p className="text-xs text-muted-foreground mt-3">
-                Utawutfola tindzaba uma sikhatsi sekutjala sifikile.
+                You'll receive notifications when planting season arrives.
               </p>
             </CardContent>
           </Card>
@@ -222,14 +222,14 @@ const PlantingGuide = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Lokumcoka</CardTitle>
+            <CardTitle>Important Tips</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
-            <p>• Hlola umhlabatsi wakho ngaphambi kwekutjala</p>
-            <p>• Cala ngekutjala lapho imvula isicale khona</p>
-            <p>• Gcina umhlabatsi unetile kepha ungawunetsisi kakhulu</p>
-            <p>• Landzelela imiyaleto yekutjala yalelo jalo</p>
-            <p>• Sebentisa umanyolo lofanele wekuvundza umhlabatsi</p>
+            <p>• Check your soil before planting</p>
+            <p>• Start planting when rains begin</p>
+            <p>• Keep soil moist but not waterlogged</p>
+            <p>• Follow planting instructions for each crop</p>
+            <p>• Use appropriate fertilizer to enrich soil</p>
           </CardContent>
         </Card>
       </div>

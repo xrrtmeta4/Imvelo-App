@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import PushNotificationManager from '@/components/PushNotificationManager';
 
 const Profile = () => {
   const { user } = useAuth();
@@ -134,21 +135,23 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-background pb-20">
       <header className="bg-primary text-primary-foreground py-4 px-4">
-        <h1 className="text-xl font-bold">I-Profile Yami</h1>
+        <h1 className="text-xl font-bold">My Profile</h1>
       </header>
 
-      <div className="max-w-screen-sm mx-auto px-4 py-6">
+      <div className="max-w-screen-sm mx-auto px-4 py-6 space-y-6">
+        {/* Push Notifications */}
+        <PushNotificationManager />
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <User className="w-5 h-5" />
-              Imininingwane Yami
+              My Information
             </CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleUpdate} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="full_name">Ligama Lonkhe</Label>
+                <Label htmlFor="full_name">Full Name</Label>
                 <Input
                   id="full_name"
                   value={formData.full_name}
@@ -160,7 +163,7 @@ const Profile = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="phone_number">Inombolo Yocingo</Label>
+                <Label htmlFor="phone_number">Phone Number</Label>
                 <Input
                   id="phone_number"
                   type="tel"
@@ -173,7 +176,7 @@ const Profile = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="location">Indawo</Label>
+                <Label htmlFor="location">Location</Label>
                 <Input
                   id="location"
                   value={formData.location}
@@ -185,12 +188,12 @@ const Profile = () => {
               </div>
 
               <div className="space-y-2">
-                <Label>Umsebenzi</Label>
+                <Label>Role</Label>
                 <p className="text-sm font-medium capitalize">{profile?.role}</p>
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>
-                Gcina Kushintja
+                Save Changes
               </Button>
             </form>
 
@@ -200,7 +203,7 @@ const Profile = () => {
               onClick={handleLogout}
             >
               <LogOut className="w-4 h-4 mr-2" />
-              Phuma
+              Logout
             </Button>
           </CardContent>
         </Card>
@@ -211,7 +214,7 @@ const Profile = () => {
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <Package className="w-5 h-5" />
-                Tintfo Tami Temakethe
+                My Listings
               </CardTitle>
               <div className="flex gap-2">
                 <Button 
@@ -219,14 +222,14 @@ const Profile = () => {
                   onClick={() => navigate('/create-listing')}
                 >
                   <Plus className="w-4 h-4 mr-1" />
-                  Faka
+                  Add
                 </Button>
                 <Button 
                   size="sm" 
                   variant="outline"
                   onClick={() => navigate('/seller-analytics')}
                 >
-                  Buka Tibalo
+                  View Analytics
                 </Button>
               </div>
             </div>
@@ -234,7 +237,7 @@ const Profile = () => {
           <CardContent>
             {listings.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">
-                Awunato tintfo temakethe
+                No listings yet
               </p>
             ) : (
               <div className="space-y-4">
@@ -256,10 +259,10 @@ const Profile = () => {
                             E{listing.price} / {listing.unit}
                           </p>
                           {listing.quantity && (
-                            <p className="text-sm">Linani: {listing.quantity}</p>
+                            <p className="text-sm">Quantity: {listing.quantity}</p>
                           )}
                           {listing.location && (
-                            <p className="text-sm text-muted-foreground">Indzawo: {listing.location}</p>
+                            <p className="text-sm text-muted-foreground">Location: {listing.location}</p>
                           )}
                         </div>
                         <div className="flex flex-col gap-2">
@@ -286,11 +289,11 @@ const Profile = () => {
                             </DialogTrigger>
                             <DialogContent className="max-w-md">
                               <DialogHeader>
-                                <DialogTitle>Hlela Into</DialogTitle>
+                                <DialogTitle>Edit Item</DialogTitle>
                               </DialogHeader>
                               <form onSubmit={handleEditListing} className="space-y-4">
                                 <div className="space-y-2">
-                                  <Label>Ligama Lomkhicito</Label>
+                                  <Label>Product Name</Label>
                                   <Input
                                     value={editFormData.product_name}
                                     onChange={(e) => setEditFormData({...editFormData, product_name: e.target.value})}
@@ -298,7 +301,7 @@ const Profile = () => {
                                   />
                                 </div>
                                 <div className="space-y-2">
-                                  <Label>Intsengo</Label>
+                                  <Label>Price</Label>
                                   <Input
                                     type="number"
                                     step="0.01"
@@ -308,7 +311,7 @@ const Profile = () => {
                                   />
                                 </div>
                                 <div className="space-y-2">
-                                  <Label>Linani</Label>
+                                  <Label>Quantity</Label>
                                   <Input
                                     type="number"
                                     value={editFormData.quantity}
@@ -316,7 +319,7 @@ const Profile = () => {
                                   />
                                 </div>
                                 <div className="space-y-2">
-                                  <Label>Silinganiselwa</Label>
+                                  <Label>Unit</Label>
                                   <Input
                                     value={editFormData.unit}
                                     onChange={(e) => setEditFormData({...editFormData, unit: e.target.value})}
@@ -324,21 +327,21 @@ const Profile = () => {
                                   />
                                 </div>
                                 <div className="space-y-2">
-                                  <Label>Indzawo</Label>
+                                  <Label>Location</Label>
                                   <Input
                                     value={editFormData.location}
                                     onChange={(e) => setEditFormData({...editFormData, location: e.target.value})}
                                   />
                                 </div>
                                 <div className="space-y-2">
-                                  <Label>Inchazelo</Label>
+                                  <Label>Description</Label>
                                   <Input
                                     value={editFormData.description}
                                     onChange={(e) => setEditFormData({...editFormData, description: e.target.value})}
                                   />
                                 </div>
                                 <Button type="submit" className="w-full">
-                                  Gcina Kushintja
+                                  Save Changes
                                 </Button>
                               </form>
                             </DialogContent>
@@ -347,7 +350,7 @@ const Profile = () => {
                             size="sm" 
                             variant="destructive"
                             onClick={() => {
-                              if (confirm('Uyacinca kutsi ufuna kususa lento?')) {
+                              if (confirm('Are you sure you want to delete this item?')) {
                                 handleDeleteListing(listing.id);
                               }
                             }}
