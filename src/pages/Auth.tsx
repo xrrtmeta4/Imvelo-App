@@ -7,23 +7,24 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Sprout, Loader2 } from 'lucide-react';
+import { Sprout, Loader2, ArrowLeft } from 'lucide-react';
 import { z } from 'zod';
 
 const signupSchema = z.object({
-  email: z.string().email('I-email ayilungile'),
-  password: z.string().min(6, 'I-password kumele ibe nezinhlamvu eziyi-6 noma ngaphezulu'),
-  full_name: z.string().min(2, 'Ligama kufanele libe nezinhlamvu eziyi-2 noma ngaphezulu'),
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+  full_name: z.string().min(2, 'Name must be at least 2 characters'),
   phone: z.string().optional(),
 });
 
 const Auth = () => {
   const navigate = useNavigate();
-  const [isLogin, setIsLogin] = useState(true);
+  const [mode, setMode] = useState<'login' | 'signup' | 'forgot' | 'reset'>('login');
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    confirmPassword: '',
     full_name: '',
     phone: '',
     role: 'farmer' as 'farmer' | 'trader' | 'extension_officer',
@@ -34,7 +35,7 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      if (isLogin) {
+      if (mode === 'login') {
         const { data, error } = await supabase.auth.signInWithPassword({
           email: formData.email,
           password: formData.password,
@@ -42,7 +43,7 @@ const Auth = () => {
 
         if (error) {
           if (error.message.includes('Invalid login credentials')) {
-            toast.error('I-email noma i-password ayilungile');
+            toast.error('Invalid email or password');
           } else {
             toast.error(error.message);
           }
@@ -50,10 +51,10 @@ const Auth = () => {
         }
 
         if (data.user) {
-          toast.success('Ungenile ngempumelelo!');
+          toast.success('Login successful!');
           navigate('/');
         }
-      } else {
+      } else if (mode === 'signup') {
         // Validate signup data
         const validation = signupSchema.safeParse({
           email: formData.email,
@@ -84,7 +85,7 @@ const Auth = () => {
 
         if (error) {
           if (error.message.includes('already registered')) {
-            toast.error('I-email seyibhalisiwe. Sicela ungene.');
+            toast.error('Email already registered. Please login.');
           } else {
             toast.error(error.message);
           }
@@ -92,15 +93,75 @@ const Auth = () => {
         }
 
         if (data.user) {
-          toast.success('Kubhaliswe ngempumelelo! Ungangena manje.');
-          setIsLogin(true);
+          toast.success('Registration successful! You can now login.');
+          setMode('login');
         }
+      } else if (mode === 'forgot') {
+        const { error } = await supabase.auth.resetPasswordForEmail(formData.email, {
+          redirectTo: `${window.location.origin}/auth?mode=reset`,
+        });
+
+        if (error) {
+          toast.error(error.message);
+          return;
+        }
+
+        toast.success('Password reset email sent! Check your inbox.');
+        setMode('login');
+      } else if (mode === 'reset') {
+        if (formData.password !== formData.confirmPassword) {
+          toast.error('Passwords do not match');
+          return;
+        }
+
+        if (formData.password.length < 6) {
+          toast.error('Password must be at least 6 characters');
+          return;
+        }
+
+        const { error } = await supabase.auth.updateUser({
+          password: formData.password,
+        });
+
+        if (error) {
+          toast.error(error.message);
+          return;
+        }
+
+        toast.success('Password updated successfully!');
+        navigate('/');
       }
     } catch (error: any) {
       console.error('Auth error:', error);
-      toast.error('Kukhona lokuphambene. Sicela uzame futhi.');
+      toast.error('Something went wrong. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Check for reset mode from URL
+  useState(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('mode') === 'reset') {
+      setMode('reset');
+    }
+  });
+
+  const getTitle = () => {
+    switch (mode) {
+      case 'login': return 'Sign In';
+      case 'signup': return 'Create Account';
+      case 'forgot': return 'Reset Password';
+      case 'reset': return 'Set New Password';
+    }
+  };
+
+  const getDescription = () => {
+    switch (mode) {
+      case 'login': return 'Sign in with your account';
+      case 'signup': return 'Register for Imvelo';
+      case 'forgot': return 'Enter your email to receive a reset link';
+      case 'reset': return 'Enter your new password';
     }
   };
 
@@ -114,16 +175,26 @@ const Auth = () => {
             </div>
           </div>
           <CardTitle className="text-2xl font-bold">Imvelo</CardTitle>
-          <CardDescription>
-            {isLogin ? 'Ngena nge-akhawunti yakho' : 'Bhalisela ku-Imvelo'}
-          </CardDescription>
+          <CardDescription>{getDescription()}</CardDescription>
         </CardHeader>
         <CardContent>
+          {(mode === 'forgot' || mode === 'reset') && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setMode('login')}
+              className="mb-4"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Login
+            </Button>
+          )}
+          
           <form onSubmit={handleAuth} className="space-y-4">
-            {!isLogin && (
+            {mode === 'signup' && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="full_name">Ligama Lonkhe</Label>
+                  <Label htmlFor="full_name">Full Name</Label>
                   <Input
                     id="full_name"
                     type="text"
@@ -134,7 +205,7 @@ const Auth = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Inombolo Yocingo (Optional)</Label>
+                  <Label htmlFor="phone">Phone Number (Optional)</Label>
                   <Input
                     id="phone"
                     type="tel"
@@ -144,7 +215,7 @@ const Auth = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="role">Umsebenzi</Label>
+                  <Label htmlFor="role">Role</Label>
                   <Select
                     value={formData.role}
                     onValueChange={(value: any) => setFormData({ ...formData, role: value })}
@@ -154,73 +225,120 @@ const Auth = () => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="farmer">Umlimi</SelectItem>
-                      <SelectItem value="trader">Umthengisi</SelectItem>
-                      <SelectItem value="extension_officer">Umhlengikati</SelectItem>
+                      <SelectItem value="farmer">Farmer</SelectItem>
+                      <SelectItem value="trader">Trader</SelectItem>
+                      <SelectItem value="extension_officer">Extension Officer</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </>
             )}
-            <div className="space-y-2">
-              <Label htmlFor="email">I-Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                required
-                disabled={loading}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">I-Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                required
-                disabled={loading}
-                minLength={6}
-              />
-            </div>
+            
+            {mode !== 'reset' && (
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  required
+                  disabled={loading}
+                />
+              </div>
+            )}
+            
+            {(mode === 'login' || mode === 'signup' || mode === 'reset') && (
+              <div className="space-y-2">
+                <Label htmlFor="password">{mode === 'reset' ? 'New Password' : 'Password'}</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  required
+                  disabled={loading}
+                  minLength={6}
+                />
+              </div>
+            )}
+            
+            {mode === 'reset' && (
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  value={formData.confirmPassword}
+                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                  required
+                  disabled={loading}
+                  minLength={6}
+                />
+              </div>
+            )}
+            
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Kulindile...
+                  Please wait...
                 </>
               ) : (
-                <>{isLogin ? 'Ngena' : 'Bhalisa'}</>
+                <>{getTitle()}</>
               )}
             </Button>
           </form>
-          <div className="mt-4 text-center">
-            <Button
-              variant="link"
-              onClick={() => setIsLogin(!isLogin)}
-              disabled={loading}
-            >
-              {isLogin ? 'Awunakho i-akhawunti? Bhalisa' : 'Unayo i-akhawunti? Ngena'}
-            </Button>
-          </div>
+          
+          {mode === 'login' && (
+            <div className="mt-4 text-center space-y-2">
+              <Button
+                variant="link"
+                onClick={() => setMode('forgot')}
+                disabled={loading}
+                className="text-sm"
+              >
+                Forgot Password?
+              </Button>
+              <div>
+                <Button
+                  variant="link"
+                  onClick={() => setMode('signup')}
+                  disabled={loading}
+                >
+                  Don't have an account? Sign Up
+                </Button>
+              </div>
+            </div>
+          )}
+          
+          {mode === 'signup' && (
+            <div className="mt-4 text-center">
+              <Button
+                variant="link"
+                onClick={() => setMode('login')}
+                disabled={loading}
+              >
+                Already have an account? Sign In
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
       
       {/* Footer Links for Google Ads Compliance */}
       <div className="mt-6 flex flex-wrap justify-center gap-4 text-sm">
         <Link to="/about" className="text-primary-foreground/80 hover:text-primary-foreground underline">
-          Mayelana Natsi
+          About Us
         </Link>
         <Link to="/contact" className="text-primary-foreground/80 hover:text-primary-foreground underline">
-          Sitsintse
+          Contact
         </Link>
         <Link to="/privacy-policy" className="text-primary-foreground/80 hover:text-primary-foreground underline">
-          Inqubomgomo Yobumfihlo
+          Privacy Policy
         </Link>
         <Link to="/terms-of-service" className="text-primary-foreground/80 hover:text-primary-foreground underline">
-          Imigomo Nekusebentisa
+          Terms of Service
         </Link>
       </div>
     </div>
