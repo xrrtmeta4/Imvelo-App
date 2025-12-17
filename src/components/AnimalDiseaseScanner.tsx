@@ -43,10 +43,10 @@ const AnimalDiseaseScanner = () => {
       if (identifyError) throw identifyError;
 
       setResult(identifyData);
-      toast.success('Sifo sitfoliwe ngempumelelo!');
+      toast.success('Disease identified successfully!');
     } catch (error: any) {
       console.error('Error:', error);
-      toast.error('Kukhona lokwehlulekile. Sicela uzame futhi.');
+      toast.error('Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -57,12 +57,12 @@ const AnimalDiseaseScanner = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Stethoscope className="w-5 h-5 text-primary" />
-          Bona Tifo Tetilwane
+          Identify Animal Diseases
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-sm text-muted-foreground">
-          Layisha sitfombe sesilwane sakho kutfola sifo nekwelapha.
+          Upload a photo of your animal to identify diseases and get treatment advice.
         </p>
         
         <input
@@ -81,12 +81,12 @@ const AnimalDiseaseScanner = () => {
               {loading ? (
                 <>
                   <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Kuyahlolwa...
+                  Analyzing...
                 </>
               ) : (
                 <>
                   <Camera className="w-5 h-5 mr-2" />
-                  Tsatsa Sitfombe Sesilwane
+                  Take Animal Photo
                 </>
               )}
             </span>
@@ -95,14 +95,14 @@ const AnimalDiseaseScanner = () => {
 
         {result && (
           <div className="mt-4 p-4 rounded-lg bg-accent space-y-2">
-            <h4 className="font-semibold text-sm text-primary">Imiphumela:</h4>
-            <p className="text-sm"><strong>Sifo:</strong> {result.disease_name}</p>
-            <p className="text-sm"><strong>Tilwane:</strong> {result.animal_type}</p>
-            <p className="text-sm"><strong>Lokwelapha:</strong> {result.treatment}</p>
-            <p className="text-sm"><strong>Lucwaningo:</strong> {result.prevention}</p>
-            <p className="text-sm"><strong>Lizinga lekuciniseka:</strong> {result.confidence}%</p>
+            <h4 className="font-semibold text-sm text-primary">Results:</h4>
+            <p className="text-sm"><strong>Disease:</strong> {result.disease_name}</p>
+            <p className="text-sm"><strong>Animal:</strong> {result.animal_type}</p>
+            <p className="text-sm"><strong>Treatment:</strong> {result.treatment}</p>
+            <p className="text-sm"><strong>Prevention:</strong> {result.prevention}</p>
+            <p className="text-sm"><strong>Confidence:</strong> {result.confidence}%</p>
             {result.urgency === 'high' && (
-              <p className="text-sm text-destructive font-semibold">⚠️ Phutfuma! Shayela udokotela wetilwane.</p>
+              <p className="text-sm text-destructive font-semibold">⚠️ Urgent! Contact a veterinarian immediately.</p>
             )}
           </div>
         )}

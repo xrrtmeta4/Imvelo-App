@@ -7,18 +7,18 @@ const BestPractices = () => {
 
   const practices = [
     {
-      title: "Kuhlanyela ngekuhamba kwemnyaka",
-      description: "Fundza sikhatsi lesihle sekutjala tijalo takho",
+      title: "Seasonal Planting Guide",
+      description: "Learn the best time to plant your crops",
       path: "/planting-guide"
     },
     {
-      title: "Ungawuphatsa kanjani umhlabatsi wakho",
-      description: "Gcina umhlabatsi uphilile kusita kuvuna lokukhulu",
+      title: "Soil Management",
+      description: "Keep your soil healthy for better harvests",
       path: "/soil-management"
     },
     {
-      title: "Kulondvolota Emanti",
-      description: "Emasu ekumisela emanti ngendlela lefanele",
+      title: "Water Conservation",
+      description: "Tips for efficient water management",
       path: "/water-conservation"
     }
   ];
@@ -28,7 +28,7 @@ const BestPractices = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <BookOpen className="w-5 h-5 text-primary" />
-          Tindlela Letinhle
+          Best Practices
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">

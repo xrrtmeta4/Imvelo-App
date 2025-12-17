@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Bug, Camera, Loader2, Upload } from 'lucide-react';
+import { Bug, Camera, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
@@ -53,10 +53,10 @@ const PestScanner = () => {
         confidence: identifyData.confidence,
       });
 
-      toast.success('Isipho sitholiwe ngempumelelo!');
+      toast.success('Pest identified successfully!');
     } catch (error: any) {
       console.error('Error:', error);
-      toast.error('Kukhona lokwehlulekile. Sicela uzame futhi.');
+      toast.error('Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -67,7 +67,7 @@ const PestScanner = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Bug className="w-5 h-5 text-primary" />
-          Bona Tilwakatana
+          Identify Pests
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -87,12 +87,12 @@ const PestScanner = () => {
               {loading ? (
                 <>
                   <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Kuyahlolwa...
+                  Analyzing...
                 </>
               ) : (
                 <>
                   <Camera className="w-5 h-5 mr-2" />
-                  Tsatsa Sitfombe
+                  Take Photo
                 </>
               )}
             </span>
@@ -101,10 +101,10 @@ const PestScanner = () => {
 
         {result && (
           <div className="mt-4 p-4 rounded-lg bg-accent space-y-2">
-            <h4 className="font-semibold text-sm text-primary">Imiphumela:</h4>
-            <p className="text-sm"><strong>Isipho:</strong> {result.pest_name}</p>
-            <p className="text-sm"><strong>Lokwelapha:</strong> {result.treatment}</p>
-            <p className="text-sm"><strong>Lizinga lekuciniseka:</strong> {result.confidence}%</p>
+            <h4 className="font-semibold text-sm text-primary">Results:</h4>
+            <p className="text-sm"><strong>Pest:</strong> {result.pest_name}</p>
+            <p className="text-sm"><strong>Treatment:</strong> {result.treatment}</p>
+            <p className="text-sm"><strong>Confidence:</strong> {result.confidence}%</p>
           </div>
         )}
 

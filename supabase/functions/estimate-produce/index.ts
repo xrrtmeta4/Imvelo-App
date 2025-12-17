@@ -32,12 +32,12 @@ serve(async (req) => {
             role: 'system',
             content: `You are an expert agricultural AI assistant specializing in crop yield estimation for farms in Eswatini/Southern Africa.
             Analyze images of crops/fields to estimate potential yield.
-            Always respond in JSON format with these fields:
-            - crop_type: Type of crop identified (in Siswati if possible)
+            Always respond in English and in JSON format with these fields:
+            - crop_type: Type of crop identified in English
             - estimated_yield: Estimated yield per hectare or visible area (e.g., "500-700 kg/hectare")
-            - crop_health: Assessment of crop health ("Kuhle kakhulu", "Kuhle", "Kuphakathi", "Akukuhle")
-            - harvest_time: Estimated time until harvest (e.g., "2-3 weeks", "1 month")
-            - recommendations: Array of 2-4 recommendations for the farmer
+            - crop_health: Assessment of crop health in English ("Excellent", "Good", "Fair", "Poor")
+            - harvest_time: Estimated time until harvest in English (e.g., "2-3 weeks", "1 month")
+            - recommendations: Array of 2-4 recommendations for the farmer in English
             - confidence: Your confidence level (0-100)
             Be practical and helpful for small-scale farmers.`
           },
@@ -77,22 +77,22 @@ serve(async (req) => {
         result = JSON.parse(jsonMatch[0]);
       } else {
         result = {
-          crop_type: 'Kungakalungi',
-          estimated_yield: 'Akwaziwa',
-          crop_health: 'Kuphakathi',
-          harvest_time: 'Akwaziwa',
-          recommendations: ['Tfumela sitfombe lesicacile kakhulu'],
+          crop_type: 'Unable to identify',
+          estimated_yield: 'Unknown',
+          crop_health: 'Fair',
+          harvest_time: 'Unknown',
+          recommendations: ['Please upload a clearer image'],
           confidence: 50
         };
       }
     } catch (parseError) {
       console.error('JSON parse error:', parseError);
       result = {
-        crop_type: 'Tijalo',
-        estimated_yield: 'Silinganiso asikalungi',
-        crop_health: 'Kuphakathi',
-        harvest_time: 'Fundza imibala yetijalo',
-        recommendations: ['Hlola tijalo takho njalo', 'Ncipheta uma kudzingeka'],
+        crop_type: 'Crops',
+        estimated_yield: 'Estimation incomplete',
+        crop_health: 'Fair',
+        harvest_time: 'Check crop color indicators',
+        recommendations: ['Check your crops regularly', 'Irrigate as needed'],
         confidence: 40
       };
     }
@@ -106,11 +106,11 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         error: error instanceof Error ? error.message : 'Unknown error',
-        crop_type: 'Kuhlulekile',
-        estimated_yield: 'Akutfolakalanga',
-        crop_health: 'Akwaziwa',
-        harvest_time: 'Akwaziwa',
-        recommendations: ['Sicela uzame futhi'],
+        crop_type: 'Failed',
+        estimated_yield: 'Not available',
+        crop_health: 'Unknown',
+        harvest_time: 'Unknown',
+        recommendations: ['Please try again'],
         confidence: 0
       }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
