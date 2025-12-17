@@ -31,7 +31,7 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are an agricultural expert specializing in pest identification for African crops. Analyze images and provide: pest name, treatment recommendation, and confidence level (0-100). Respond in JSON format: {"pest_name": "...", "treatment": "...", "confidence": number}'
+            content: 'You are an agricultural expert specializing in pest identification for African crops. Analyze images and provide: pest name in English, treatment recommendation in English, and confidence level (0-100). Always respond in English. Respond in JSON format: {"pest_name": "...", "treatment": "...", "confidence": number}'
           },
           {
             role: 'user',

@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, Send, ArrowLeft, Check, CheckCheck } from 'lucide-react';
+import { MessageCircle, Send, ArrowLeft, Check, CheckCheck, Trash2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -101,6 +101,18 @@ const Messages = () => {
             setMessages((prev) =>
               prev.map((m) => (m.id === updatedMsg.id ? updatedMsg : m))
             );
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'DELETE',
+            schema: 'public',
+            table: 'messages',
+          },
+          (payload) => {
+            const deletedMsg = payload.old as Message;
+            setMessages((prev) => prev.filter((m) => m.id !== deletedMsg.id));
           }
         )
         .subscribe();
@@ -239,9 +251,49 @@ const Messages = () => {
     });
 
     if (error) {
-      toast.error('Umlayeto awuthunyelelwanga');
+      toast.error('Message not sent');
       setNewMessage(messageContent);
     }
+  };
+
+  const deleteMessage = async (messageId: string) => {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('messages')
+      .delete()
+      .eq('id', messageId)
+      .eq('sender_id', user.id);
+
+    if (error) {
+      toast.error('Failed to delete message');
+      return;
+    }
+
+    setMessages(messages.filter(m => m.id !== messageId));
+    toast.success('Message deleted');
+  };
+
+  const deleteConversation = async (conversationId: string) => {
+    if (!user) return;
+
+    // Delete all messages where user is sender or receiver in this conversation
+    const { error } = await supabase
+      .from('messages')
+      .delete()
+      .or(`and(sender_id.eq.${user.id},receiver_id.eq.${conversationId}),and(sender_id.eq.${conversationId},receiver_id.eq.${user.id})`);
+
+    if (error) {
+      toast.error('Failed to delete conversation');
+      return;
+    }
+
+    setConversations(conversations.filter(c => c.id !== conversationId));
+    if (selectedConversation === conversationId) {
+      setSelectedConversation(null);
+      setMessages([]);
+    }
+    toast.success('Conversation deleted');
   };
 
   const getConversationName = () => {
@@ -253,10 +305,10 @@ const Messages = () => {
     return (
       <div className="min-h-screen bg-background pb-20">
         <header className="bg-primary text-primary-foreground py-4 px-4">
-          <h1 className="text-xl font-bold">Imilayeto</h1>
+          <h1 className="text-xl font-bold">Messages</h1>
         </header>
         <div className="max-w-screen-sm mx-auto px-4 py-6">
-          <p className="text-center text-muted-foreground">Ngena kuqala kutfumela imilayeto</p>
+          <p className="text-center text-muted-foreground">Please login to send messages</p>
         </div>
       </div>
     );
@@ -265,7 +317,7 @@ const Messages = () => {
   return (
     <div className="min-h-screen bg-background pb-20">
       <header className="bg-primary text-primary-foreground py-4 px-4">
-        <h1 className="text-xl font-bold">Imilayeto</h1>
+        <h1 className="text-xl font-bold">Messages</h1>
       </header>
 
       <div className="max-w-screen-sm mx-auto px-4 py-6">
@@ -274,41 +326,56 @@ const Messages = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MessageCircle className="w-5 h-5" />
-                Imilayeto Yemakhasimende
+                Conversations
               </CardTitle>
             </CardHeader>
             <CardContent>
               {conversations.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-4">
-                  Ute imilayeto
+                  No messages
                 </p>
               ) : (
                 <div className="space-y-2">
                   {conversations.map((conv) => (
-                    <button
+                    <div
                       key={conv.id}
-                      onClick={() => setSelectedConversation(conv.id)}
-                      className="w-full p-3 rounded-lg bg-accent/50 hover:bg-accent text-left relative"
+                      className="w-full p-3 rounded-lg bg-accent/50 hover:bg-accent text-left relative flex items-center gap-2"
                     >
-                      <div className="flex items-center justify-between">
-                        <p className="font-medium">{conv.name}</p>
-                        {conv.unreadCount > 0 && (
-                          <span className="bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full">
-                            {conv.unreadCount}
-                          </span>
+                      <button
+                        onClick={() => setSelectedConversation(conv.id)}
+                        className="flex-1 text-left"
+                      >
+                        <div className="flex items-center justify-between">
+                          <p className="font-medium">{conv.name}</p>
+                          {conv.unreadCount > 0 && (
+                            <span className="bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full">
+                              {conv.unreadCount}
+                            </span>
+                          )}
+                        </div>
+                        {conv.lastMessage && (
+                          <p className="text-sm text-muted-foreground truncate mt-1">
+                            {conv.lastMessage}
+                          </p>
                         )}
-                      </div>
-                      {conv.lastMessage && (
-                        <p className="text-sm text-muted-foreground truncate mt-1">
-                          {conv.lastMessage}
-                        </p>
-                      )}
-                      {conv.lastMessageTime && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {new Date(conv.lastMessageTime).toLocaleString('ss-ZA')}
-                        </p>
-                      )}
-                    </button>
+                        {conv.lastMessageTime && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {new Date(conv.lastMessageTime).toLocaleString('en-US')}
+                          </p>
+                        )}
+                      </button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteConversation(conv.id);
+                        }}
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   ))}
                 </div>
               )}
@@ -328,7 +395,7 @@ const Messages = () => {
                 <div className="flex-1">
                   <p className="font-semibold">{getConversationName()}</p>
                   {otherUserTyping && (
-                    <p className="text-xs text-primary animate-pulse">Uyabhala...</p>
+                    <p className="text-xs text-primary animate-pulse">Typing...</p>
                   )}
                 </div>
               </div>
@@ -338,16 +405,16 @@ const Messages = () => {
                 {messages.map((msg) => (
                   <div
                     key={msg.id}
-                    className={`p-3 rounded-lg max-w-[80%] ${
+                    className={`group p-3 rounded-lg max-w-[80%] relative ${
                       msg.sender_id === user.id
                         ? 'bg-primary text-primary-foreground ml-auto'
                         : 'bg-accent mr-auto'
                     }`}
                   >
-                    <p className="text-sm">{msg.content}</p>
+                    <p className="text-sm pr-6">{msg.content}</p>
                     <div className="flex items-center justify-end gap-1 mt-1">
                       <p className="text-xs opacity-70">
-                        {new Date(msg.created_at).toLocaleTimeString('ss-ZA', { 
+                        {new Date(msg.created_at).toLocaleTimeString('en-US', { 
                           hour: '2-digit', 
                           minute: '2-digit' 
                         })}
@@ -360,6 +427,16 @@ const Messages = () => {
                         )
                       )}
                     </div>
+                    {msg.sender_id === user.id && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => deleteMessage(msg.id)}
+                        className="absolute top-1 right-1 w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity text-primary-foreground/70 hover:text-destructive hover:bg-transparent"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    )}
                   </div>
                 ))}
                 <div ref={messagesEndRef} />
@@ -367,7 +444,7 @@ const Messages = () => {
 
               <div className="flex gap-2">
                 <Input
-                  placeholder="Bhala umlayeto..."
+                  placeholder="Type a message..."
                   value={newMessage}
                   onChange={(e) => {
                     setNewMessage(e.target.value);

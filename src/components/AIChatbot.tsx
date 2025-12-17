@@ -30,7 +30,7 @@ const AIChatbot = () => {
       setMessages(prev => [...prev, { role: 'assistant', content: data.response }]);
     } catch (error: any) {
       console.error('Error:', error);
-      toast.error('Kuhlulekile kubuta umlayeto');
+      toast.error('Failed to send message');
     } finally {
       setLoading(false);
     }
@@ -51,7 +51,7 @@ const AIChatbot = () => {
   return (
     <Card className="fixed bottom-20 right-4 w-80 z-40 shadow-xl">
       <CardHeader className="flex flex-row items-center justify-between pb-3">
-        <CardTitle className="text-base">Umsiti We-AI</CardTitle>
+        <CardTitle className="text-base">AI Assistant</CardTitle>
         <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
           <X className="w-4 h-4" />
         </Button>
@@ -60,7 +60,7 @@ const AIChatbot = () => {
         <div className="h-64 overflow-y-auto space-y-2 border rounded-lg p-2">
           {messages.length === 0 ? (
             <p className="text-xs text-muted-foreground text-center py-8">
-              buta ngetekulima
+              Ask about farming
             </p>
           ) : (
             messages.map((msg, idx) => (
@@ -78,13 +78,13 @@ const AIChatbot = () => {
           )}
           {loading && (
             <div className="p-2 rounded-lg text-xs bg-accent mr-8">
-              Kuyalayisha...
+              Loading...
             </div>
           )}
         </div>
         <div className="flex gap-2">
           <Input
-            placeholder="Bhala Umbuto Wakho..."
+            placeholder="Type your question..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && sendMessage()}

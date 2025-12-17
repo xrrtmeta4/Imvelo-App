@@ -43,10 +43,10 @@ const ProduceEstimator = () => {
       if (estimateError) throw estimateError;
 
       setResult(estimateData);
-      toast.success('Kulinganiswa kuphelile!');
+      toast.success('Estimation complete!');
     } catch (error: any) {
       console.error('Error:', error);
-      toast.error('Kukhona lokwehlulekile. Sicela uzame futhi.');
+      toast.error('Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -57,12 +57,12 @@ const ProduceEstimator = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Wheat className="w-5 h-5 text-primary" />
-          Linganisela Sivuno
+          Estimate Yield
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-sm text-muted-foreground">
-          Layisha sitfombe sensimi yakho kutfola silinganiso sesivuno.
+          Upload a photo of your field to get a yield estimate.
         </p>
         
         <input
@@ -81,12 +81,12 @@ const ProduceEstimator = () => {
               {loading ? (
                 <>
                   <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Kuyalinganiswa...
+                  Estimating...
                 </>
               ) : (
                 <>
                   <Camera className="w-5 h-5 mr-2" />
-                  Tsatsa Sitfombe Sensimi
+                  Take Field Photo
                 </>
               )}
             </span>
@@ -95,14 +95,14 @@ const ProduceEstimator = () => {
 
         {result && (
           <div className="mt-4 p-4 rounded-lg bg-accent space-y-2">
-            <h4 className="font-semibold text-sm text-primary">Silinganiso:</h4>
-            <p className="text-sm"><strong>Uhlobo lwesijalo:</strong> {result.crop_type}</p>
-            <p className="text-sm"><strong>Sivuno esilindelekile:</strong> {result.estimated_yield}</p>
-            <p className="text-sm"><strong>Isimo setijalo:</strong> {result.crop_health}</p>
-            <p className="text-sm"><strong>Sikhatsi sekuvuna:</strong> {result.harvest_time}</p>
+            <h4 className="font-semibold text-sm text-primary">Estimation:</h4>
+            <p className="text-sm"><strong>Crop Type:</strong> {result.crop_type}</p>
+            <p className="text-sm"><strong>Expected Yield:</strong> {result.estimated_yield}</p>
+            <p className="text-sm"><strong>Crop Health:</strong> {result.crop_health}</p>
+            <p className="text-sm"><strong>Harvest Time:</strong> {result.harvest_time}</p>
             {result.recommendations && (
               <div>
-                <p className="text-sm font-semibold mt-2">Siboniso:</p>
+                <p className="text-sm font-semibold mt-2">Recommendations:</p>
                 <ul className="text-sm list-disc list-inside">
                   {result.recommendations.map((rec: string, idx: number) => (
                     <li key={idx}>{rec}</li>
@@ -110,7 +110,7 @@ const ProduceEstimator = () => {
                 </ul>
               </div>
             )}
-            <p className="text-sm"><strong>Lizinga lekuciniseka:</strong> {result.confidence}%</p>
+            <p className="text-sm"><strong>Confidence:</strong> {result.confidence}%</p>
           </div>
         )}
       </CardContent>

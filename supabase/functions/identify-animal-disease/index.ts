@@ -32,11 +32,11 @@ serve(async (req) => {
             role: 'system',
             content: `You are an expert veterinarian AI assistant specializing in livestock and farm animal health. 
             Analyze images of animals to identify potential diseases or health issues.
-            Always respond in JSON format with these fields:
-            - disease_name: The name of the disease or condition (in Siswati if possible, otherwise English)
+            Always respond in English and in JSON format with these fields:
+            - disease_name: The name of the disease or condition in English
             - animal_type: Type of animal identified
-            - treatment: Recommended treatment steps
-            - prevention: Prevention measures
+            - treatment: Recommended treatment steps in English
+            - prevention: Prevention measures in English
             - confidence: Your confidence level (0-100)
             - urgency: "low", "medium", or "high" based on severity
             Be accurate and helpful for farmers in Eswatini.`
@@ -79,10 +79,10 @@ serve(async (req) => {
       } else {
         // Fallback response
         result = {
-          disease_name: 'Kungahlonishwa',
-          animal_type: 'Akunakiwe',
-          treatment: 'Sicela utfumele sitfombe lesicacile kakhulu.',
-          prevention: 'Gcina tilwane takho tihlobile.',
+          disease_name: 'Unable to identify',
+          animal_type: 'Unknown',
+          treatment: 'Please upload a clearer image.',
+          prevention: 'Keep your animals healthy with regular checkups.',
           confidence: 50,
           urgency: 'low'
         };
@@ -90,10 +90,10 @@ serve(async (req) => {
     } catch (parseError) {
       console.error('JSON parse error:', parseError);
       result = {
-        disease_name: 'Sifo esingakalungi',
-        animal_type: 'Silwane',
+        disease_name: 'Unidentified condition',
+        animal_type: 'Animal',
         treatment: content.substring(0, 200),
-        prevention: 'Bonana nodokotela wetilwane.',
+        prevention: 'Consult a veterinarian.',
         confidence: 60,
         urgency: 'medium'
       };
@@ -108,8 +108,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         error: error instanceof Error ? error.message : 'Unknown error',
-        disease_name: 'Kuhlulekile',
-        treatment: 'Sicela uzame futhi noma ubonane nodokotela wetilwane.',
+        disease_name: 'Failed',
+        treatment: 'Please try again or consult a veterinarian.',
         confidence: 0,
         urgency: 'medium'
       }),
