@@ -17,6 +17,7 @@ import PlantingGuide from "./pages/PlantingGuide";
 import SoilManagement from "./pages/SoilManagement";
 import WaterConservation from "./pages/WaterConservation";
 import SellerAnalytics from "./pages/SellerAnalytics";
+import ExtensionDirectory from "./pages/ExtensionDirectory";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import Contact from "./pages/Contact";
@@ -153,6 +154,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <ProductDetail />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/extension-directory"
+              element={
+                <ProtectedRoute>
+                  <ExtensionDirectory />
                 </ProtectedRoute>
               }
             />

@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.check-planting-reminders]
 verify_jwt = false
+
+[functions.send-weather-notifications]
+verify_jwt = false
