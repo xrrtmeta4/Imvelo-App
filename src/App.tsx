@@ -7,16 +7,12 @@ import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Scanner from "./pages/Scanner";
-import Marketplace from "./pages/Marketplace";
 import Messages from "./pages/Messages";
 import Profile from "./pages/Profile";
-import CreateListing from "./pages/CreateListing";
-import ProductDetail from "./pages/ProductDetail";
 import OfficerDashboard from "./pages/OfficerDashboard";
 import PlantingGuide from "./pages/PlantingGuide";
 import SoilManagement from "./pages/SoilManagement";
 import WaterConservation from "./pages/WaterConservation";
-import SellerAnalytics from "./pages/SellerAnalytics";
 import ExtensionDirectory from "./pages/ExtensionDirectory";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
@@ -78,14 +74,6 @@ const App = () => (
               }
             />
             <Route
-              path="/marketplace"
-              element={
-                <ProtectedRoute>
-                  <Marketplace />
-                </ProtectedRoute>
-              }
-            />
-            <Route
               path="/messages"
               element={
                 <ProtectedRoute>
@@ -102,10 +90,10 @@ const App = () => (
               }
             />
             <Route
-              path="/create-listing"
+              path="/officer-dashboard"
               element={
                 <ProtectedRoute>
-                  <CreateListing />
+                  <OfficerDashboard />
                 </ProtectedRoute>
               }
             />
@@ -138,22 +126,6 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <WaterConservation />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/seller-analytics"
-              element={
-                <ProtectedRoute>
-                  <SellerAnalytics />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/product/:id"
-              element={
-                <ProtectedRoute>
-                  <ProductDetail />
                 </ProtectedRoute>
               }
             />

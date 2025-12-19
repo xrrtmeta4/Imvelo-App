@@ -1,6 +1,5 @@
 import WeatherCard from '@/components/WeatherCard';
 import PestScanner from '@/components/PestScanner';
-import MarketplaceFeed from '@/components/MarketplaceFeed';
 import BestPractices from '@/components/BestPractices';
 import ExtensionServices from '@/components/ExtensionServices';
 import AIChatbot from '@/components/AIChatbot';
@@ -26,7 +25,6 @@ const Index = () => {
       <div className="max-w-screen-sm mx-auto px-4 py-6 space-y-6">
         <WeatherCard />
         <PestScanner />
-        <MarketplaceFeed />
         <div className="grid grid-cols-1 gap-6">
           <ExtensionServices />
           <BestPractices />
