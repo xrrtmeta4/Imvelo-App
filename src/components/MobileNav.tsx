@@ -1,11 +1,10 @@
-import { Home, ShoppingCart, Bug, MessageCircle, User } from 'lucide-react';
+import { Home, Bug, MessageCircle, User } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { cn } from '@/lib/utils';
 
 const MobileNav = () => {
   const navItems = [
     { to: '/', icon: Home, label: 'Likhaya' },
-    { to: '/marketplace', icon: ShoppingCart, label: 'Imakethe' },
     { to: '/scanner', icon: Bug, label: 'Bonatilokwatana' },
     { to: '/messages', icon: MessageCircle, label: 'Imilayeto' },
     { to: '/profile', icon: User, label: 'Mine' },
