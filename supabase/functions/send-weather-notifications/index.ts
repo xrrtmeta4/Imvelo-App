@@ -13,6 +13,12 @@ interface WeatherData {
   precipitation: number;
 }
 
+interface ClimateIssue {
+  title: string;
+  description: string;
+  severity: string;
+}
+
 function getWeatherDescription(code: number): string {
   const descriptions: Record<number, string> = {
     0: "Clear sky",
@@ -38,6 +44,68 @@ function getWeatherDescription(code: number): string {
     99: "Thunderstorm with heavy hail",
   };
   return descriptions[code] || "Unknown conditions";
+}
+
+// Check for climate issues based on weather patterns
+function checkClimateIssues(weather: WeatherData): ClimateIssue | null {
+  const currentMonth = new Date().getMonth() + 1;
+  
+  // Drought conditions (low humidity, no precipitation, high temp)
+  if (weather.humidity < 30 && weather.precipitation === 0 && weather.temperature > 30) {
+    return {
+      title: '🏜️ Drought Warning',
+      description: `Low humidity (${weather.humidity}%) and no rainfall detected. Implement water conservation measures.`,
+      severity: 'high'
+    };
+  }
+  
+  // El Niño conditions (unusual weather patterns)
+  if (currentMonth >= 10 || currentMonth <= 3) { // Summer season
+    if (weather.temperature > 35) {
+      return {
+        title: '🌡️ Heat Wave Advisory',
+        description: `Extreme temperatures (${weather.temperature}°C) may indicate climate stress. Protect crops and livestock.`,
+        severity: 'high'
+      };
+    }
+  }
+  
+  // Flooding risk
+  if (weather.precipitation > 30) {
+    return {
+      title: '🌊 Flood Risk Alert',
+      description: `Heavy precipitation (${weather.precipitation}mm) may cause flooding. Move livestock to higher ground.`,
+      severity: 'critical'
+    };
+  }
+  
+  // Seasonal climate advisory
+  if (currentMonth >= 5 && currentMonth <= 8 && weather.temperature < 10) {
+    return {
+      title: '❄️ Frost Advisory',
+      description: `Cold conditions (${weather.temperature}°C) during winter. Protect sensitive crops and provide shelter for animals.`,
+      severity: 'medium'
+    };
+  }
+  
+  return null;
+}
+
+async function sendWebPush(endpoint: string, payload: any): Promise<boolean> {
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'TTL': '86400',
+      },
+      body: JSON.stringify(payload),
+    });
+    return response.ok || response.status === 201;
+  } catch (error) {
+    console.error('Error sending push:', error);
+    return false;
+  }
 }
 
 function checkForAlerts(weather: WeatherData): { hasAlert: boolean; message: string; severity: string } {
@@ -126,6 +194,9 @@ Deno.serve(async (req) => {
 
     const alert = checkForAlerts(weather);
 
+    // Check for climate issues
+    const climateIssue = checkClimateIssues(weather);
+    
     // Get all users who have weather notifications enabled
     const { data: users, error: usersError } = await supabase
       .from('profiles')
@@ -148,10 +219,22 @@ Deno.serve(async (req) => {
       read: false
     })) || [];
 
-    if (alerts.length > 0) {
+    // Add climate issue alerts if detected
+    const climateAlerts = climateIssue ? users?.map(user => ({
+      user_id: user.id,
+      alert_type: 'climate_issue',
+      message: `${climateIssue.title}: ${climateIssue.description}`,
+      severity: climateIssue.severity,
+      weather_data: weather,
+      read: false
+    })) || [] : [];
+
+    const allAlerts = [...alerts, ...climateAlerts];
+
+    if (allAlerts.length > 0) {
       const { error: insertError } = await supabase
         .from('weather_alerts')
-        .insert(alerts);
+        .insert(allAlerts);
 
       if (insertError) {
         console.error('Error inserting alerts:', insertError);
@@ -159,14 +242,52 @@ Deno.serve(async (req) => {
       }
     }
 
-    console.log(`Successfully sent ${alerts.length} weather notifications`);
+    // Send push notifications to subscribed users
+    const { data: subscriptions, error: subError } = await supabase
+      .from('push_subscriptions')
+      .select('*');
+
+    if (!subError && subscriptions && subscriptions.length > 0) {
+      console.log(`Sending push notifications to ${subscriptions.length} devices`);
+      
+      for (const sub of subscriptions) {
+        // Send weather update push
+        const weatherPayload = {
+          title: alert.hasAlert ? '⚠️ Weather Alert' : '🌤️ Weather Update',
+          body: alert.message,
+          icon: '/icon-192.png',
+          badge: '/icon-192.png',
+          tag: 'weather-update',
+          data: { type: 'weather', weather }
+        };
+        
+        await sendWebPush(sub.endpoint, weatherPayload);
+
+        // Send climate issue push if detected
+        if (climateIssue) {
+          const climatePayload = {
+            title: climateIssue.title,
+            body: climateIssue.description,
+            icon: '/icon-192.png',
+            badge: '/icon-192.png',
+            tag: 'climate-issue',
+            data: { type: 'climate', issue: climateIssue }
+          };
+          
+          await sendWebPush(sub.endpoint, climatePayload);
+        }
+      }
+    }
+
+    console.log(`Successfully sent ${allAlerts.length} weather notifications`);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: `Sent ${alerts.length} weather notifications`,
+        message: `Sent ${allAlerts.length} weather notifications`,
         weather: weather,
-        alert: alert
+        alert: alert,
+        climateIssue: climateIssue
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

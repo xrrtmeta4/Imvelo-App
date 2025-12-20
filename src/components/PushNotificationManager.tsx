@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bell, BellOff, AlertTriangle, Cloud, Bug } from 'lucide-react';
+import { Bell, BellOff, AlertTriangle, Cloud, Bug, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,6 +17,8 @@ const PushNotificationManager = () => {
   const { user } = useAuth();
   const [isSupported, setIsSupported] = useState(false);
   const [permission, setPermission] = useState<NotificationPermission>('default');
+  const [isSubscribing, setIsSubscribing] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
   const [preferences, setPreferences] = useState<NotificationPreferences>({
     weather_alerts: true,
     pest_outbreaks: true,
@@ -25,33 +27,119 @@ const PushNotificationManager = () => {
   });
 
   useEffect(() => {
-    // Check if notifications are supported
-    if ('Notification' in window) {
+    // Check if notifications and service workers are supported
+    if ('Notification' in window && 'serviceWorker' in navigator) {
       setIsSupported(true);
       setPermission(Notification.permission);
+      checkSubscription();
     }
-  }, []);
+  }, [user]);
 
-  const requestPermission = async () => {
-    if (!isSupported) {
-      toast.error('Push notifications are not supported in this browser');
+  const checkSubscription = async () => {
+    if (!user) return;
+    
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      const subscription = await registration.pushManager.getSubscription();
+      setIsSubscribed(!!subscription);
+    } catch (error) {
+      console.error('Error checking subscription:', error);
+    }
+  };
+
+  const registerServiceWorker = async () => {
+    try {
+      const registration = await navigator.serviceWorker.register('/sw.js');
+      console.log('Service Worker registered:', registration);
+      return registration;
+    } catch (error) {
+      console.error('Service Worker registration failed:', error);
+      throw error;
+    }
+  };
+
+  const subscribeToPush = async () => {
+    if (!user) {
+      toast.error('Please sign in to enable notifications');
       return;
     }
 
+    setIsSubscribing(true);
+    
     try {
-      const result = await Notification.requestPermission();
-      setPermission(result);
+      // Request notification permission
+      const permissionResult = await Notification.requestPermission();
+      setPermission(permissionResult);
 
-      if (result === 'granted') {
-        toast.success('Push notifications enabled!');
-        // Show a test notification
-        showNotification('Notifications Enabled', 'You will now receive important alerts about weather, pests, and diseases.');
-      } else if (result === 'denied') {
-        toast.error('Notifications blocked. Please enable them in your browser settings.');
+      if (permissionResult !== 'granted') {
+        toast.error('Notification permission denied');
+        setIsSubscribing(false);
+        return;
       }
+
+      // Register service worker
+      const registration = await registerServiceWorker();
+      await navigator.serviceWorker.ready;
+
+      // Subscribe to push
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(
+          // Public VAPID key - this is safe to expose
+          'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U'
+        ) as BufferSource,
+      });
+
+      // Save subscription to database
+      const subscriptionJSON = subscription.toJSON();
+      
+      const { error } = await supabase
+        .from('push_subscriptions')
+        .upsert({
+          user_id: user.id,
+          endpoint: subscription.endpoint,
+          p256dh_key: subscriptionJSON.keys?.p256dh || '',
+          auth_key: subscriptionJSON.keys?.auth || '',
+        }, { onConflict: 'user_id,endpoint' });
+
+      if (error) throw error;
+
+      setIsSubscribed(true);
+      toast.success('Push notifications enabled!');
+      
+      // Show test notification
+      showNotification('Notifications Enabled', 'You will receive weather updates and climate alerts automatically.');
     } catch (error) {
-      console.error('Error requesting notification permission:', error);
-      toast.error('Failed to enable notifications');
+      console.error('Error subscribing to push:', error);
+      toast.error('Failed to enable push notifications');
+    } finally {
+      setIsSubscribing(false);
+    }
+  };
+
+  const unsubscribeFromPush = async () => {
+    if (!user) return;
+
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      const subscription = await registration.pushManager.getSubscription();
+      
+      if (subscription) {
+        await subscription.unsubscribe();
+        
+        // Remove from database
+        await supabase
+          .from('push_subscriptions')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('endpoint', subscription.endpoint);
+      }
+
+      setIsSubscribed(false);
+      toast.success('Push notifications disabled');
+    } catch (error) {
+      console.error('Error unsubscribing:', error);
+      toast.error('Failed to disable notifications');
     }
   };
 
@@ -60,8 +148,8 @@ const PushNotificationManager = () => {
 
     const notification = new Notification(title, {
       body,
-      icon: icon || '/favicon.ico',
-      badge: '/favicon.ico',
+      icon: icon || '/icon-192.png',
+      badge: '/icon-192.png',
       tag: 'imvelo-notification',
     });
 
@@ -70,6 +158,20 @@ const PushNotificationManager = () => {
       notification.close();
     };
   };
+
+  // Helper function to convert VAPID key
+  function urlBase64ToUint8Array(base64String: string): Uint8Array {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding)
+      .replace(/-/g, '+')
+      .replace(/_/g, '/');
+    const rawData = atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  }
 
   const togglePreference = (key: keyof NotificationPreferences) => {
     setPreferences(prev => ({
@@ -152,14 +254,18 @@ const PushNotificationManager = () => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {permission !== 'granted' ? (
+        {!isSubscribed ? (
           <div className="text-center space-y-3">
             <p className="text-sm text-muted-foreground">
-              Enable push notifications to receive important alerts about weather, pests, and disease outbreaks.
+              Enable push notifications to receive automatic hourly weather updates and climate alerts.
             </p>
-            <Button onClick={requestPermission} className="w-full">
-              <Bell className="w-4 h-4 mr-2" />
-              Enable Notifications
+            <Button onClick={subscribeToPush} className="w-full" disabled={isSubscribing}>
+              {isSubscribing ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Bell className="w-4 h-4 mr-2" />
+              )}
+              {isSubscribing ? 'Enabling...' : 'Enable Push Notifications'}
             </Button>
           </div>
         ) : (
@@ -220,9 +326,15 @@ const PushNotificationManager = () => {
               </Button>
             </div>
 
-            <p className="text-xs text-muted-foreground text-center mt-2">
-              ✓ Notifications enabled
-            </p>
+            <div className="flex items-center justify-between mt-4 pt-3 border-t">
+              <p className="text-xs text-muted-foreground">
+                ✓ Push notifications active
+              </p>
+              <Button variant="outline" size="sm" onClick={unsubscribeFromPush}>
+                <BellOff className="w-4 h-4 mr-1" />
+                Disable
+              </Button>
+            </div>
           </div>
         )}
       </CardContent>
