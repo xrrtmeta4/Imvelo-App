@@ -7,7 +7,7 @@ import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Scanner from "./pages/Scanner";
-import Messages from "./pages/Messages";
+import ClimateEducation from "./pages/ClimateEducation";
 import Profile from "./pages/Profile";
 import OfficerDashboard from "./pages/OfficerDashboard";
 import PlantingGuide from "./pages/PlantingGuide";
@@ -74,10 +74,10 @@ const App = () => (
               }
             />
             <Route
-              path="/messages"
+              path="/climate-education"
               element={
                 <ProtectedRoute>
-                  <Messages />
+                  <ClimateEducation />
                 </ProtectedRoute>
               }
             />
