@@ -12,122 +12,109 @@ const TermsOfService = () => {
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>
-          <h1 className="text-xl font-bold">Imigomo Nekusebentisa</h1>
+          <h1 className="text-xl font-bold">Terms of Service</h1>
         </div>
       </header>
 
       <main className="p-4 pb-24 max-w-4xl mx-auto">
         <div className="prose prose-sm dark:prose-invert max-w-none space-y-6">
-          <p className="text-muted-foreground">Kucala kusebenta: December 2024</p>
+          <p className="text-muted-foreground">Effective Date: December 2024</p>
           
           <section className="space-y-3">
-            <h2 className="text-lg font-semibold text-foreground">1. Kwemukela Imigomo</h2>
+            <h2 className="text-lg font-semibold text-foreground">1. Acceptance of Terms</h2>
             <p className="text-muted-foreground">
-              Ngekusebentisa Imvelo, uyavuma kulandzela lemigomo nekusebentisa. Uma ungavumelani nalemigomo, sicela ungayisebentisi i-app.
+              By using Imvelo, you agree to follow these terms and conditions. If you do not agree with these terms, please do not use the app.
             </p>
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-lg font-semibold text-foreground">2. Incazelo Yelusito</h2>
-            <p className="text-muted-foreground">Imvelo iniketa:</p>
+            <h2 className="text-lg font-semibold text-foreground">2. Service Description</h2>
+            <p className="text-muted-foreground">Imvelo provides:</p>
             <ul className="list-disc pl-6 text-muted-foreground space-y-1">
-              <li>Kuhlolwa kwetilokatane nge-AI</li>
-              <li>Kuhlolwa kwetifo tetilwane nge-AI</li>
-              <li>Kulinganisela sivuno semkhicito</li>
-              <li>Lwatiso lwelitulu langempela</li>
-              <li>Imakethe yekutsenga nekutsengisa imikhicito yetemnotfo</li>
-              <li>Siboniso sekulima nekuhlanyela</li>
+              <li>AI-powered pest identification</li>
+              <li>AI-powered animal disease detection</li>
+              <li>Harvest estimation</li>
+              <li>Real-time weather information</li>
+              <li>Climate change education and safety guides</li>
+              <li>Farming and planting guides</li>
             </ul>
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-lg font-semibold text-foreground">3. I-Akhawunti Yalomsebentisi</h2>
+            <h2 className="text-lg font-semibold text-foreground">3. User Account</h2>
             <p className="text-muted-foreground">
-              Kufanele usubhalise i-akhawunti kusebentisa letinye tici. Wena unesibopho sekugcina i-password yakho iyimfihlo nekutsi konkhe lokwenteka nge-akhawunti yakho.
+              You must register an account to use certain features. You are responsible for keeping your password confidential and for everything that happens on your account.
             </p>
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-lg font-semibold text-foreground">4. Kusebentisa Lokuvunyelwe</h2>
-            <p className="text-muted-foreground">Uyavuma kutsi:</p>
+            <h2 className="text-lg font-semibold text-foreground">4. Permitted Use</h2>
+            <p className="text-muted-foreground">You agree that:</p>
             <ul className="list-disc pl-6 text-muted-foreground space-y-1">
-              <li>Utosebentisa i-app ngetinjongo temtsetfo kuphela</li>
-              <li>Awutokufaka lwatiso lolungemanga</li>
-              <li>Awutophula emalungelo alabanye basebentisi</li>
-              <li>Awutolinga kudlulela etindzaweni letingakavunyelwa</li>
-              <li>Awutoyisebentisa kabi i-app</li>
+              <li>You will use the app for lawful purposes only</li>
+              <li>You will not submit false information</li>
+              <li>You will not violate the rights of other users</li>
+              <li>You will not attempt to access unauthorized areas</li>
+              <li>You will not misuse the app</li>
             </ul>
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-lg font-semibold text-foreground">5. Imikhicito Yemakethe</h2>
+            <h2 className="text-lg font-semibold text-foreground">5. AI Services</h2>
             <p className="text-muted-foreground">
-              Uma utsengisa emakethe yetfu:
+              Our AI services for pest identification, animal diseases, and harvest estimation are provided as guidance only. We do not guarantee that results are always correct. Please consult an expert for serious conditions.
+            </p>
+          </section>
+
+          <section className="space-y-3">
+            <h2 className="text-lg font-semibold text-foreground">6. Data Ownership</h2>
+            <p className="text-muted-foreground">
+              You retain ownership of your information and photos that you upload. By uploading to Imvelo, you grant us the right to use them to provide our services.
+            </p>
+          </section>
+
+          <section className="space-y-3">
+            <h2 className="text-lg font-semibold text-foreground">7. Limitation of Liability</h2>
+            <p className="text-muted-foreground">
+              Imvelo is not liable for losses arising from using the app, including:
             </p>
             <ul className="list-disc pl-6 text-muted-foreground space-y-1">
-              <li>Wena unesibopho sekuniketela imikhicito leyiyo</li>
-              <li>Intsengo nekwenteka kwekutsenga kuphakati kwakho nemtsengi</li>
-              <li>Imvelo ayisingeni ekutsengeni nekutsengisa</li>
-              <li>Kufanele ulandzele imitsetfo yetemnotfo</li>
+              <li>Crop losses</li>
+              <li>Financial losses</li>
+              <li>Incorrect AI guidance</li>
             </ul>
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-lg font-semibold text-foreground">6. Lusito Lwe-AI</h2>
+            <h2 className="text-lg font-semibold text-foreground">8. Account Termination</h2>
             <p className="text-muted-foreground">
-              Lusito lwetfu lwe-AI lwetilokatane, tifo tetilwane, nekulinganisela sivuno luniketwa njengesiboniso kuphela. Asisiniki siciniseko sekutsi imiphumela ilungile njalo. Sicela ubonane nengcweti uma unesimo lesibi.
+              We may terminate your account if you violate these terms, at any time, without notice.
             </p>
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-lg font-semibold text-foreground">7. Bumnini Belwatiso</h2>
+            <h2 className="text-lg font-semibold text-foreground">9. Changes to Terms</h2>
             <p className="text-muted-foreground">
-              Ugcina bumnini belwatiso lwakho netiithombe lotifakako. Ngekulifaka ku-Imvelo, usiniketa lilungelo lekutsi silisebentise kukuniketa lusito.
+              We may change these terms at any time. Continuing to use the app means you accept the new terms.
             </p>
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-lg font-semibold text-foreground">8. Kuncishiswa Kwesibopho</h2>
+            <h2 className="text-lg font-semibold text-foreground">10. Governing Law</h2>
             <p className="text-muted-foreground">
-              Imvelo ayibophekeleki kulahlekelwa lokuvela ekusebentiseni i-app, lokufaka:
-            </p>
-            <ul className="list-disc pl-6 text-muted-foreground space-y-1">
-              <li>Kulahlekelwa kwemkhicito</li>
-              <li>Kulahleka kwemali</li>
-              <li>Siboniso se-AI lesingakacondziswa</li>
-              <li>Kutingela emakethe</li>
-            </ul>
-          </section>
-
-          <section className="space-y-3">
-            <h2 className="text-lg font-semibold text-foreground">9. Kumisa I-akhawunti</h2>
-            <p className="text-muted-foreground">
-              Singayimisa i-akhawunti yakho uma uphula lemigomo, noma nini, ngaphandle kwesaziso.
+              These terms are governed by the laws of the Kingdom of Eswatini.
             </p>
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-lg font-semibold text-foreground">10. Kuntjintja Imigomo</h2>
+            <h2 className="text-lg font-semibold text-foreground">11. Contact Us</h2>
             <p className="text-muted-foreground">
-              Singayintjintja lemigomo noma nini. Kuchubeka kusebentisa i-app kusho kutsi uyayemukela imigomo lemisha.
-            </p>
-          </section>
-
-          <section className="space-y-3">
-            <h2 className="text-lg font-semibold text-foreground">11. Umtsetfo Lophetse</h2>
-            <p className="text-muted-foreground">
-              Lemigomo iphetfwe yimitsetfo ye-Kingdom of Eswatini.
-            </p>
-          </section>
-
-          <section className="space-y-3">
-            <h2 className="text-lg font-semibold text-foreground">12. Sitsintse</h2>
-            <p className="text-muted-foreground">
-              Uma unemibuto mayelana nalemigomo, sitsintse ku:
+              If you have questions about these terms, contact us at:
             </p>
             <p className="text-muted-foreground">
-              Email: support@imvelo.app<br />
-              Indzawo: Mbabane, Eswatini
+              Email: imveloapps@gmail.com<br />
+              Phone: +268 7921 5621<br />
+              Location: Mbabane, Eswatini
             </p>
           </section>
         </div>
