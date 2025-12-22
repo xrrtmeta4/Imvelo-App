@@ -53,17 +53,17 @@ function checkClimateIssues(weather: WeatherData): ClimateIssue | null {
   // Drought conditions (low humidity, no precipitation, high temp)
   if (weather.humidity < 30 && weather.precipitation === 0 && weather.temperature > 30) {
     return {
-      title: '🏜️ Drought Warning',
+      title: 'Drought Warning',
       description: `Low humidity (${weather.humidity}%) and no rainfall detected. Implement water conservation measures.`,
       severity: 'high'
     };
   }
   
-  // El Niño conditions (unusual weather patterns)
+  // Heat wave conditions
   if (currentMonth >= 10 || currentMonth <= 3) { // Summer season
     if (weather.temperature > 35) {
       return {
-        title: '🌡️ Heat Wave Advisory',
+        title: 'Heat Wave Advisory',
         description: `Extreme temperatures (${weather.temperature}°C) may indicate climate stress. Protect crops and livestock.`,
         severity: 'high'
       };
@@ -73,16 +73,16 @@ function checkClimateIssues(weather: WeatherData): ClimateIssue | null {
   // Flooding risk
   if (weather.precipitation > 30) {
     return {
-      title: '🌊 Flood Risk Alert',
+      title: 'Flood Risk Alert',
       description: `Heavy precipitation (${weather.precipitation}mm) may cause flooding. Move livestock to higher ground.`,
       severity: 'critical'
     };
   }
   
-  // Seasonal climate advisory
+  // Frost advisory
   if (currentMonth >= 5 && currentMonth <= 8 && weather.temperature < 10) {
     return {
-      title: '❄️ Frost Advisory',
+      title: 'Frost Advisory',
       description: `Cold conditions (${weather.temperature}°C) during winter. Protect sensitive crops and provide shelter for animals.`,
       severity: 'medium'
     };
@@ -104,6 +104,44 @@ async function sendWebPush(endpoint: string, payload: any): Promise<boolean> {
     return response.ok || response.status === 201;
   } catch (error) {
     console.error('Error sending push:', error);
+    return false;
+  }
+}
+
+// Send SMS for users without internet (backup notification)
+async function sendSMSNotification(phone: string, message: string): Promise<boolean> {
+  try {
+    console.log(`Sending SMS to ${phone}: ${message.substring(0, 50)}...`);
+    
+    // Format phone for Eswatini
+    let formattedPhone = phone.replace(/\s+/g, '').replace(/-/g, '');
+    if (!formattedPhone.startsWith('+')) {
+      if (formattedPhone.startsWith('268')) {
+        formattedPhone = '+' + formattedPhone;
+      } else if (formattedPhone.startsWith('0')) {
+        formattedPhone = '+268' + formattedPhone.substring(1);
+      } else {
+        formattedPhone = '+268' + formattedPhone;
+      }
+    }
+
+    const response = await fetch('https://textbelt.com/text', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        phone: formattedPhone,
+        message: message.substring(0, 160), // SMS character limit
+        key: 'textbelt', // Free tier - 1 SMS/day. For production, use paid key.
+      }),
+    });
+
+    const result = await response.json();
+    console.log('SMS result:', result);
+    return result.success === true;
+  } catch (error) {
+    console.error('SMS error:', error);
     return false;
   }
 }
@@ -197,15 +235,22 @@ Deno.serve(async (req) => {
     // Check for climate issues
     const climateIssue = checkClimateIssues(weather);
     
-    // Get all users who have weather notifications enabled
+    // Get all users with their phone numbers for SMS backup
     const { data: users, error: usersError } = await supabase
       .from('profiles')
-      .select('id');
+      .select('id, phone_number');
 
     if (usersError) {
       console.error('Error fetching users:', usersError);
       throw usersError;
     }
+
+    // Get users with push subscriptions
+    const { data: subscriptions } = await supabase
+      .from('push_subscriptions')
+      .select('user_id');
+    
+    const usersWithPush = new Set(subscriptions?.map(s => s.user_id) || []);
 
     console.log(`Sending weather notifications to ${users?.length || 0} users`);
 
@@ -243,17 +288,16 @@ Deno.serve(async (req) => {
     }
 
     // Send push notifications to subscribed users
-    const { data: subscriptions, error: subError } = await supabase
+    const { data: pushSubs, error: subError } = await supabase
       .from('push_subscriptions')
       .select('*');
 
-    if (!subError && subscriptions && subscriptions.length > 0) {
-      console.log(`Sending push notifications to ${subscriptions.length} devices`);
+    if (!subError && pushSubs && pushSubs.length > 0) {
+      console.log(`Sending push notifications to ${pushSubs.length} devices`);
       
-      for (const sub of subscriptions) {
-        // Send weather update push
+      for (const sub of pushSubs) {
         const weatherPayload = {
-          title: alert.hasAlert ? '⚠️ Weather Alert' : '🌤️ Weather Update',
+          title: alert.hasAlert ? 'Weather Alert' : 'Weather Update',
           body: alert.message,
           icon: '/icon-192.png',
           badge: '/icon-192.png',
@@ -276,6 +320,20 @@ Deno.serve(async (req) => {
           
           await sendWebPush(sub.endpoint, climatePayload);
         }
+      }
+    }
+
+    // SMS backup for users without push subscriptions (only for critical alerts)
+    if (alert.hasAlert && alert.severity === 'critical') {
+      const usersNeedingSMS = users?.filter(u => 
+        u.phone_number && !usersWithPush.has(u.id)
+      ) || [];
+      
+      console.log(`Sending SMS to ${usersNeedingSMS.length} users without push`);
+      
+      for (const user of usersNeedingSMS) {
+        const smsMessage = `FarmAssist Alert: ${alert.message.replace(/[^\w\s.,!?°%]/g, '')}`;
+        await sendSMSNotification(user.phone_number, smsMessage);
       }
     }
 

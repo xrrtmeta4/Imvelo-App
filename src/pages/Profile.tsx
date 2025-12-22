@@ -3,12 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { User, LogOut, Package, Edit, Trash2, Plus } from 'lucide-react';
+import { User, LogOut } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import PushNotificationManager from '@/components/PushNotificationManager';
 
 const Profile = () => {
@@ -21,22 +20,10 @@ const Profile = () => {
     phone_number: '',
     location: '',
   });
-  const [listings, setListings] = useState<any[]>([]);
-  const [editingListing, setEditingListing] = useState<any>(null);
-  const [editFormData, setEditFormData] = useState({
-    product_name: '',
-    price: '',
-    quantity: '',
-    unit: '',
-    category: '',
-    description: '',
-    location: ''
-  });
 
   useEffect(() => {
     if (user) {
       fetchProfile();
-      fetchUserListings();
     }
   }, [user]);
 
@@ -68,63 +55,12 @@ const Profile = () => {
       .eq('id', user?.id);
 
     if (error) {
-      toast.error('Kuhlulekile ukushintja');
+      toast.error('Failed to update profile');
     } else {
-      toast.success('Kushintjiwe ngempumelelo!');
+      toast.success('Profile updated successfully!');
       fetchProfile();
     }
     setLoading(false);
-  };
-
-  const fetchUserListings = async () => {
-    const { data } = await supabase
-      .from('marketplace_listings')
-      .select('*')
-      .eq('seller_id', user?.id)
-      .order('created_at', { ascending: false });
-
-    if (data) {
-      setListings(data);
-    }
-  };
-
-  const handleDeleteListing = async (listingId: string) => {
-    const { error } = await supabase
-      .from('marketplace_listings')
-      .delete()
-      .eq('id', listingId);
-
-    if (error) {
-      toast.error('Kuhlulekile kususa');
-    } else {
-      toast.success('Kususiwe ngempumelelo!');
-      fetchUserListings();
-    }
-  };
-
-  const handleEditListing = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const { error } = await supabase
-      .from('marketplace_listings')
-      .update({
-        product_name: editFormData.product_name,
-        price: parseFloat(editFormData.price),
-        quantity: parseFloat(editFormData.quantity),
-        unit: editFormData.unit,
-        category: editFormData.category,
-        description: editFormData.description,
-        location: editFormData.location
-      })
-      .eq('id', editingListing.id);
-
-    if (error) {
-      toast.error('Kuhlulekile kushintja');
-    } else {
-      toast.success('Kushintjiwe ngempumelelo!');
-      setEditingListing(null);
-      fetchUserListings();
-    }
   };
 
   const handleLogout = async () => {
@@ -205,165 +141,6 @@ const Profile = () => {
               <LogOut className="w-4 h-4 mr-2" />
               Logout
             </Button>
-          </CardContent>
-        </Card>
-
-        {/* User's Marketplace Listings */}
-        <Card className="mt-6">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Package className="w-5 h-5" />
-                My Listings
-              </CardTitle>
-              <div className="flex gap-2">
-                <Button 
-                  size="sm" 
-                  onClick={() => navigate('/create-listing')}
-                >
-                  <Plus className="w-4 h-4 mr-1" />
-                  Add
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline"
-                  onClick={() => navigate('/seller-analytics')}
-                >
-                  View Analytics
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {listings.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                No listings yet
-              </p>
-            ) : (
-              <div className="space-y-4">
-                {listings.map((listing) => (
-                  <Card key={listing.id} className="overflow-hidden">
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          {listing.image_url && (
-                            <img 
-                              src={listing.image_url} 
-                              alt={listing.product_name}
-                              className="w-full h-32 object-cover rounded-md mb-3"
-                            />
-                          )}
-                          <h3 className="font-semibold text-lg">{listing.product_name}</h3>
-                          <p className="text-sm text-muted-foreground">{listing.category}</p>
-                          <p className="text-primary font-bold mt-1">
-                            E{listing.price} / {listing.unit}
-                          </p>
-                          {listing.quantity && (
-                            <p className="text-sm">Quantity: {listing.quantity}</p>
-                          )}
-                          {listing.location && (
-                            <p className="text-sm text-muted-foreground">Location: {listing.location}</p>
-                          )}
-                        </div>
-                        <div className="flex flex-col gap-2">
-                          <Dialog open={editingListing?.id === listing.id} onOpenChange={(open) => !open && setEditingListing(null)}>
-                            <DialogTrigger asChild>
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                onClick={() => {
-                                  setEditingListing(listing);
-                                  setEditFormData({
-                                    product_name: listing.product_name,
-                                    price: listing.price.toString(),
-                                    quantity: listing.quantity?.toString() || '',
-                                    unit: listing.unit,
-                                    category: listing.category,
-                                    description: listing.description || '',
-                                    location: listing.location || ''
-                                  });
-                                }}
-                              >
-                                <Edit className="w-4 h-4" />
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="max-w-md">
-                              <DialogHeader>
-                                <DialogTitle>Edit Item</DialogTitle>
-                              </DialogHeader>
-                              <form onSubmit={handleEditListing} className="space-y-4">
-                                <div className="space-y-2">
-                                  <Label>Product Name</Label>
-                                  <Input
-                                    value={editFormData.product_name}
-                                    onChange={(e) => setEditFormData({...editFormData, product_name: e.target.value})}
-                                    required
-                                  />
-                                </div>
-                                <div className="space-y-2">
-                                  <Label>Price</Label>
-                                  <Input
-                                    type="number"
-                                    step="0.01"
-                                    value={editFormData.price}
-                                    onChange={(e) => setEditFormData({...editFormData, price: e.target.value})}
-                                    required
-                                  />
-                                </div>
-                                <div className="space-y-2">
-                                  <Label>Quantity</Label>
-                                  <Input
-                                    type="number"
-                                    value={editFormData.quantity}
-                                    onChange={(e) => setEditFormData({...editFormData, quantity: e.target.value})}
-                                  />
-                                </div>
-                                <div className="space-y-2">
-                                  <Label>Unit</Label>
-                                  <Input
-                                    value={editFormData.unit}
-                                    onChange={(e) => setEditFormData({...editFormData, unit: e.target.value})}
-                                    required
-                                  />
-                                </div>
-                                <div className="space-y-2">
-                                  <Label>Location</Label>
-                                  <Input
-                                    value={editFormData.location}
-                                    onChange={(e) => setEditFormData({...editFormData, location: e.target.value})}
-                                  />
-                                </div>
-                                <div className="space-y-2">
-                                  <Label>Description</Label>
-                                  <Input
-                                    value={editFormData.description}
-                                    onChange={(e) => setEditFormData({...editFormData, description: e.target.value})}
-                                  />
-                                </div>
-                                <Button type="submit" className="w-full">
-                                  Save Changes
-                                </Button>
-                              </form>
-                            </DialogContent>
-                          </Dialog>
-                          <Button 
-                            size="sm" 
-                            variant="destructive"
-                            onClick={() => {
-                              if (confirm('Are you sure you want to delete this item?')) {
-                                handleDeleteListing(listing.id);
-                              }
-                            }}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
           </CardContent>
         </Card>
       </div>
