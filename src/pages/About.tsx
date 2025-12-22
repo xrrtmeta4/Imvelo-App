@@ -13,7 +13,7 @@ const About = () => {
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>
-          <h1 className="text-xl font-bold">Mayelana Natsi</h1>
+          <h1 className="text-xl font-bold">About Us</h1>
         </div>
       </header>
 
@@ -25,7 +25,7 @@ const About = () => {
           </div>
           <h2 className="text-3xl font-bold text-foreground">Imvelo</h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Kusita balimi be-Eswatini nge-technology yesimanje nekuhlakanipha kwe-AI
+            Helping Eswatini farmers with modern technology and AI intelligence
           </p>
         </div>
 
@@ -37,12 +37,12 @@ const About = () => {
                 <Target className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold mb-2">Injongo Yetfu</h3>
+                <h3 className="text-lg font-semibold mb-2">Our Mission</h3>
                 <p className="text-muted-foreground">
-                  Injongo yetfu kusita balimi be-Eswatini kutsi bakhicite kahle futsi batfole imali lengetekile. 
-                  Sisebentisa i-technology yesimanje ne-AI kusita ekuhloleni tilokatane, tifo tetilwane, 
-                  nekulinganisela sivuno. Sifuna kutsi wonkhe umlimi atfole lusito lolufanele, kungakhatsaleki 
-                  kutsi mncane noma mkhulu.
+                  Our mission is to help Eswatini farmers produce better yields and earn more income. 
+                  We use modern technology and AI to assist with pest identification, animal disease detection, 
+                  and harvest estimation. We want every farmer to have access to quality assistance, regardless 
+                  of farm size.
                 </p>
               </div>
             </div>
@@ -51,58 +51,58 @@ const About = () => {
 
         {/* What We Offer */}
         <div className="space-y-4">
-          <h3 className="text-xl font-semibold text-foreground">Siniketa Ini</h3>
+          <h3 className="text-xl font-semibold text-foreground">What We Offer</h3>
           <div className="grid sm:grid-cols-2 gap-4">
             <Card>
               <CardContent className="p-4">
-                <h4 className="font-semibold mb-2">🔍 Kuhlola Tilokatane</h4>
+                <h4 className="font-semibold mb-2">🔍 Pest Identification</h4>
                 <p className="text-sm text-muted-foreground">
-                  Tsatsa sitfombe sesilwane noma umutsi wakho, i-AI yetfu itokutsela kutsi silokatane sini futsi sikalapha kanjani.
+                  Take a photo of your plant or crop, and our AI will tell you what pest it is and how to treat it.
                 </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardContent className="p-4">
-                <h4 className="font-semibold mb-2">🐄 Kuhlola Tifo Tetilwane</h4>
+                <h4 className="font-semibold mb-2">🐄 Animal Disease Detection</h4>
                 <p className="text-sm text-muted-foreground">
-                  Tsatsa sitfombe sesilwane sakho, sitokutsela kutsi siyagula yini futsi wenteni.
+                  Take a photo of your animal, and we will tell you if it is sick and what to do.
                 </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardContent className="p-4">
-                <h4 className="font-semibold mb-2">📊 Kulinganisela Sivuno</h4>
+                <h4 className="font-semibold mb-2">📊 Harvest Estimation</h4>
                 <p className="text-sm text-muted-foreground">
-                  Tsatsa sitfombe semkhicito wakho, sitolinganisela kutsi utovuna kangakanani.
+                  Take a photo of your crop, and we will estimate how much you will harvest.
                 </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardContent className="p-4">
-                <h4 className="font-semibold mb-2">🌤️ Litulu Langempela</h4>
+                <h4 className="font-semibold mb-2">🌤️ Real-time Weather</h4>
                 <p className="text-sm text-muted-foreground">
-                  Tfola lwatiso lwelitulu lwendzawo yakho, kanye neticwayiso telilumo lelibi.
+                  Get weather information for your location, along with alerts for severe weather conditions.
                 </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardContent className="p-4">
-                <h4 className="font-semibold mb-2">🛒 Imakethe</h4>
+                <h4 className="font-semibold mb-2">🌍 Climate Education</h4>
                 <p className="text-sm text-muted-foreground">
-                  Tsengisa imikhicito yakho kubatsengi, futsi utsenge kulabanye balimi.
+                  Learn about climate change impacts and safety measures for various weather events.
                 </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardContent className="p-4">
-                <h4 className="font-semibold mb-2">📚 Siboniso Sekulima</h4>
+                <h4 className="font-semibold mb-2">📚 Farming Guides</h4>
                 <p className="text-sm text-muted-foreground">
-                  Funda ngekulima lokukahle, kuhlanyela, nekuphatsa umhlabatsi wakho.
+                  Learn about best farming practices, planting schedules, and soil management.
                 </p>
               </CardContent>
             </Card>
@@ -117,11 +117,11 @@ const About = () => {
                 <Users className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold mb-2">Sicubu Setfu</h3>
+                <h3 className="text-lg font-semibold mb-2">Our Team</h3>
                 <p className="text-muted-foreground">
-                  Imvelo yakhiwe sicubu lesitsandza i-Eswatini nekulima. Sihlangene ne-technology ne-agricultural 
-                  science kusita balimi betfu. Sisebenta nebongcweti betemnotfo ne-extension officers kusicinisekisa 
-                  kutsi lwatiso lwetfu lucondzile futsi lusita.
+                  Imvelo was built by a team that loves Eswatini and farming. We combine technology and agricultural 
+                  science to help our farmers. We work with agricultural experts and extension officers to ensure 
+                  our information is accurate and helpful.
                 </p>
               </div>
             </div>
@@ -136,12 +136,12 @@ const About = () => {
                 <Heart className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold mb-2">Lokusibalulekile</h3>
+                <h3 className="text-lg font-semibold mb-2">Our Values</h3>
                 <ul className="text-muted-foreground space-y-2">
-                  <li><strong>Kusita:</strong> Silapha kusita balimi, hhayi kutfola imali kuphela</li>
-                  <li><strong>Bucotfo:</strong> Siniketa lwatiso lolucondzile nelocwayelwe</li>
-                  <li><strong>Kulula:</strong> I-app yetfu ilula kuyisebentisa wonkhe umuntfu</li>
-                  <li><strong>Kubambisana:</strong> Sisebenta nebalimi, hhayi sibaphetse</li>
+                  <li><strong>Service:</strong> We are here to help farmers, not just to make money</li>
+                  <li><strong>Accuracy:</strong> We provide accurate and verified information</li>
+                  <li><strong>Simplicity:</strong> Our app is easy to use for everyone</li>
+                  <li><strong>Partnership:</strong> We work with farmers, not above them</li>
                 </ul>
               </div>
             </div>
@@ -151,11 +151,11 @@ const About = () => {
         {/* Contact CTA */}
         <div className="text-center py-6">
           <p className="text-muted-foreground mb-4">
-            Unemibuto noma ufuna kusita? Sitsintse!
+            Have questions or want to help? Contact us!
           </p>
           <Link to="/contact">
             <Button size="lg">
-              Sitsintse
+              Contact Us
             </Button>
           </Link>
         </div>

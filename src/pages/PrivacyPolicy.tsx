@@ -12,102 +12,102 @@ const PrivacyPolicy = () => {
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>
-          <h1 className="text-xl font-bold">Inqubomgomo Yobumfihlo</h1>
+          <h1 className="text-xl font-bold">Privacy Policy</h1>
         </div>
       </header>
 
       <main className="p-4 pb-24 max-w-4xl mx-auto">
         <div className="prose prose-sm dark:prose-invert max-w-none space-y-6">
-          <p className="text-muted-foreground">Kucala kusebenta: December 2024</p>
+          <p className="text-muted-foreground">Effective Date: December 2024</p>
           
           <section className="space-y-3">
-            <h2 className="text-lg font-semibold text-foreground">1. Singobanini</h2>
+            <h2 className="text-lg font-semibold text-foreground">1. Who We Are</h2>
             <p className="text-muted-foreground">
-              Imvelo yi-app yetemnotfo letakhiwe kucedza balimi be-Eswatini. Siyayihlonipha imfihlo yakho futsi sitimisele kuvikela lwatiso lwakho.
+              Imvelo is an agricultural app built to help farmers in Eswatini. We respect your privacy and are committed to protecting your information.
             </p>
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-lg font-semibold text-foreground">2. Lwatiso Lesilicokelako</h2>
-            <p className="text-muted-foreground">Sicokelela lolwatiso lolandelako:</p>
+            <h2 className="text-lg font-semibold text-foreground">2. Information We Collect</h2>
+            <p className="text-muted-foreground">We collect the following information:</p>
             <ul className="list-disc pl-6 text-muted-foreground space-y-1">
-              <li>Ligama lakho ne-email uma usubhalisa</li>
-              <li>Inombolo yefoni (uma uyinikile)</li>
-              <li>Indzawo yakho (uma uvumile)</li>
-              <li>Titfombe letifakiwe tekuhlola tifo netilokatane</li>
-              <li>Imikhicito yemakethe nekulinganisela kwetintsengo</li>
+              <li>Your name and email when you register</li>
+              <li>Phone number (if provided)</li>
+              <li>Your location (if permitted)</li>
+              <li>Photos uploaded for pest and disease identification</li>
+              <li>Profile information including avatar images</li>
             </ul>
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-lg font-semibold text-foreground">3. Silisebentisa Kanjani Lwatiso Lwakho</h2>
-            <p className="text-muted-foreground">Sisebentisa lwatiso lwakho ku:</p>
+            <h2 className="text-lg font-semibold text-foreground">3. How We Use Your Information</h2>
+            <p className="text-muted-foreground">We use your information to:</p>
             <ul className="list-disc pl-6 text-muted-foreground space-y-1">
-              <li>Kukuniketa lusito lwe-AI lwetilokatane netifo tetilwane</li>
-              <li>Kukubonisa litulu langempela nendzawo yakho</li>
-              <li>Kukuvumela kutsenga nekutsengisa emakethe</li>
-              <li>Kukutfumela tetfiso telilumo lelibi</li>
-              <li>Kuthuthukisa lusito lwetfu</li>
+              <li>Provide AI-powered pest and animal disease identification</li>
+              <li>Show real-time weather for your location</li>
+              <li>Send you weather and climate alerts</li>
+              <li>Improve our services</li>
             </ul>
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-lg font-semibold text-foreground">4. Kwabelana Ngelwatiso</h2>
+            <h2 className="text-lg font-semibold text-foreground">4. Information Sharing</h2>
             <p className="text-muted-foreground">
-              Asilitsengiselani lwatiso lwakho nebangaphandle. Singabelana ngelwatiso kuphela:
+              We do not sell your information to third parties. We only share information:
             </p>
             <ul className="list-disc pl-6 text-muted-foreground space-y-1">
-              <li>Uma uvumile</li>
-              <li>Kufeza umtsetfo</li>
-              <li>Kuvikela emalungelo etfu</li>
+              <li>With your consent</li>
+              <li>To comply with the law</li>
+              <li>To protect our rights</li>
             </ul>
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-lg font-semibold text-foreground">5. Kuvikeleka Kwelwatiso</h2>
+            <h2 className="text-lg font-semibold text-foreground">5. Data Security</h2>
             <p className="text-muted-foreground">
-              Sisebentisa tindlela tekuvikeleka letinamandla kuvikela lwatiso lwakho, lokufaka ekhatsi:
+              We use strong security measures to protect your information, including:
             </p>
             <ul className="list-disc pl-6 text-muted-foreground space-y-1">
-              <li>Kufihla lwatiso (encryption)</li>
-              <li>Kutovulela lokuvikelekile</li>
-              <li>Kuhlola kuvikeleka njalo</li>
+              <li>Data encryption</li>
+              <li>Secure authentication</li>
+              <li>Regular security audits</li>
             </ul>
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-lg font-semibold text-foreground">6. Emalungelo Akho</h2>
-            <p className="text-muted-foreground">Unelilungelo le:</p>
+            <h2 className="text-lg font-semibold text-foreground">6. Your Rights</h2>
+            <p className="text-muted-foreground">You have the right to:</p>
             <ul className="list-disc pl-6 text-muted-foreground space-y-1">
-              <li>Kubona lwatiso lwakho</li>
-              <li>Kucondzisa lwatiso lwakho</li>
-              <li>Kususa lwatiso lwakho</li>
-              <li>Kukhipha i-akhawunti yakho</li>
+              <li>View your information</li>
+              <li>Correct your information</li>
+              <li>Delete your information</li>
+              <li>Delete your account</li>
             </ul>
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-lg font-semibold text-foreground">7. Ama-Cookies</h2>
+            <h2 className="text-lg font-semibold text-foreground">7. Cookies</h2>
             <p className="text-muted-foreground">
-              Sisebentisa ama-cookies kugcina i-session yakho nekwenta i-app isebente kahle. Awekho ama-cookies ekukhangisa.
+              We use cookies to maintain your session and make the app work properly. We do not use advertising cookies.
             </p>
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-lg font-semibold text-foreground">8. Kuntjintja Inqubomgomo</h2>
+            <h2 className="text-lg font-semibold text-foreground">8. Policy Changes</h2>
             <p className="text-muted-foreground">
-              Singayintjintja lenqubomgomo noma nini. Sitokwatisa ngetintjintjo letibalulekile nge-app.
+              We may change this policy at any time. We will notify you of significant changes through the app.
             </p>
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-lg font-semibold text-foreground">9. Sitsintse</h2>
+            <h2 className="text-lg font-semibold text-foreground">9. Contact Us</h2>
             <p className="text-muted-foreground">
-              Uma unemibuto mayelana nenqubomgomo yetfu yobumfihlo, sitsintse ku:
+              If you have questions about our privacy policy, contact us at:
             </p>
             <p className="text-muted-foreground">
-              Email: support@imvelo.app<br />
-              Indzawo: Mbabane, Eswatini
+              Email: imveloapps@gmail.com<br />
+              Phone: +268 7921 5621<br />
+              Location: Mbabane, Eswatini
             </p>
           </section>
         </div>
