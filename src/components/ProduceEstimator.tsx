@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Wheat, Camera, Loader2 } from 'lucide-react';
+import { Wheat, Camera, Loader2, Download } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
+import { generateResultPdf } from '@/lib/generateResultPdf';
 
 const ProduceEstimator = () => {
   const { user } = useAuth();
@@ -52,6 +53,22 @@ const ProduceEstimator = () => {
     }
   };
 
+  const handleDownloadPdf = () => {
+    if (!result) return;
+    generateResultPdf({
+      title: 'Yield Estimation Report',
+      type: 'produce',
+      data: {
+        crop_type: result.crop_type,
+        estimated_yield: result.estimated_yield,
+        crop_health: result.crop_health,
+        harvest_time: result.harvest_time,
+        recommendations: result.recommendations,
+        confidence: `${result.confidence}%`
+      }
+    });
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -86,7 +103,7 @@ const ProduceEstimator = () => {
               ) : (
                 <>
                   <Camera className="w-5 h-5 mr-2" />
-                  Take Field Photo
+                  Tsatsa sitfombe
                 </>
               )}
             </span>
@@ -111,6 +128,15 @@ const ProduceEstimator = () => {
               </div>
             )}
             <p className="text-sm"><strong>Confidence:</strong> {result.confidence}%</p>
+            
+            <Button 
+              onClick={handleDownloadPdf} 
+              variant="outline" 
+              className="w-full mt-3"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Download PDF Report
+            </Button>
           </div>
         )}
       </CardContent>

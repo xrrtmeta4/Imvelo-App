@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Bug, Camera, Loader2 } from 'lucide-react';
+import { Bug, Camera, Loader2, Download } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
+import { generateResultPdf } from '@/lib/generateResultPdf';
 
 const PestScanner = () => {
   const { user } = useAuth();
@@ -62,6 +63,19 @@ const PestScanner = () => {
     }
   };
 
+  const handleDownloadPdf = () => {
+    if (!result) return;
+    generateResultPdf({
+      title: 'Pest Identification Report',
+      type: 'pest',
+      data: {
+        pest_name: result.pest_name,
+        treatment: result.treatment,
+        confidence: `${result.confidence}%`
+      }
+    });
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -92,7 +106,7 @@ const PestScanner = () => {
               ) : (
                 <>
                   <Camera className="w-5 h-5 mr-2" />
-                  Take Photo
+                  Tsatsa sitfombe
                 </>
               )}
             </span>
@@ -105,6 +119,15 @@ const PestScanner = () => {
             <p className="text-sm"><strong>Pest:</strong> {result.pest_name}</p>
             <p className="text-sm"><strong>Treatment:</strong> {result.treatment}</p>
             <p className="text-sm"><strong>Confidence:</strong> {result.confidence}%</p>
+            
+            <Button 
+              onClick={handleDownloadPdf} 
+              variant="outline" 
+              className="w-full mt-3"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Download PDF Report
+            </Button>
           </div>
         )}
 

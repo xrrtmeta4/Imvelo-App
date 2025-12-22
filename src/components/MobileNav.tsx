@@ -4,10 +4,10 @@ import { cn } from '@/lib/utils';
 
 const MobileNav = () => {
   const navItems = [
-    { to: '/', icon: Home, label: 'Home' },
-    { to: '/scanner', icon: Bug, label: 'Scanner' },
-    { to: '/climate-education', icon: Leaf, label: 'Climate' },
-    { to: '/profile', icon: User, label: 'Profile' },
+    { to: '/', icon: Home, label: 'Ekhaya' },
+    { to: '/scanner', icon: Bug, label: 'Hlola' },
+    { to: '/climate-education', icon: Leaf, label: 'Litulu' },
+    { to: '/profile', icon: User, label: 'Phrofayili' },
   ];
 
   return (

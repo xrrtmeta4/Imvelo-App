@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Stethoscope, Camera, Loader2 } from 'lucide-react';
+import { Stethoscope, Camera, Loader2, Download } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
+import { generateResultPdf } from '@/lib/generateResultPdf';
 
 const AnimalDiseaseScanner = () => {
   const { user } = useAuth();
@@ -52,6 +53,22 @@ const AnimalDiseaseScanner = () => {
     }
   };
 
+  const handleDownloadPdf = () => {
+    if (!result) return;
+    generateResultPdf({
+      title: 'Animal Disease Report',
+      type: 'animal-disease',
+      data: {
+        disease_name: result.disease_name,
+        animal_type: result.animal_type,
+        treatment: result.treatment,
+        prevention: result.prevention,
+        urgency: result.urgency,
+        confidence: `${result.confidence}%`
+      }
+    });
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -86,7 +103,7 @@ const AnimalDiseaseScanner = () => {
               ) : (
                 <>
                   <Camera className="w-5 h-5 mr-2" />
-                  Take Animal Photo
+                  Tsatsa sitfombe
                 </>
               )}
             </span>
@@ -104,6 +121,15 @@ const AnimalDiseaseScanner = () => {
             {result.urgency === 'high' && (
               <p className="text-sm text-destructive font-semibold">⚠️ Urgent! Contact a veterinarian immediately.</p>
             )}
+            
+            <Button 
+              onClick={handleDownloadPdf} 
+              variant="outline" 
+              className="w-full mt-3"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Download PDF Report
+            </Button>
           </div>
         )}
       </CardContent>
