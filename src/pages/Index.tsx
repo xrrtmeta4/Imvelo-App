@@ -1,4 +1,5 @@
 import WeatherCard from '@/components/WeatherCard';
+import WeatherTicker from '@/components/WeatherTicker';
 import PestScanner from '@/components/PestScanner';
 import BestPractices from '@/components/BestPractices';
 import ExtensionServices from '@/components/ExtensionServices';
@@ -10,6 +11,8 @@ const Index = () => {
   useNotifications();
   return (
     <div className="min-h-screen bg-background pb-20">
+      <WeatherTicker />
+      
       <header className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground py-8 px-4">
         <div className="max-w-screen-sm mx-auto text-center">
           <div className="flex justify-center mb-4">
@@ -18,7 +21,7 @@ const Index = () => {
             </div>
           </div>
           <h1 className="text-3xl font-bold mb-2">Imvelo</h1>
-          <p className="text-primary-foreground/90">sisita balimi ngelwati lolujulile</p>
+          <p className="text-primary-foreground/90">Ungani webalimi mhlaba wonkhe jikelele</p>
         </div>
       </header>
 
