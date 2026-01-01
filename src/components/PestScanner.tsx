@@ -1,19 +1,26 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Bug, Camera, Loader2, Download } from 'lucide-react';
+import { Bug, Camera, Loader2, Download, Crown } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { generateResultPdf } from '@/lib/generateResultPdf';
+import { useUsageLimits } from '@/hooks/useUsageLimits';
 
 const PestScanner = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
+  const { canUseDetection, incrementDetection, getRemainingDetections, openUpgrade } = useUsageLimits();
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !e.target.files[0] || !user) return;
+    
+    if (!canUseDetection()) {
+      toast.error('Daily limit reached. Upgrade for unlimited detections!');
+      return;
+    }
     
     const file = e.target.files[0];
     setLoading(true);
@@ -44,6 +51,7 @@ const PestScanner = () => {
       if (identifyError) throw identifyError;
 
       setResult(identifyData);
+      incrementDetection();
 
       // Save to database
       await supabase.from('pest_reports').insert({
@@ -76,42 +84,63 @@ const PestScanner = () => {
     });
   };
 
+  const remaining = getRemainingDetections();
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Bug className="w-5 h-5 text-primary" />
-          Identify Pests
+        <CardTitle className="flex items-center justify-between">
+          <span className="flex items-center gap-2">
+            <Bug className="w-5 h-5 text-primary" />
+            Identify Pests
+          </span>
+          <span className="text-xs font-normal text-muted-foreground">
+            {remaining}/3 left today
+          </span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <input
-          type="file"
-          accept="image/*"
-          capture="environment"
-          id="pest-upload"
-          className="hidden"
-          onChange={handleImageUpload}
-          disabled={loading}
-        />
-        
-        <label htmlFor="pest-upload">
-          <Button className="w-full" size="lg" disabled={loading} asChild>
-            <span>
-              {loading ? (
-                <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Analyzing...
-                </>
-              ) : (
-                <>
-                  <Camera className="w-5 h-5 mr-2" />
-                  Tsatsa sitfombe
-                </>
-              )}
-            </span>
-          </Button>
-        </label>
+        {!canUseDetection() ? (
+          <div className="text-center py-4 space-y-3">
+            <p className="text-sm text-muted-foreground">
+              You've used all 3 free detections today.
+            </p>
+            <Button onClick={openUpgrade} className="gap-2">
+              <Crown className="w-4 h-4" />
+              Upgrade for Unlimited
+            </Button>
+          </div>
+        ) : (
+          <>
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              id="pest-upload"
+              className="hidden"
+              onChange={handleImageUpload}
+              disabled={loading}
+            />
+            
+            <label htmlFor="pest-upload">
+              <Button className="w-full" size="lg" disabled={loading} asChild>
+                <span>
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      <Camera className="w-5 h-5 mr-2" />
+                      Take Photo
+                    </>
+                  )}
+                </span>
+              </Button>
+            </label>
+          </>
+        )}
 
         {result && (
           <div className="mt-4 p-4 rounded-lg bg-accent space-y-2">

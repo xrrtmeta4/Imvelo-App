@@ -2,18 +2,25 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { MessageCircle, Send, X } from 'lucide-react';
+import { MessageCircle, Send, X, Crown } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { useUsageLimits } from '@/hooks/useUsageLimits';
 
 const AIChatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const { canUseChat, incrementChat, getRemainingChats, openUpgrade } = useUsageLimits();
 
   const sendMessage = async () => {
     if (!input.trim()) return;
+
+    if (!canUseChat()) {
+      toast.error('Daily chat limit reached. Upgrade for unlimited conversations!');
+      return;
+    }
 
     const userMessage = { role: 'user' as const, content: input };
     setMessages(prev => [...prev, userMessage]);
@@ -28,6 +35,7 @@ const AIChatbot = () => {
       if (error) throw error;
 
       setMessages(prev => [...prev, { role: 'assistant', content: data.response }]);
+      incrementChat();
     } catch (error: any) {
       console.error('Error:', error);
       toast.error('Failed to send message');
@@ -35,6 +43,8 @@ const AIChatbot = () => {
       setLoading(false);
     }
   };
+
+  const remainingChats = getRemainingChats();
 
   if (!isOpen) {
     return (
@@ -51,7 +61,10 @@ const AIChatbot = () => {
   return (
     <Card className="fixed bottom-20 right-4 w-80 z-40 shadow-xl">
       <CardHeader className="flex flex-row items-center justify-between pb-3">
-        <CardTitle className="text-base">AI Assistant</CardTitle>
+        <div>
+          <CardTitle className="text-base">AI Assistant</CardTitle>
+          <p className="text-xs text-muted-foreground">{remainingChats}/10 messages left today</p>
+        </div>
         <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
           <X className="w-4 h-4" />
         </Button>
@@ -82,18 +95,28 @@ const AIChatbot = () => {
             </div>
           )}
         </div>
-        <div className="flex gap-2">
-          <Input
-            placeholder="Type your question..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-            disabled={loading}
-          />
-          <Button onClick={sendMessage} disabled={loading} size="icon">
-            <Send className="w-4 h-4" />
-          </Button>
-        </div>
+        
+        {!canUseChat() ? (
+          <div className="text-center py-2">
+            <Button onClick={openUpgrade} size="sm" className="gap-2">
+              <Crown className="w-4 h-4" />
+              Upgrade for Unlimited
+            </Button>
+          </div>
+        ) : (
+          <div className="flex gap-2">
+            <Input
+              placeholder="Type your question..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+              disabled={loading}
+            />
+            <Button onClick={sendMessage} disabled={loading} size="icon">
+              <Send className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
