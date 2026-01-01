@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/lib/supabase';
 
 const DAILY_DETECTION_LIMIT = 3;
 const DAILY_CHAT_LIMIT = 10;
@@ -22,12 +23,41 @@ export const useUsageLimits = () => {
     chatCount: 0,
     lastResetDate: getTodayDate()
   });
+  const [isPremium, setIsPremium] = useState(false);
+  const [loadingPremium, setLoadingPremium] = useState(true);
 
   useEffect(() => {
     if (user) {
       loadUsage();
+      checkPremiumStatus();
     }
   }, [user]);
+
+  const checkPremiumStatus = async () => {
+    if (!user) {
+      setLoadingPremium(false);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('premium_subscriptions')
+        .select('status, expires_at')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (data && data.status === 'active') {
+        // Check if subscription hasn't expired
+        if (!data.expires_at || new Date(data.expires_at) > new Date()) {
+          setIsPremium(true);
+        }
+      }
+    } catch (error) {
+      console.error('Error checking premium status:', error);
+    } finally {
+      setLoadingPremium(false);
+    }
+  };
 
   const loadUsage = () => {
     if (!user) return;
@@ -56,10 +86,11 @@ export const useUsageLimits = () => {
     setUsage(newUsage);
   };
 
-  const canUseDetection = () => usage.detectionCount < DAILY_DETECTION_LIMIT;
-  const canUseChat = () => usage.chatCount < DAILY_CHAT_LIMIT;
+  const canUseDetection = () => isPremium || usage.detectionCount < DAILY_DETECTION_LIMIT;
+  const canUseChat = () => isPremium || usage.chatCount < DAILY_CHAT_LIMIT;
 
   const incrementDetection = () => {
+    if (isPremium) return; // Don't track for premium users
     const newUsage = {
       ...usage,
       detectionCount: usage.detectionCount + 1,
@@ -69,6 +100,7 @@ export const useUsageLimits = () => {
   };
 
   const incrementChat = () => {
+    if (isPremium) return; // Don't track for premium users
     const newUsage = {
       ...usage,
       chatCount: usage.chatCount + 1,
@@ -77,8 +109,8 @@ export const useUsageLimits = () => {
     saveUsage(newUsage);
   };
 
-  const getRemainingDetections = () => DAILY_DETECTION_LIMIT - usage.detectionCount;
-  const getRemainingChats = () => DAILY_CHAT_LIMIT - usage.chatCount;
+  const getRemainingDetections = () => isPremium ? Infinity : DAILY_DETECTION_LIMIT - usage.detectionCount;
+  const getRemainingChats = () => isPremium ? Infinity : DAILY_CHAT_LIMIT - usage.chatCount;
 
   const openUpgrade = () => {
     window.open(UPGRADE_URL, '_blank');
@@ -92,6 +124,8 @@ export const useUsageLimits = () => {
     getRemainingDetections,
     getRemainingChats,
     openUpgrade,
+    isPremium,
+    loadingPremium,
     UPGRADE_URL
   };
 };

@@ -12,7 +12,9 @@ const PestScanner = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
-  const { canUseDetection, incrementDetection, getRemainingDetections, openUpgrade } = useUsageLimits();
+  const { canUseDetection, incrementDetection, getRemainingDetections, openUpgrade, isPremium } = useUsageLimits();
+
+  const remaining = getRemainingDetections();
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !e.target.files[0] || !user) return;
@@ -27,22 +29,19 @@ const PestScanner = () => {
     setResult(null);
 
     try {
-      // Upload image to storage
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}/${Date.now()}.${fileExt}`;
       
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('pest-images')
         .upload(fileName, file);
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('pest-images')
         .getPublicUrl(fileName);
 
-      // Call AI identification
       const { data: identifyData, error: identifyError } = await supabase.functions
         .invoke('identify-pest', {
           body: { imageUrl: publicUrl }
@@ -53,7 +52,6 @@ const PestScanner = () => {
       setResult(identifyData);
       incrementDetection();
 
-      // Save to database
       await supabase.from('pest_reports').insert({
         user_id: user.id,
         image_url: publicUrl,
@@ -84,8 +82,6 @@ const PestScanner = () => {
     });
   };
 
-  const remaining = getRemainingDetections();
-
   return (
     <Card>
       <CardHeader>
@@ -94,9 +90,11 @@ const PestScanner = () => {
             <Bug className="w-5 h-5 text-primary" />
             Identify Pests
           </span>
-          <span className="text-xs font-normal text-muted-foreground">
-            {remaining}/3 left today
-          </span>
+          {!isPremium && (
+            <span className="text-xs font-normal text-muted-foreground">
+              {remaining}/3 left today
+            </span>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -159,7 +157,6 @@ const PestScanner = () => {
             </Button>
           </div>
         )}
-
       </CardContent>
     </Card>
   );

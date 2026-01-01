@@ -12,7 +12,9 @@ const AIChatbot = () => {
   const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const { canUseChat, incrementChat, getRemainingChats, openUpgrade } = useUsageLimits();
+  const { canUseChat, incrementChat, getRemainingChats, openUpgrade, isPremium } = useUsageLimits();
+
+  const remainingChats = getRemainingChats();
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -44,8 +46,6 @@ const AIChatbot = () => {
     }
   };
 
-  const remainingChats = getRemainingChats();
-
   if (!isOpen) {
     return (
       <Button
@@ -63,7 +63,9 @@ const AIChatbot = () => {
       <CardHeader className="flex flex-row items-center justify-between pb-3">
         <div>
           <CardTitle className="text-base">AI Assistant</CardTitle>
-          <p className="text-xs text-muted-foreground">{remainingChats}/10 messages left today</p>
+          {!isPremium && (
+            <p className="text-xs text-muted-foreground">{remainingChats}/10 messages left today</p>
+          )}
         </div>
         <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
           <X className="w-4 h-4" />
