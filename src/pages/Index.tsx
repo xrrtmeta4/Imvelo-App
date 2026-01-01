@@ -5,10 +5,14 @@ import BestPractices from '@/components/BestPractices';
 import ExtensionServices from '@/components/ExtensionServices';
 import AIChatbot from '@/components/AIChatbot';
 import { useNotifications } from '@/hooks/useNotifications';
-import { Sprout } from 'lucide-react';
+import { useUsageLimits } from '@/hooks/useUsageLimits';
+import { Sprout, Crown } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const Index = () => {
   useNotifications();
+  const { isPremium, openUpgrade } = useUsageLimits();
+
   return (
     <div className="min-h-screen bg-background pb-20">
       <WeatherTicker />
@@ -21,7 +25,18 @@ const Index = () => {
             </div>
           </div>
           <h1 className="text-3xl font-bold mb-2">Imvelo</h1>
-          <p className="text-primary-foreground/90">Ungani webalimi mhlaba wonkhe jikelele</p>
+          <p className="text-primary-foreground/90">Farmer's Best Friend</p>
+          
+          {!isPremium && (
+            <Button 
+              onClick={openUpgrade}
+              variant="secondary"
+              className="mt-4 gap-2"
+            >
+              <Crown className="w-4 h-4" />
+              Upgrade to Premium - $6.04
+            </Button>
+          )}
         </div>
       </header>
 
