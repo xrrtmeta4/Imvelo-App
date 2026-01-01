@@ -1,63 +1,94 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Cloud, CloudRain, Sun, Thermometer, Wind, Droplets, Loader2, MapPin } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { format, addDays } from 'date-fns';
 
+// Cache weather data in memory
+const weatherCache: { data: any; timestamp: number; coords: string } | null = null;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
 const Weather = () => {
   const { user } = useAuth();
   const [weather, setWeather] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [location, setLocation] = useState<string>('Eswatini');
+  const [location, setLocation] = useState<string>('Detecting location...');
 
-  useEffect(() => {
-    getWeather();
-  }, []);
+  const fetchWeather = useCallback(async (lat: number, lon: number) => {
+    const cacheKey = `${lat.toFixed(2)},${lon.toFixed(2)}`;
+    
+    // Check memory cache first
+    if (weatherCache && weatherCache.coords === cacheKey && Date.now() - weatherCache.timestamp < CACHE_DURATION) {
+      setWeather(weatherCache.data);
+      setLoading(false);
+      return;
+    }
 
-  const getWeather = async () => {
+    // Check localStorage cache
+    const cachedData = localStorage.getItem('imvelo_weather_cache');
+    if (cachedData) {
+      try {
+        const parsed = JSON.parse(cachedData);
+        if (parsed.coords === cacheKey && Date.now() - parsed.timestamp < CACHE_DURATION) {
+          setWeather(parsed.data);
+          setLoading(false);
+          return;
+        }
+      } catch {
+        // Invalid cache, continue to fetch
+      }
+    }
+
+    const { data, error } = await supabase.functions.invoke('get-weather', {
+      body: { latitude: lat, longitude: lon, user_id: user?.id }
+    });
+    
+    if (!error && data) {
+      setWeather(data);
+      // Cache the result
+      const cacheEntry = { data, timestamp: Date.now(), coords: cacheKey };
+      localStorage.setItem('imvelo_weather_cache', JSON.stringify(cacheEntry));
+    }
+    setLoading(false);
+  }, [user?.id]);
+
+  const getWeather = useCallback(async () => {
     try {
+      // Start with default location immediately to reduce perceived load time
+      const defaultLat = -26.3054;
+      const defaultLon = 31.1367;
+      
       if ('geolocation' in navigator) {
+        // Use high accuracy with shorter timeout
         navigator.geolocation.getCurrentPosition(
           async (position) => {
             const { latitude, longitude } = position.coords;
+            setLocation('Uses actual location');
             await fetchWeather(latitude, longitude);
-            // Try to get location name
-            try {
-              const geoResponse = await fetch(
-                `https://geocode.maps.co/reverse?lat=${latitude}&lon=${longitude}`
-              );
-              const geoData = await geoResponse.json();
-              if (geoData.address) {
-                setLocation(geoData.address.city || geoData.address.town || geoData.address.country || 'Eswatini');
-              }
-            } catch {
-              setLocation('Your Location');
-            }
           },
           async () => {
-            await fetchWeather(-26.3054, 31.1367);
+            await fetchWeather(defaultLat, defaultLon);
             setLocation('Mbabane, Eswatini');
+          },
+          { 
+            enableHighAccuracy: false, 
+            timeout: 5000, 
+            maximumAge: 300000 // 5 minutes
           }
         );
       } else {
-        await fetchWeather(-26.3054, 31.1367);
+        await fetchWeather(defaultLat, defaultLon);
         setLocation('Mbabane, Eswatini');
       }
     } catch {
       setLoading(false);
     }
-  };
+  }, [fetchWeather]);
 
-  const fetchWeather = async (lat: number, lon: number) => {
-    const { data, error } = await supabase.functions.invoke('get-weather', {
-      body: { latitude: lat, longitude: lon, user_id: user?.id }
-    });
-    if (!error && data) {
-      setWeather(data);
-    }
-    setLoading(false);
-  };
+  useEffect(() => {
+    getWeather();
+  }, [getWeather]);
 
   const getWeatherIcon = (description: string, size = 'w-8 h-8') => {
     if (description?.includes('mvula') || description?.includes('Imvula') || description?.includes('Sikhukhula')) {
