@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Scanner from "./pages/Scanner";
 import ClimateEducation from "./pages/ClimateEducation";
+import Weather from "./pages/Weather";
 import Profile from "./pages/Profile";
 import OfficerDashboard from "./pages/OfficerDashboard";
 import PlantingGuide from "./pages/PlantingGuide";
@@ -78,6 +79,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <ClimateEducation />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/weather"
+              element={
+                <ProtectedRoute>
+                  <Weather />
                 </ProtectedRoute>
               }
             />

@@ -10,32 +10,39 @@ interface SMSRequest {
   message: string;
 }
 
-// Using Textbelt free API for SMS
-// Free tier: 1 SMS per day with key "textbelt" 
-// For production, get an API key from https://textbelt.com
+// Using Televite API for SMS
 async function sendSMS(phone: string, message: string): Promise<{ success: boolean; error?: string }> {
   try {
-    console.log(`Sending SMS to ${phone}: ${message.substring(0, 50)}...`);
+    const apiKey = Deno.env.get('TELEVITE_API_KEY');
     
-    const response = await fetch('https://textbelt.com/text', {
+    if (!apiKey) {
+      console.error('TELEVITE_API_KEY not configured');
+      return { success: false, error: 'SMS service not configured' };
+    }
+
+    console.log(`Sending SMS via Televite to ${phone}: ${message.substring(0, 50)}...`);
+    
+    // Televite API endpoint
+    const response = await fetch('https://api.televite.com/v1/sms/send', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        phone: phone,
+        to: phone,
         message: message,
-        key: 'textbelt', // Free tier key - limited to 1 SMS/day
+        sender_id: 'Imvelo',
       }),
     });
 
     const result = await response.json();
-    console.log('Textbelt response:', result);
+    console.log('Televite response:', result);
 
-    if (result.success) {
+    if (response.ok && (result.success || result.status === 'sent' || result.id)) {
       return { success: true };
     } else {
-      return { success: false, error: result.error || 'Failed to send SMS' };
+      return { success: false, error: result.error || result.message || 'Failed to send SMS' };
     }
   } catch (error) {
     console.error('SMS sending error:', error);
