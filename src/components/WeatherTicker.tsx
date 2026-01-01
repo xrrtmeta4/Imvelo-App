@@ -45,17 +45,46 @@ const WeatherTicker = () => {
     }
   };
 
-  const getWeatherIcon = (description: string) => {
-    if (description.includes('mvula') || description.includes('Imvula')) {
+  const getWeatherIcon = (code: number) => {
+    if (code >= 51 && code <= 99) {
       return <CloudRain className="w-4 h-4" />;
     }
-    if (description.includes('mafu') || description.includes('Limafu')) {
+    if (code >= 1 && code <= 3) {
       return <Cloud className="w-4 h-4" />;
     }
     return <Sun className="w-4 h-4" />;
   };
 
+  const getWeatherDescription = (code: number): string => {
+    const descriptions: Record<number, string> = {
+      0: 'Clear sky',
+      1: 'Mainly clear',
+      2: 'Partly cloudy',
+      3: 'Overcast',
+      45: 'Foggy',
+      48: 'Rime fog',
+      51: 'Light drizzle',
+      53: 'Moderate drizzle',
+      55: 'Dense drizzle',
+      61: 'Slight rain',
+      63: 'Moderate rain',
+      65: 'Heavy rain',
+      71: 'Slight snow',
+      73: 'Moderate snow',
+      75: 'Heavy snow',
+      80: 'Slight showers',
+      81: 'Moderate showers',
+      82: 'Violent showers',
+      95: 'Thunderstorm',
+      96: 'Thunderstorm with hail',
+      99: 'Severe thunderstorm'
+    };
+    return descriptions[code] || 'Unknown';
+  };
+
   if (loading || !weather) return null;
+
+  const weatherCode = weather.current.weather_code || 0;
 
   return (
     <div className="bg-primary/10 border-b border-primary/20 overflow-hidden">
@@ -65,22 +94,22 @@ const WeatherTicker = () => {
           <span className="font-medium">{weather.current.temperature}°C</span>
         </div>
         <div className="flex items-center gap-2 text-sm text-foreground">
-          {getWeatherIcon(weather.current.weather_description)}
-          <span>{weather.current.weather_description}</span>
+          {getWeatherIcon(weatherCode)}
+          <span>{getWeatherDescription(weatherCode)}</span>
         </div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span>↑{weather.daily.max_temp}°</span>
-          <span>↓{weather.daily.min_temp}°</span>
+          <span>High: {weather.daily.max_temp}°</span>
+          <span>Low: {weather.daily.min_temp}°</span>
         </div>
         {weather.current.humidity && (
           <div className="text-sm text-muted-foreground">
-            Umswakama: {weather.current.humidity}%
+            Humidity: {weather.current.humidity}%
           </div>
         )}
         {weather.daily.precipitation_probability > 0 && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <CloudRain className="w-4 h-4" />
-            <span>{weather.daily.precipitation_probability}% imvula</span>
+            <span>{weather.daily.precipitation_probability}% chance of rain</span>
           </div>
         )}
         {/* Duplicate for seamless loop */}
@@ -89,8 +118,8 @@ const WeatherTicker = () => {
           <span className="font-medium">{weather.current.temperature}°C</span>
         </div>
         <div className="flex items-center gap-2 text-sm text-foreground">
-          {getWeatherIcon(weather.current.weather_description)}
-          <span>{weather.current.weather_description}</span>
+          {getWeatherIcon(weatherCode)}
+          <span>{getWeatherDescription(weatherCode)}</span>
         </div>
       </div>
     </div>
