@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { User, LogOut, Camera } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { User, LogOut, Camera, Crown } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
@@ -16,6 +17,8 @@ const Profile = () => {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
+  const [premiumExpiry, setPremiumExpiry] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     full_name: '',
@@ -26,6 +29,7 @@ const Profile = () => {
   useEffect(() => {
     if (user) {
       fetchProfile();
+      checkPremiumStatus();
     }
   }, [user]);
 
@@ -45,6 +49,23 @@ const Profile = () => {
       });
     }
     setLoading(false);
+  };
+
+  const checkPremiumStatus = async () => {
+    if (!user) return;
+    
+    const { data } = await supabase
+      .from('premium_subscriptions')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('status', 'active')
+      .gte('expires_at', new Date().toISOString())
+      .maybeSingle();
+
+    if (data) {
+      setIsPremium(true);
+      setPremiumExpiry(data.expires_at);
+    }
   };
 
   const handleUpdate = async (e: React.FormEvent) => {
@@ -171,6 +192,21 @@ const Profile = () => {
               <div className="text-center">
                 <h2 className="font-semibold text-lg">{profile?.full_name || 'User'}</h2>
                 <p className="text-sm text-muted-foreground capitalize">{profile?.role}</p>
+                {isPremium ? (
+                  <Badge className="mt-2 bg-gradient-to-r from-amber-500 to-yellow-400 text-white border-0">
+                    <Crown className="w-3 h-3 mr-1" />
+                    Premium Member
+                  </Badge>
+                ) : (
+                  <Badge variant="secondary" className="mt-2">
+                    Free Plan
+                  </Badge>
+                )}
+                {isPremium && premiumExpiry && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Expires: {new Date(premiumExpiry).toLocaleDateString()}
+                  </p>
+                )}
               </div>
               {uploading && (
                 <p className="text-sm text-muted-foreground">Uploading...</p>
