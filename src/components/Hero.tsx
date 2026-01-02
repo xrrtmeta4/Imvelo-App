@@ -14,7 +14,7 @@ const Hero = () => {
           Imvelo
         </h1>
         <p className="text-xl sm:text-2xl text-primary-foreground/90 mb-8 max-w-3xl mx-auto">
-          Ungani webalimi mhlaba wonkhe jikelele
+          Farmer's Best Friend
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button size="lg" variant="secondary" className="text-lg">
