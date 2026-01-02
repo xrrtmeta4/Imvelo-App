@@ -72,13 +72,13 @@ const WeatherCard = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-foreground">
           <Cloud className="w-5 h-5" />
-          Simoselitulu
+          Weather Forecast
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Namuhla</span>
+            <span className="text-sm text-muted-foreground">Today</span>
             <div className="flex items-center gap-2">
               <span className="font-semibold text-2xl">{weather.current.temperature}°</span>
             </div>
@@ -87,24 +87,24 @@ const WeatherCard = () => {
           
           {weather.current.feels_like && (
             <p className="text-xs text-muted-foreground">
-              Kutiva njenge: {weather.current.feels_like}°
+              Feels like: {weather.current.feels_like}°
             </p>
           )}
           
           <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground pt-2 border-t">
-            <span>Liphakeme: {weather.daily.max_temp}°</span>
-            <span>Liphansi: {weather.daily.min_temp}°</span>
+            <span>High: {weather.daily.max_temp}°</span>
+            <span>Low: {weather.daily.min_temp}°</span>
             {weather.current.humidity && (
-              <span>Umswakama: {weather.current.humidity}%</span>
+              <span>Humidity: {weather.current.humidity}%</span>
             )}
             {weather.daily.precipitation_probability && (
-              <span>Imvula: {weather.daily.precipitation_probability}%</span>
+              <span>Rain: {weather.daily.precipitation_probability}%</span>
             )}
           </div>
           
           {weather.current.wind_speed > 0 && (
             <p className="text-xs text-muted-foreground">
-              Umoya: {weather.current.wind_speed} km/h
+              Wind: {weather.current.wind_speed} km/h
             </p>
           )}
         </div>

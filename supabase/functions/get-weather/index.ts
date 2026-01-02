@@ -26,21 +26,29 @@ serve(async (req) => {
     const data = await response.json();
     console.log('Weather data received:', data);
 
-    // Map weather codes to descriptions
+    // Map weather codes to descriptions in English
     const weatherCodeMap: { [key: number]: string } = {
-      0: 'Lizulu lelikhanya', // Clear sky
-      1: 'Lizulu lelikhanya', // Mainly clear
-      2: 'Incenye limafu', // Partly cloudy
-      3: 'Limafu', // Overcast
-      45: 'Linkungu', // Fog
-      48: 'Linkungu limakhaza', // Depositing rime fog
-      51: 'Imvula encane', // Light drizzle
-      61: 'Imvula', // Light rain
-      63: 'Imvula enkulu', // Moderate rain
-      65: 'Imvula enamandla', // Heavy rain
-      80: 'Kufika imvula', // Rain showers
-      95: 'Sikhukhula', // Thunderstorm
-      96: 'Sikhukhula nesichotho', // Thunderstorm with hail
+      0: 'Clear sky',
+      1: 'Mainly clear',
+      2: 'Partly cloudy',
+      3: 'Overcast',
+      45: 'Foggy',
+      48: 'Rime fog',
+      51: 'Light drizzle',
+      53: 'Moderate drizzle',
+      55: 'Dense drizzle',
+      61: 'Light rain',
+      63: 'Moderate rain',
+      65: 'Heavy rain',
+      71: 'Light snow',
+      73: 'Moderate snow',
+      75: 'Heavy snow',
+      80: 'Rain showers',
+      81: 'Moderate showers',
+      82: 'Heavy showers',
+      95: 'Thunderstorm',
+      96: 'Thunderstorm with hail',
+      99: 'Severe thunderstorm',
     };
 
     const weatherCode = data.current.weather_code;
@@ -80,7 +88,7 @@ serve(async (req) => {
       if (weatherCode === 95 || weatherCode === 96) {
         extremeConditions.push({
           type: 'storm',
-          message: 'Sikhukhula! Vikela timbali takho.',
+          message: 'Storm warning! Protect your crops and livestock.',
           severity: 'high'
         });
       }
@@ -89,7 +97,7 @@ serve(async (req) => {
       if (weatherCode === 65 || data.daily.precipitation_sum[0] > 50) {
         extremeConditions.push({
           type: 'heavy_rain',
-          message: 'Imvula enamandla! Hlola tindzawo tekumila.',
+          message: 'Heavy rain expected! Check your planting areas for drainage.',
           severity: 'medium'
         });
       }
@@ -98,7 +106,7 @@ serve(async (req) => {
       if (data.current.temperature_2m > 35) {
         extremeConditions.push({
           type: 'extreme_heat',
-          message: 'Kushisa kakhulu! Ncipheta timbali takho.',
+          message: 'Extreme heat warning! Water your crops early morning or evening.',
           severity: 'high'
         });
       }
@@ -108,7 +116,7 @@ serve(async (req) => {
       if (totalPrecipitation < 5 && data.daily.temperature_2m_max[0] > 30) {
         extremeConditions.push({
           type: 'drought',
-          message: 'Kumisile! Hlela tindlela tekuncipheta.',
+          message: 'Dry conditions ahead! Plan water conservation strategies.',
           severity: 'high'
         });
       }
@@ -117,7 +125,7 @@ serve(async (req) => {
       if (data.current.wind_speed_10m > 40) {
         extremeConditions.push({
           type: 'strong_wind',
-          message: 'Umoya lomkhulu! Vikela timbali takho.',
+          message: 'Strong winds expected! Secure structures and protect young plants.',
           severity: 'medium'
         });
       }

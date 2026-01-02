@@ -143,17 +143,36 @@ const Auth = () => {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
         },
       });
+      
       if (error) {
-        toast.error(error.message);
+        console.error('Google OAuth error:', error);
+        if (error.message.includes('provider is not enabled')) {
+          toast.error('Google sign-in is not configured. Please use email login.');
+        } else if (error.message.includes('redirect')) {
+          toast.error('Redirect URL error. Please try again.');
+        } else {
+          toast.error(error.message || 'Failed to sign in with Google');
+        }
+        return;
+      }
+      
+      // OAuth will redirect, so we don't need to do anything else here
+      if (!data.url) {
+        toast.error('Failed to initiate Google sign-in');
       }
     } catch (error: any) {
-      toast.error('Failed to sign in with Google');
+      console.error('Google sign-in error:', error);
+      toast.error('Failed to sign in with Google. Please try email login.');
     } finally {
       setLoading(false);
     }

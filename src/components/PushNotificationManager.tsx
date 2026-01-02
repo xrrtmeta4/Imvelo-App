@@ -67,28 +67,69 @@ const PushNotificationManager = () => {
     setIsSubscribing(true);
     
     try {
+      // Check if notifications are supported
+      if (!('Notification' in window)) {
+        toast.error('Notifications are not supported in this browser');
+        setIsSubscribing(false);
+        return;
+      }
+
       // Request notification permission
       const permissionResult = await Notification.requestPermission();
       setPermission(permissionResult);
 
       if (permissionResult !== 'granted') {
-        toast.error('Notification permission denied');
+        toast.error('Notification permission denied. Please enable notifications in your browser settings.');
+        setIsSubscribing(false);
+        return;
+      }
+
+      // Check if service workers are supported
+      if (!('serviceWorker' in navigator)) {
+        toast.error('Service workers are not supported in this browser');
         setIsSubscribing(false);
         return;
       }
 
       // Register service worker
-      const registration = await registerServiceWorker();
-      await navigator.serviceWorker.ready;
+      let registration;
+      try {
+        registration = await registerServiceWorker();
+        await navigator.serviceWorker.ready;
+      } catch (swError) {
+        console.error('Service worker error:', swError);
+        toast.error('Failed to register service worker. Please refresh and try again.');
+        setIsSubscribing(false);
+        return;
+      }
+
+      // Check if push manager is available
+      if (!registration.pushManager) {
+        toast.error('Push notifications are not available in this browser');
+        setIsSubscribing(false);
+        return;
+      }
 
       // Subscribe to push
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(
-          // Public VAPID key - this is safe to expose
-          'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U'
-        ) as BufferSource,
-      });
+      let subscription;
+      try {
+        subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(
+            // Public VAPID key - this is safe to expose
+            'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U'
+          ) as BufferSource,
+        });
+      } catch (pushError: any) {
+        console.error('Push subscription error:', pushError);
+        if (pushError.message?.includes('applicationServerKey')) {
+          toast.error('Push notification setup error. Please contact support.');
+        } else {
+          toast.error('Failed to subscribe to push notifications');
+        }
+        setIsSubscribing(false);
+        return;
+      }
 
       // Save subscription to database
       const subscriptionJSON = subscription.toJSON();
@@ -102,16 +143,21 @@ const PushNotificationManager = () => {
           auth_key: subscriptionJSON.keys?.auth || '',
         }, { onConflict: 'user_id,endpoint' });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Database error:', error);
+        toast.error('Failed to save notification preferences');
+        setIsSubscribing(false);
+        return;
+      }
 
       setIsSubscribed(true);
-      toast.success('Push notifications enabled!');
+      toast.success('Push notifications enabled successfully!');
       
       // Show test notification
       showNotification('Notifications Enabled', 'You will receive weather updates and climate alerts automatically.');
     } catch (error) {
       console.error('Error subscribing to push:', error);
-      toast.error('Failed to enable push notifications');
+      toast.error('Failed to enable push notifications. Please try again.');
     } finally {
       setIsSubscribing(false);
     }
