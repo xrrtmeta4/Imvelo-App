@@ -4,7 +4,6 @@ import PestScanner from '@/components/PestScanner';
 import BestPractices from '@/components/BestPractices';
 import ExtensionServices from '@/components/ExtensionServices';
 import AIChatbot from '@/components/AIChatbot';
-import WhatsAppButton from '@/components/WhatsAppButton';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { Sprout, Crown } from 'lucide-react';
@@ -49,7 +48,6 @@ const Index = () => {
           <BestPractices />
         </div>
       </div>
-      <WhatsAppButton />
       <AIChatbot />
     </div>
   );
