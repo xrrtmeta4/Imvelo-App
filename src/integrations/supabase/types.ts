@@ -265,6 +265,42 @@ export type Database = {
         }
         Relationships: []
       }
+      ussd_sessions: {
+        Row: {
+          context: Json | null
+          created_at: string
+          current_menu: string
+          expires_at: string
+          id: string
+          last_input: string | null
+          phone_number: string
+          session_id: string
+          updated_at: string
+        }
+        Insert: {
+          context?: Json | null
+          created_at?: string
+          current_menu?: string
+          expires_at?: string
+          id?: string
+          last_input?: string | null
+          phone_number: string
+          session_id: string
+          updated_at?: string
+        }
+        Update: {
+          context?: Json | null
+          created_at?: string
+          current_menu?: string
+          expires_at?: string
+          id?: string
+          last_input?: string | null
+          phone_number?: string
+          session_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       weather_alerts: {
         Row: {
           alert_type: string

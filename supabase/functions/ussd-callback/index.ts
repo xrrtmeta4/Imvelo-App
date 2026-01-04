@@ -1,18 +1,32 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// USSD session storage (in production, use a database for persistence)
-const sessions: Map<string, { level: string; data: Record<string, string> }> = new Map();
+interface USSDSession {
+  id: string;
+  session_id: string;
+  phone_number: string;
+  current_menu: string;
+  context: Record<string, string>;
+  last_input: string | null;
+  created_at: string;
+  updated_at: string;
+  expires_at: string;
+}
 
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
+
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
     // Africa's Talking sends data as application/x-www-form-urlencoded
@@ -25,8 +39,12 @@ serve(async (req) => {
 
     console.log('USSD Request:', { sessionId, serviceCode, phoneNumber, text });
 
-    // Get or create session
-    let session = sessions.get(sessionId) || { level: 'main', data: {} };
+    // Get or create session from database
+    let session = await getSession(supabase, sessionId);
+    
+    if (!session) {
+      session = await createSession(supabase, sessionId, phoneNumber);
+    }
     
     // Parse user input (text comes as "1*2*3" for multiple selections)
     const userInput = text.split('*').pop() || '';
@@ -45,7 +63,7 @@ Farmer's Best Friend
 3. Pest Identification Tips
 4. Crop Planting Guide
 5. Contact Extension Officer`;
-      session.level = 'main';
+      await updateSession(supabase, sessionId, 'main', {}, '');
       
     } else if (inputPath[0] === '1') {
       // Ask Farming Question flow
@@ -58,7 +76,7 @@ Farmer's Best Friend
 4. Pest Control
 5. Fertilizer Use
 0. Back to Main Menu`;
-        session.level = 'farming_topic';
+        await updateSession(supabase, sessionId, 'farming_topic', session.context, userInput);
         
       } else if (inputPath.length === 2) {
         if (userInput === '0') {
@@ -70,6 +88,7 @@ Farmer's Best Friend
 3. Pest Identification Tips
 4. Crop Planting Guide
 5. Contact Extension Officer`;
+          await updateSession(supabase, sessionId, 'main', {}, userInput);
         } else {
           const topics: Record<string, string> = {
             '1': 'Crop Diseases',
@@ -79,7 +98,6 @@ Farmer's Best Friend
             '5': 'Fertilizer Use'
           };
           const topic = topics[userInput] || 'General Farming';
-          session.data.topic = topic;
           
           // Provide AI-generated tip
           const tips = await getAITip(topic);
@@ -87,7 +105,8 @@ Farmer's Best Friend
 
 ${tips}
 
-Dial *223# for more help.`;
+Dial *384# for more help.`;
+          await updateSession(supabase, sessionId, 'farming_result', { topic }, userInput);
         }
       }
       
@@ -101,7 +120,8 @@ Rain chance: 83%
 
 Farming tip: Good conditions for planting. Consider irrigation due to high humidity.
 
-Dial *223# for more options.`;
+Dial *384# for more options.`;
+      await updateSession(supabase, sessionId, 'weather', {}, userInput);
       
     } else if (inputPath[0] === '3') {
       // Pest Identification Tips
@@ -114,6 +134,7 @@ Dial *223# for more options.`;
 4. Sugarcane
 5. Cotton
 0. Back to Main Menu`;
+        await updateSession(supabase, sessionId, 'pest_select', session.context, userInput);
         
       } else if (inputPath.length === 2) {
         if (userInput === '0') {
@@ -125,6 +146,7 @@ Farmer's Best Friend
 3. Pest Identification Tips
 4. Crop Planting Guide
 5. Contact Extension Officer`;
+          await updateSession(supabase, sessionId, 'main', {}, userInput);
         } else {
           const crops: Record<string, string> = {
             '1': 'Maize/Corn',
@@ -141,7 +163,8 @@ ${pestTips}
 
 For detailed diagnosis, use Imvelo app camera scanner.
 
-Dial *223# for more options.`;
+Dial *384# for more options.`;
+          await updateSession(supabase, sessionId, 'pest_result', { crop }, userInput);
         }
       }
       
@@ -155,6 +178,7 @@ Dial *223# for more options.`;
 3. July-September (Winter)
 4. October-December (Spring)
 0. Back to Main Menu`;
+        await updateSession(supabase, sessionId, 'planting_select', session.context, userInput);
         
       } else if (inputPath.length === 2) {
         if (userInput === '0') {
@@ -166,6 +190,7 @@ Farmer's Best Friend
 3. Pest Identification Tips
 4. Crop Planting Guide
 5. Contact Extension Officer`;
+          await updateSession(supabase, sessionId, 'main', {}, userInput);
         } else {
           const seasons: Record<string, { name: string; crops: string }> = {
             '1': { name: 'Summer (Jan-Mar)', crops: 'Maize, Beans, Pumpkins, Watermelons' },
@@ -181,7 +206,8 @@ ${season.crops}
 
 Tips: Prepare soil 2 weeks before planting. Add compost for nutrients.
 
-Dial *223# for more options.`;
+Dial *384# for more options.`;
+          await updateSession(supabase, sessionId, 'planting_result', { season: season.name }, userInput);
         }
       }
       
@@ -198,7 +224,8 @@ Manzini: +268 2505 2841
 Lubombo: +268 2303 3241
 Shiselweni: +268 2207 1841
 
-Dial *223# for more options.`;
+Dial *384# for more options.`;
+      await updateSession(supabase, sessionId, 'contact', {}, userInput);
       
     } else {
       // Invalid input
@@ -209,17 +236,12 @@ Dial *223# for more options.`;
 3. Pest Identification Tips
 4. Crop Planting Guide
 5. Contact Extension Officer`;
+      await updateSession(supabase, sessionId, 'error', session.context, userInput);
     }
 
-    // Save session
-    sessions.set(sessionId, session);
-
-    // Clean up old sessions (simple cleanup - in production use TTL)
-    if (sessions.size > 1000) {
-      const keys = Array.from(sessions.keys());
-      for (let i = 0; i < 500; i++) {
-        sessions.delete(keys[i]);
-      }
+    // Clean up expired sessions periodically (1% chance per request)
+    if (Math.random() < 0.01) {
+      await cleanupExpiredSessions(supabase);
     }
 
     console.log('USSD Response:', response);
@@ -242,6 +264,88 @@ Dial *223# for more options.`;
     });
   }
 });
+
+// Database session management functions
+async function getSession(supabase: any, sessionId: string): Promise<USSDSession | null> {
+  const { data, error } = await supabase
+    .from('ussd_sessions')
+    .select('*')
+    .eq('session_id', sessionId)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error fetching session:', error);
+    return null;
+  }
+
+  // Check if session is expired
+  if (data && new Date(data.expires_at) < new Date()) {
+    console.log('Session expired, will create new one');
+    return null;
+  }
+
+  return data;
+}
+
+async function createSession(supabase: any, sessionId: string, phoneNumber: string): Promise<USSDSession> {
+  const newSession = {
+    session_id: sessionId,
+    phone_number: phoneNumber,
+    current_menu: 'main',
+    context: {},
+    last_input: null,
+    expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // 30 minutes
+  };
+
+  const { data, error } = await supabase
+    .from('ussd_sessions')
+    .insert(newSession)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating session:', error);
+    throw error;
+  }
+
+  console.log('Created new session:', data.id);
+  return data;
+}
+
+async function updateSession(
+  supabase: any, 
+  sessionId: string, 
+  currentMenu: string, 
+  context: Record<string, string>,
+  lastInput: string
+): Promise<void> {
+  const { error } = await supabase
+    .from('ussd_sessions')
+    .update({
+      current_menu: currentMenu,
+      context: context,
+      last_input: lastInput,
+      expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // Extend expiry
+    })
+    .eq('session_id', sessionId);
+
+  if (error) {
+    console.error('Error updating session:', error);
+  }
+}
+
+async function cleanupExpiredSessions(supabase: any): Promise<void> {
+  const { error } = await supabase
+    .from('ussd_sessions')
+    .delete()
+    .lt('expires_at', new Date().toISOString());
+
+  if (error) {
+    console.error('Error cleaning up sessions:', error);
+  } else {
+    console.log('Cleaned up expired sessions');
+  }
+}
 
 // Helper function to get AI farming tips
 async function getAITip(topic: string): Promise<string> {
