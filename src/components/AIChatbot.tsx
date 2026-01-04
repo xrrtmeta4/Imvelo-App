@@ -87,7 +87,13 @@ const AIChatbot = () => {
                     : 'bg-accent mr-8'
                 }`}
               >
-                {msg.content}
+                {msg.role === 'assistant' ? (
+                  <div className="whitespace-pre-line">
+                    {msg.content.replace(/\*+/g, '').trim()}
+                  </div>
+                ) : (
+                  msg.content
+                )}
               </div>
             ))
           )}
