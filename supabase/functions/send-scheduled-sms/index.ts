@@ -188,13 +188,13 @@ Deno.serve(async (req) => {
             message += `🌧️ ${weather.daily.precipitation_probability}% chance of rain\n`;
           }
           message += `\n${getPlantingGuide()}\n`;
-          message += `\n- Imvelo 🌱`;
+          message += `\nDial *384*51139# for more tips.\n- Imvelo 🌱`;
         }
       }
       // Midday farming tip (12-1 PM)
       else if (hour >= 12 && hour < 14) {
         const randomTip = farmingTips[Math.floor(Math.random() * farmingTips.length)];
-        message = `🌾 Farming Tip of the Day\n\n${randomTip}\n\n- Imvelo 🌱`;
+        message = `🌾 Farming Tip of the Day\n\n${randomTip}\n\nDial *384*51139# for more help.\n- Imvelo 🌱`;
       }
       // Evening weather summary (5-6 PM)
       else if (hour >= 17 && hour < 19) {
@@ -207,7 +207,7 @@ Deno.serve(async (req) => {
           if (weather.current.temperature > 30) {
             message += `🌡️ Hot day - ensure adequate irrigation tomorrow morning.\n`;
           }
-          message += `\nHave a great evening!\n- Imvelo 🌱`;
+          message += `\nDial *384*51139# for farming help.\n- Imvelo 🌱`;
         }
       }
 

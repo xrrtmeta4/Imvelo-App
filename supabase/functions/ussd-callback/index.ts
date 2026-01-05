@@ -105,7 +105,7 @@ Farmer's Best Friend
 
 ${tips}
 
-Dial *384# for more help.`;
+Dial *384*51139# for more help.`;
           await updateSession(supabase, sessionId, 'farming_result', { topic }, userInput);
         }
       }
@@ -120,7 +120,7 @@ Rain chance: 83%
 
 Farming tip: Good conditions for planting. Consider irrigation due to high humidity.
 
-Dial *384# for more options.`;
+Dial *384*51139# for more options.`;
       await updateSession(supabase, sessionId, 'weather', {}, userInput);
       
     } else if (inputPath[0] === '3') {
@@ -163,7 +163,7 @@ ${pestTips}
 
 For detailed diagnosis, use Imvelo app camera scanner.
 
-Dial *384# for more options.`;
+Dial *384*51139# for more options.`;
           await updateSession(supabase, sessionId, 'pest_result', { crop }, userInput);
         }
       }
@@ -206,7 +206,7 @@ ${season.crops}
 
 Tips: Prepare soil 2 weeks before planting. Add compost for nutrients.
 
-Dial *384# for more options.`;
+Dial *384*51139# for more options.`;
           await updateSession(supabase, sessionId, 'planting_result', { season: season.name }, userInput);
         }
       }
@@ -224,7 +224,7 @@ Manzini: +268 2505 2841
 Lubombo: +268 2303 3241
 Shiselweni: +268 2207 1841
 
-Dial *384# for more options.`;
+Dial *384*51139# for more options.`;
       await updateSession(supabase, sessionId, 'contact', {}, userInput);
       
     } else {
