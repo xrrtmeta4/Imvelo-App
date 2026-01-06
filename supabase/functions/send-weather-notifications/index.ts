@@ -108,9 +108,17 @@ async function sendWebPush(endpoint: string, payload: any): Promise<boolean> {
   }
 }
 
-// Send SMS for users without internet (backup notification)
+// Send SMS for users without internet (backup notification) via Africa's Talking
 async function sendSMSNotification(phone: string, message: string): Promise<boolean> {
   try {
+    const apiKey = Deno.env.get('AFRICASTALKING_API_KEY');
+    const username = Deno.env.get('AFRICASTALKING_USERNAME');
+    
+    if (!apiKey || !username) {
+      console.error('Africa\'s Talking credentials not configured');
+      return false;
+    }
+
     console.log(`Sending SMS to ${phone}: ${message.substring(0, 50)}...`);
     
     // Format phone for Eswatini
@@ -125,21 +133,28 @@ async function sendSMSNotification(phone: string, message: string): Promise<bool
       }
     }
 
-    const response = await fetch('https://textbelt.com/text', {
+    // Africa's Talking SMS API with short code 17004
+    const response = await fetch('https://api.africastalking.com/version1/messaging', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'apiKey': apiKey,
+        'Accept': 'application/json',
       },
-      body: JSON.stringify({
-        phone: formattedPhone,
+      body: new URLSearchParams({
+        username: username,
+        to: formattedPhone,
         message: message.substring(0, 160), // SMS character limit
-        key: 'textbelt', // Free tier - 1 SMS/day. For production, use paid key.
-      }),
+        from: '17004', // Africa's Talking short code
+      }).toString(),
     });
 
     const result = await response.json();
     console.log('SMS result:', result);
-    return result.success === true;
+    
+    // Check Africa's Talking response format
+    const recipients = result.SMSMessageData?.Recipients || [];
+    return recipients.length > 0 && recipients[0].status === 'Success';
   } catch (error) {
     console.error('SMS error:', error);
     return false;
