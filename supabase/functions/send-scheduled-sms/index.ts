@@ -51,8 +51,16 @@ function getPlantingGuide(): string {
   return guides[month] || "🌱 Check local conditions for planting recommendations.";
 }
 
-async function sendSMS(phone: string, message: string, apiKey: string): Promise<boolean> {
+async function sendSMS(phone: string, message: string): Promise<boolean> {
   try {
+    const apiKey = Deno.env.get('AFRICASTALKING_API_KEY');
+    const username = Deno.env.get('AFRICASTALKING_USERNAME');
+    
+    if (!apiKey || !username) {
+      console.error('Africa\'s Talking credentials not configured');
+      return false;
+    }
+
     // Format phone number for Eswatini (+268)
     let formattedPhone = phone.replace(/\s+/g, '').replace(/-/g, '');
     if (!formattedPhone.startsWith('+')) {
@@ -65,24 +73,31 @@ async function sendSMS(phone: string, message: string, apiKey: string): Promise<
       }
     }
 
-    console.log(`Sending SMS to ${formattedPhone}`);
+    console.log(`Sending SMS via Africa's Talking to ${formattedPhone}`);
     
-    const response = await fetch('https://api.televite.com/v1/sms/send', {
+    // Africa's Talking SMS API
+    const response = await fetch('https://api.africastalking.com/version1/messaging', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'apiKey': apiKey,
+        'Accept': 'application/json',
       },
-      body: JSON.stringify({
+      body: new URLSearchParams({
+        username: username,
         to: formattedPhone,
         message: message,
-        sender_id: 'Imvelo',
-      }),
+        from: '17004', // Africa's Talking short code
+      }).toString(),
     });
 
     const result = await response.json();
     console.log(`SMS result for ${formattedPhone}:`, result);
-    return response.ok && (result.success || result.status === 'sent' || result.id);
+    
+    // Check Africa's Talking response format
+    const recipients = result.SMSMessageData?.Recipients || [];
+    const success = recipients.length > 0 && recipients[0].status === 'Success';
+    return success;
   } catch (error) {
     console.error(`SMS error for ${phone}:`, error);
     return false;
@@ -129,9 +144,10 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const apiKey = Deno.env.get('TELEVITE_API_KEY');
-    if (!apiKey) {
-      console.error('TELEVITE_API_KEY not configured');
+    const apiKey = Deno.env.get('AFRICASTALKING_API_KEY');
+    const username = Deno.env.get('AFRICASTALKING_USERNAME');
+    if (!apiKey || !username) {
+      console.error('Africa\'s Talking credentials not configured');
       return new Response(
         JSON.stringify({ success: false, error: 'SMS service not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -212,7 +228,7 @@ Deno.serve(async (req) => {
       }
 
       if (message) {
-        const success = await sendSMS(profile.phone_number, message, apiKey);
+        const success = await sendSMS(profile.phone_number, message);
         if (success) {
           sentCount++;
         } else {
