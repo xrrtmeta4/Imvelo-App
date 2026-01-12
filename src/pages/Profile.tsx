@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { User, LogOut, Camera, Crown } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { User, LogOut, Camera, Crown, Languages } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
@@ -24,6 +25,7 @@ const Profile = () => {
     full_name: '',
     phone_number: '',
     location: '',
+    preferred_language: 'en',
   });
 
   useEffect(() => {
@@ -46,6 +48,7 @@ const Profile = () => {
         full_name: data.full_name || '',
         phone_number: data.phone_number || '',
         location: data.location || '',
+        preferred_language: data.preferred_language || 'en',
       });
     }
     setLoading(false);
@@ -262,6 +265,48 @@ const Profile = () => {
                   }
                   disabled={loading}
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="preferred_language" className="flex items-center gap-2">
+                  <Languages className="w-4 h-4" />
+                  AI Assistant Language
+                </Label>
+                <Select
+                  value={formData.preferred_language}
+                  onValueChange={(value) => setFormData({ ...formData, preferred_language: value })}
+                  disabled={loading}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select language" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="en">English</SelectItem>
+                    <SelectItem value="fr">Français (French)</SelectItem>
+                    <SelectItem value="de">Deutsch (German)</SelectItem>
+                    <SelectItem value="es">Español (Spanish)</SelectItem>
+                    <SelectItem value="pt">Português (Portuguese)</SelectItem>
+                    <SelectItem value="it">Italiano (Italian)</SelectItem>
+                    <SelectItem value="nl">Nederlands (Dutch)</SelectItem>
+                    <SelectItem value="pl">Polski (Polish)</SelectItem>
+                    <SelectItem value="sv">Svenska (Swedish)</SelectItem>
+                    <SelectItem value="da">Dansk (Danish)</SelectItem>
+                    <SelectItem value="no">Norsk (Norwegian)</SelectItem>
+                    <SelectItem value="fi">Suomi (Finnish)</SelectItem>
+                    <SelectItem value="el">Ελληνικά (Greek)</SelectItem>
+                    <SelectItem value="cs">Čeština (Czech)</SelectItem>
+                    <SelectItem value="hu">Magyar (Hungarian)</SelectItem>
+                    <SelectItem value="ro">Română (Romanian)</SelectItem>
+                    <SelectItem value="bg">Български (Bulgarian)</SelectItem>
+                    <SelectItem value="hr">Hrvatski (Croatian)</SelectItem>
+                    <SelectItem value="sk">Slovenčina (Slovak)</SelectItem>
+                    <SelectItem value="sl">Slovenščina (Slovenian)</SelectItem>
+                    <SelectItem value="ss">siSwati</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  The AI assistant will respond in your preferred language
+                </p>
               </div>
 
               <div className="space-y-2">

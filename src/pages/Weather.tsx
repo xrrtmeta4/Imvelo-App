@@ -53,18 +53,38 @@ const Weather = () => {
     setLoading(false);
   }, [user?.id]);
 
+  const reverseGeocode = useCallback(async (lat: number, lon: number): Promise<string> => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`
+      );
+      const data = await response.json();
+      const city = data.address?.city || data.address?.town || data.address?.village || data.address?.county;
+      const country = data.address?.country;
+      if (city && country) {
+        return `${city}, ${country}`;
+      } else if (city) {
+        return city;
+      } else if (country) {
+        return country;
+      }
+      return 'Unknown Location';
+    } catch {
+      return 'Unknown Location';
+    }
+  }, []);
+
   const getWeather = useCallback(async () => {
     try {
-      // Start with default location immediately to reduce perceived load time
       const defaultLat = -26.3054;
       const defaultLon = 31.1367;
       
       if ('geolocation' in navigator) {
-        // Use high accuracy with shorter timeout
         navigator.geolocation.getCurrentPosition(
           async (position) => {
             const { latitude, longitude } = position.coords;
-            setLocation('Your Location');
+            const locationName = await reverseGeocode(latitude, longitude);
+            setLocation(locationName);
             await fetchWeather(latitude, longitude);
           },
           async () => {
@@ -74,7 +94,7 @@ const Weather = () => {
           { 
             enableHighAccuracy: false, 
             timeout: 5000, 
-            maximumAge: 300000 // 5 minutes
+            maximumAge: 300000
           }
         );
       } else {
@@ -84,7 +104,7 @@ const Weather = () => {
     } catch {
       setLoading(false);
     }
-  }, [fetchWeather]);
+  }, [fetchWeather, reverseGeocode]);
 
   useEffect(() => {
     getWeather();

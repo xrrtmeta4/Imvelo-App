@@ -11,13 +11,39 @@ serve(async (req) => {
   }
 
   try {
-    const { messages } = await req.json();
-    console.log('AI Assistant request:', messages);
+    const { messages, preferredLanguage = 'en' } = await req.json();
+    console.log('AI Assistant request:', messages, 'Language:', preferredLanguage);
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY not configured');
     }
+
+    const languageNames: Record<string, string> = {
+      en: 'English',
+      fr: 'French',
+      de: 'German',
+      es: 'Spanish',
+      pt: 'Portuguese',
+      it: 'Italian',
+      nl: 'Dutch',
+      pl: 'Polish',
+      sv: 'Swedish',
+      da: 'Danish',
+      no: 'Norwegian',
+      fi: 'Finnish',
+      el: 'Greek',
+      cs: 'Czech',
+      hu: 'Hungarian',
+      ro: 'Romanian',
+      bg: 'Bulgarian',
+      hr: 'Croatian',
+      sk: 'Slovak',
+      sl: 'Slovenian',
+      ss: 'siSwati'
+    };
+
+    const languageName = languageNames[preferredLanguage] || 'English';
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -32,10 +58,10 @@ serve(async (req) => {
             role: 'system',
             content: `You are a helpful agricultural assistant for farmers called Imvelo AI. 
 
-IMPORTANT LANGUAGE RULES:
-- Detect the language of the user's message and respond in the SAME language
-- You support ALL European languages including but not limited to: English, French, German, Spanish, Portuguese, Italian, Dutch, Polish, Swedish, Norwegian, Danish, Finnish, Greek, Czech, Hungarian, Romanian, Bulgarian, Croatian, Slovak, Slovenian, Lithuanian, Latvian, Estonian
-- If the user writes in any European language, respond fluently in that language
+CRITICAL LANGUAGE INSTRUCTION:
+- You MUST respond in ${languageName} language
+- All your responses should be entirely in ${languageName}
+- This is the user's preferred language setting
 
 IMPORTANT FORMATTING RULES:
 - NEVER use asterisks (*) or markdown formatting like **bold** or *italic*
