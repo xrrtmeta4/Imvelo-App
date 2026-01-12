@@ -64,7 +64,7 @@ const Weather = () => {
         navigator.geolocation.getCurrentPosition(
           async (position) => {
             const { latitude, longitude } = position.coords;
-            setLocation('Uses actual location');
+            setLocation('Your Location');
             await fetchWeather(latitude, longitude);
           },
           async () => {
@@ -101,8 +101,8 @@ const Weather = () => {
   };
 
   const getDayName = (index: number) => {
-    if (index === 0) return 'Namuhla';
-    if (index === 1) return 'Kusasa';
+    if (index === 0) return 'Today';
+    if (index === 1) return 'Tomorrow';
     return format(addDays(new Date(), index), 'EEEE');
   };
 
@@ -121,7 +121,7 @@ const Weather = () => {
       <header className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground py-8 px-4">
         <div className="max-w-screen-sm mx-auto text-center">
           <Cloud className="w-12 h-12 mx-auto mb-4" />
-          <h1 className="text-3xl font-bold mb-2">Litulu</h1>
+          <h1 className="text-3xl font-bold mb-2">Weather</h1>
           <div className="flex items-center justify-center gap-2 text-primary-foreground/90">
             <MapPin className="w-4 h-4" />
             <span>{location}</span>
@@ -137,10 +137,10 @@ const Weather = () => {
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">Namuhla</p>
+                    <p className="text-sm text-muted-foreground mb-1">Today</p>
                     <p className="text-5xl font-bold text-foreground">{weather.current.temperature}°C</p>
                     <p className="text-lg text-muted-foreground mt-2">{weather.current.weather_description}</p>
-                    <p className="text-sm text-muted-foreground">Kutiva njenge {weather.current.feels_like}°C</p>
+                    <p className="text-sm text-muted-foreground">Feels like {weather.current.feels_like}°C</p>
                   </div>
                   <div className="text-right">
                     {getWeatherIcon(weather.current.weather_description, 'w-20 h-20')}
@@ -150,17 +150,17 @@ const Weather = () => {
                 <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-border">
                   <div className="text-center">
                     <Thermometer className="w-5 h-5 mx-auto mb-1 text-orange-500" />
-                    <p className="text-xs text-muted-foreground">Liphakeme/Liphansi</p>
+                    <p className="text-xs text-muted-foreground">High/Low</p>
                     <p className="text-sm font-medium">{weather.daily.max_temp}° / {weather.daily.min_temp}°</p>
                   </div>
                   <div className="text-center">
                     <Droplets className="w-5 h-5 mx-auto mb-1 text-blue-500" />
-                    <p className="text-xs text-muted-foreground">Umswakama</p>
+                    <p className="text-xs text-muted-foreground">Humidity</p>
                     <p className="text-sm font-medium">{weather.current.humidity}%</p>
                   </div>
                   <div className="text-center">
                     <Wind className="w-5 h-5 mx-auto mb-1 text-gray-500" />
-                    <p className="text-xs text-muted-foreground">Umoya</p>
+                    <p className="text-xs text-muted-foreground">Wind</p>
                     <p className="text-sm font-medium">{weather.current.wind_speed} km/h</p>
                   </div>
                 </div>
