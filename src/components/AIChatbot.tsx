@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,15 +6,37 @@ import { MessageCircle, Send, X, Crown } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { useUsageLimits } from '@/hooks/useUsageLimits';
+import { useAuth } from '@/hooks/useAuth';
 
 const AIChatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [preferredLanguage, setPreferredLanguage] = useState('en');
   const { canUseChat, incrementChat, getRemainingChats, openUpgrade, isPremium } = useUsageLimits();
+  const { user } = useAuth();
 
   const remainingChats = getRemainingChats();
+
+  useEffect(() => {
+    if (user) {
+      fetchLanguagePreference();
+    }
+  }, [user]);
+
+  const fetchLanguagePreference = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from('profiles')
+      .select('preferred_language')
+      .eq('id', user.id)
+      .single();
+    
+    if (data?.preferred_language) {
+      setPreferredLanguage(data.preferred_language);
+    }
+  };
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -31,7 +53,7 @@ const AIChatbot = () => {
 
     try {
       const { data, error } = await supabase.functions.invoke('ai-assistant', {
-        body: { messages: [...messages, userMessage] }
+        body: { messages: [...messages, userMessage], preferredLanguage }
       });
 
       if (error) throw error;
