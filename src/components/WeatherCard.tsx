@@ -15,44 +15,28 @@ const WeatherCard = () => {
 
   const getWeather = async () => {
     try {
-      // Get user location
-      if ('geolocation' in navigator) {
-        navigator.geolocation.getCurrentPosition(
-          async (position) => {
-            const { latitude, longitude } = position.coords;
-            
-            const { data, error } = await supabase.functions.invoke('get-weather', {
-              body: { latitude, longitude, user_id: user?.id }
-            });
-
-            if (error) throw error;
-            setWeather(data);
-            setLoading(false);
-          },
-          (error) => {
-            console.error('Location error:', error);
-            // Use default location (Eswatini capital)
-            fetchDefaultWeather();
-          }
-        );
-      } else {
-        fetchDefaultWeather();
+      // Use IP geolocation API for location detection
+      const { data: locationData, error: locationError } = await supabase.functions.invoke('get-location', {});
+      
+      let lat = -26.3054;
+      let lon = 31.1367;
+      
+      if (!locationError && locationData && locationData.latitude && locationData.longitude) {
+        lat = locationData.latitude;
+        lon = locationData.longitude;
       }
+      
+      const { data, error } = await supabase.functions.invoke('get-weather', {
+        body: { latitude: lat, longitude: lon, user_id: user?.id }
+      });
+
+      if (error) throw error;
+      setWeather(data);
+      setLoading(false);
     } catch (error) {
       console.error('Weather error:', error);
       setLoading(false);
     }
-  };
-
-  const fetchDefaultWeather = async () => {
-    const { data, error } = await supabase.functions.invoke('get-weather', {
-      body: { latitude: -26.3054, longitude: 31.1367, user_id: user?.id } // Mbabane, Eswatini
-    });
-
-    if (!error) {
-      setWeather(data);
-    }
-    setLoading(false);
   };
 
   if (loading) {

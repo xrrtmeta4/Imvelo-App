@@ -39,7 +39,8 @@ const languageNames: Record<string, string> = {
   hr: 'Croatian',
   sk: 'Slovak',
   sl: 'Slovenian',
-  ss: 'siSwati'
+  ss: 'siSwati',
+  sw: 'Swahili'
 };
 
 // Menu translations
@@ -47,6 +48,7 @@ const menuTranslations: Record<string, Record<string, string>> = {
   main_welcome: {
     en: "Welcome to Imvelo AI\nFarmer's Best Friend",
     ss: "Wemukelekile ku-Imvelo AI\nUmngani Wemlimi",
+    sw: "Karibu Imvelo AI\nRafiki wa Mkulima",
     fr: "Bienvenue à Imvelo AI\nL'ami du fermier",
     de: "Willkommen bei Imvelo AI\nDer Freund des Bauern",
     es: "Bienvenido a Imvelo AI\nEl amigo del agricultor",
@@ -55,6 +57,7 @@ const menuTranslations: Record<string, Record<string, string>> = {
   menu_1: {
     en: "1. Ask Farming Question",
     ss: "1. Buta Umbuzo Wekulima",
+    sw: "1. Uliza Swali la Kilimo",
     fr: "1. Poser une question agricole",
     de: "1. Landwirtschaftliche Frage stellen",
     es: "1. Hacer pregunta agrícola",
@@ -63,6 +66,7 @@ const menuTranslations: Record<string, Record<string, string>> = {
   menu_2: {
     en: "2. Weather Forecast",
     ss: "2. Litulu",
+    sw: "2. Utabiri wa Hali ya Hewa",
     fr: "2. Prévisions météo",
     de: "2. Wettervorhersage",
     es: "2. Pronóstico del tiempo",
@@ -71,6 +75,7 @@ const menuTranslations: Record<string, Record<string, string>> = {
   menu_3: {
     en: "3. Pest Identification Tips",
     ss: "3. Emacondziso Ngetilwane",
+    sw: "3. Vidokezo vya Kutambua Wadudu",
     fr: "3. Conseils d'identification des ravageurs",
     de: "3. Tipps zur Schädlingsidentifikation",
     es: "3. Consejos de identificación de plagas",
@@ -79,6 +84,7 @@ const menuTranslations: Record<string, Record<string, string>> = {
   menu_4: {
     en: "4. Crop Planting Guide",
     ss: "4. Umhlahlandlela Wekuhlanyela",
+    sw: "4. Mwongozo wa Kupanda Mazao",
     fr: "4. Guide de plantation",
     de: "4. Pflanzanleitung",
     es: "4. Guía de siembra",
@@ -87,6 +93,7 @@ const menuTranslations: Record<string, Record<string, string>> = {
   menu_5: {
     en: "5. Contact Extension Officer",
     ss: "5. Chumana Ne-Extension Officer",
+    sw: "5. Wasiliana na Afisa wa Kilimo",
     fr: "5. Contacter l'agent agricole",
     de: "5. Kontakt Berater",
     es: "5. Contactar agente agrícola",
@@ -95,6 +102,7 @@ const menuTranslations: Record<string, Record<string, string>> = {
   back_to_menu: {
     en: "0. Back to Main Menu",
     ss: "0. Buyela Emuva",
+    sw: "0. Rudi Menyu Kuu",
     fr: "0. Retour au menu principal",
     de: "0. Zurück zum Hauptmenü",
     es: "0. Volver al menú principal",
@@ -103,6 +111,7 @@ const menuTranslations: Record<string, Record<string, string>> = {
   farming_topic_prompt: {
     en: "What topic do you need help with?",
     ss: "Ufuna lusito ngani?",
+    sw: "Unahitaji msaada kuhusu nini?",
     fr: "De quel sujet avez-vous besoin d'aide?",
     de: "Bei welchem Thema brauchen Sie Hilfe?",
     es: "¿En qué tema necesita ayuda?",
@@ -111,6 +120,7 @@ const menuTranslations: Record<string, Record<string, string>> = {
   topic_1: {
     en: "1. Crop Diseases",
     ss: "1. Tifo Tetitjalo",
+    sw: "1. Magonjwa ya Mazao",
     fr: "1. Maladies des cultures",
     de: "1. Pflanzenkrankheiten",
     es: "1. Enfermedades de cultivos",
@@ -119,6 +129,7 @@ const menuTranslations: Record<string, Record<string, string>> = {
   topic_2: {
     en: "2. Soil Management",
     ss: "2. Kunakekela Umhlaba",
+    sw: "2. Usimamizi wa Udongo",
     fr: "2. Gestion du sol",
     de: "2. Bodenpflege",
     es: "2. Gestión del suelo",
@@ -127,6 +138,7 @@ const menuTranslations: Record<string, Record<string, string>> = {
   topic_3: {
     en: "3. Irrigation Tips",
     ss: "3. Emacondziso Ekunisela",
+    sw: "3. Vidokezo vya Umwagiliaji",
     fr: "3. Conseils d'irrigation",
     de: "3. Bewässerungstipps",
     es: "3. Consejos de riego",
@@ -135,6 +147,7 @@ const menuTranslations: Record<string, Record<string, string>> = {
   topic_4: {
     en: "4. Pest Control",
     ss: "4. Kulawula Tilwane",
+    sw: "4. Kudhibiti Wadudu",
     fr: "4. Lutte antiparasitaire",
     de: "4. Schädlingsbekämpfung",
     es: "4. Control de plagas",
@@ -143,6 +156,7 @@ const menuTranslations: Record<string, Record<string, string>> = {
   topic_5: {
     en: "5. Fertilizer Use",
     ss: "5. Kusebentisa Umanyolo",
+    sw: "5. Matumizi ya Mbolea",
     fr: "5. Utilisation d'engrais",
     de: "5. Düngemittelverwendung",
     es: "5. Uso de fertilizantes",
@@ -151,6 +165,7 @@ const menuTranslations: Record<string, Record<string, string>> = {
   dial_more: {
     en: "Dial *384*51139# for more help.",
     ss: "Shayela *384*51139# kutfola lusito.",
+    sw: "Piga *384*51139# kwa msaada zaidi.",
     fr: "Composez *384*51139# pour plus d'aide.",
     de: "Wählen Sie *384*51139# für weitere Hilfe.",
     es: "Marque *384*51139# para más ayuda.",
@@ -159,6 +174,7 @@ const menuTranslations: Record<string, Record<string, string>> = {
   dial_options: {
     en: "Dial *384*51139# for more options.",
     ss: "Shayela *384*51139# kutfola lokunyenti.",
+    sw: "Piga *384*51139# kwa chaguo zaidi.",
     fr: "Composez *384*51139# pour plus d'options.",
     de: "Wählen Sie *384*51139# für mehr Optionen.",
     es: "Marque *384*51139# para más opciones.",
@@ -167,6 +183,7 @@ const menuTranslations: Record<string, Record<string, string>> = {
   select_crop: {
     en: "Select crop type:",
     ss: "Khetsa luhlobo lwesitjalo:",
+    sw: "Chagua aina ya zao:",
     fr: "Sélectionnez le type de culture:",
     de: "Wählen Sie die Kulturart:",
     es: "Seleccione tipo de cultivo:",
@@ -175,6 +192,7 @@ const menuTranslations: Record<string, Record<string, string>> = {
   crop_1: {
     en: "1. Maize/Corn",
     ss: "1. Umbila",
+    sw: "1. Mahindi",
     fr: "1. Maïs",
     de: "1. Mais",
     es: "1. Maíz",
@@ -183,6 +201,7 @@ const menuTranslations: Record<string, Record<string, string>> = {
   crop_2: {
     en: "2. Vegetables",
     ss: "2. Tibhidvo",
+    sw: "2. Mboga",
     fr: "2. Légumes",
     de: "2. Gemüse",
     es: "2. Verduras",
@@ -191,6 +210,7 @@ const menuTranslations: Record<string, Record<string, string>> = {
   crop_3: {
     en: "3. Fruits",
     ss: "3. Titselo",
+    sw: "3. Matunda",
     fr: "3. Fruits",
     de: "3. Früchte",
     es: "3. Frutas",
@@ -199,6 +219,7 @@ const menuTranslations: Record<string, Record<string, string>> = {
   crop_4: {
     en: "4. Sugarcane",
     ss: "4. Umoba",
+    sw: "4. Miwa",
     fr: "4. Canne à sucre",
     de: "4. Zuckerrohr",
     es: "4. Caña de azúcar",
@@ -207,6 +228,7 @@ const menuTranslations: Record<string, Record<string, string>> = {
   crop_5: {
     en: "5. Cotton",
     ss: "5. Kotoni",
+    sw: "5. Pamba",
     fr: "5. Coton",
     de: "5. Baumwolle",
     es: "5. Algodón",
@@ -215,6 +237,7 @@ const menuTranslations: Record<string, Record<string, string>> = {
   use_app_scanner: {
     en: "For detailed diagnosis, use Imvelo app camera scanner.",
     ss: "Kutfola kabanzi, sebentisa ikhamera ye-Imvelo app.",
+    sw: "Kwa uchunguzi wa kina, tumia skana ya kamera ya Imvelo.",
     fr: "Pour un diagnostic détaillé, utilisez le scanner de l'application Imvelo.",
     de: "Für eine detaillierte Diagnose verwenden Sie den Imvelo App Scanner.",
     es: "Para un diagnóstico detallado, use el escáner de la aplicación Imvelo.",
@@ -223,6 +246,7 @@ const menuTranslations: Record<string, Record<string, string>> = {
   select_season: {
     en: "Select month for planting guide:",
     ss: "Khetsa sikhatsi sekuhlanyela:",
+    sw: "Chagua mwezi kwa mwongozo wa kupanda:",
     fr: "Sélectionnez le mois pour le guide de plantation:",
     de: "Wählen Sie den Monat für die Pflanzanleitung:",
     es: "Seleccione el mes para la guía de siembra:",
@@ -231,6 +255,7 @@ const menuTranslations: Record<string, Record<string, string>> = {
   season_1: {
     en: "1. January-March (Summer)",
     ss: "1. Bhimbidvwane-Indlovana (Lihlobo)",
+    sw: "1. Januari-Machi (Kiangazi)",
     fr: "1. Janvier-Mars (Été)",
     de: "1. Januar-März (Sommer)",
     es: "1. Enero-Marzo (Verano)",
@@ -239,6 +264,7 @@ const menuTranslations: Record<string, Record<string, string>> = {
   season_2: {
     en: "2. April-June (Autumn)",
     ss: "2. Mabasa-Inhlaba (Lihwindla)",
+    sw: "2. Aprili-Juni (Vuli)",
     fr: "2. Avril-Juin (Automne)",
     de: "2. April-Juni (Herbst)",
     es: "2. Abril-Junio (Otoño)",
@@ -247,6 +273,7 @@ const menuTranslations: Record<string, Record<string, string>> = {
   season_3: {
     en: "3. July-September (Winter)",
     ss: "3. Kholwane-Inyoni (Busika)",
+    sw: "3. Julai-Septemba (Baridi)",
     fr: "3. Juillet-Septembre (Hiver)",
     de: "3. Juli-September (Winter)",
     es: "3. Julio-Septiembre (Invierno)",
@@ -255,6 +282,7 @@ const menuTranslations: Record<string, Record<string, string>> = {
   season_4: {
     en: "4. October-December (Spring)",
     ss: "4. Inkhwekhweti-Ingongoni (Intwasahlobo)",
+    sw: "4. Oktoba-Desemba (Masika)",
     fr: "4. Octobre-Décembre (Printemps)",
     de: "4. Oktober-Dezember (Frühling)",
     es: "4. Octubre-Diciembre (Primavera)",
@@ -263,6 +291,7 @@ const menuTranslations: Record<string, Record<string, string>> = {
   best_crops: {
     en: "Best crops to plant:",
     ss: "Titjalo letinhle tekuhlanyela:",
+    sw: "Mazao bora ya kupanda:",
     fr: "Meilleures cultures à planter:",
     de: "Beste Kulturen zum Pflanzen:",
     es: "Mejores cultivos para plantar:",
@@ -271,6 +300,7 @@ const menuTranslations: Record<string, Record<string, string>> = {
   planting_tips: {
     en: "Tips: Prepare soil 2 weeks before planting. Add compost for nutrients.",
     ss: "Emacondziso: Lungisa umhlaba emaviki lamabili ngaphambi kwekuhlanyela.",
+    sw: "Vidokezo: Andaa udongo wiki 2 kabla ya kupanda. Ongeza mboji kwa virutubisho.",
     fr: "Conseils: Préparez le sol 2 semaines avant la plantation.",
     de: "Tipps: Bereiten Sie den Boden 2 Wochen vor dem Pflanzen vor.",
     es: "Consejos: Prepare el suelo 2 semanas antes de plantar.",
@@ -279,6 +309,7 @@ const menuTranslations: Record<string, Record<string, string>> = {
   extension_title: {
     en: "Extension Officer Contact:",
     ss: "Chumana Ne-Extension Officer:",
+    sw: "Mawasiliano ya Afisa wa Kilimo:",
     fr: "Contact Agent Agricole:",
     de: "Kontakt Berater:",
     es: "Contacto Agente Agrícola:",
@@ -287,6 +318,7 @@ const menuTranslations: Record<string, Record<string, string>> = {
   regional_offices: {
     en: "Regional Offices:",
     ss: "Ema-Ofisi Etifundza:",
+    sw: "Ofisi za Mkoa:",
     fr: "Bureaux régionaux:",
     de: "Regionalbüros:",
     es: "Oficinas regionales:",
@@ -295,6 +327,7 @@ const menuTranslations: Record<string, Record<string, string>> = {
   invalid_option: {
     en: "Invalid option. Please try again.",
     ss: "Inombolo lengakalungi. Zama futsi.",
+    sw: "Chaguo batili. Tafadhali jaribu tena.",
     fr: "Option invalide. Veuillez réessayer.",
     de: "Ungültige Option. Bitte versuchen Sie es erneut.",
     es: "Opción inválida. Por favor intente de nuevo.",
@@ -303,6 +336,7 @@ const menuTranslations: Record<string, Record<string, string>> = {
   weather_title: {
     en: "Weather Forecast for Eswatini:",
     ss: "Litulu laka-Eswatini:",
+    sw: "Utabiri wa Hali ya Hewa kwa Eswatini:",
     fr: "Prévisions météo pour Eswatini:",
     de: "Wettervorhersage für Eswatini:",
     es: "Pronóstico del tiempo para Eswatini:",
@@ -311,6 +345,7 @@ const menuTranslations: Record<string, Record<string, string>> = {
   weather_today: {
     en: "Today: Partly cloudy, 19-25C",
     ss: "Namuhla: Kunelifu, 19-25C",
+    sw: "Leo: Mawingu kidogo, 19-25C",
     fr: "Aujourd'hui: Partiellement nuageux, 19-25C",
     de: "Heute: Teilweise bewölkt, 19-25C",
     es: "Hoy: Parcialmente nublado, 19-25C",
@@ -319,6 +354,7 @@ const menuTranslations: Record<string, Record<string, string>> = {
   farming_tip: {
     en: "Farming tip: Good conditions for planting. Consider irrigation due to high humidity.",
     ss: "Sicondziso sekulima: Sikhatsi lesihle sekuhlanyela. Cabangela kunisela.",
+    sw: "Kidokezo cha kilimo: Hali nzuri ya kupanda. Fikiria umwagiliaji kutokana na unyevu mkubwa.",
     fr: "Conseil agricole: Bonnes conditions pour la plantation.",
     de: "Landwirtschaftstipp: Gute Bedingungen zum Pflanzen.",
     es: "Consejo agrícola: Buenas condiciones para plantar.",

@@ -93,19 +93,19 @@ const PWAInstallPrompt = () => {
               <Download className="w-8 h-8 text-primary" />
             </div>
           </div>
-          <DialogTitle className="text-center">Layisha Imvelo</DialogTitle>
+          <DialogTitle className="text-center">Install Imvelo</DialogTitle>
           <DialogDescription className="text-center">
-            Layisha le-app efowunini yakho kutsi uyisebentise noma nini, ngisho ungekho ku-inthanethi.
+            Install this app on your phone to use it anytime, even when you're offline.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex-col gap-2 sm:flex-col">
           <Button onClick={handleInstall} className="w-full">
             <Download className="w-4 h-4 mr-2" />
-            Layisha Nyalo
+            Install Now
           </Button>
           <Button variant="outline" onClick={handleDismiss} className="w-full">
             <X className="w-4 h-4 mr-2" />
-            Hayi, Ngiyabonga
+            No, Thanks
           </Button>
         </DialogFooter>
       </DialogContent>
