@@ -47,6 +47,48 @@ export type Database = {
         }
         Relationships: []
       }
+      farm_activities: {
+        Row: {
+          activity_date: string
+          activity_type: string
+          created_at: string
+          description: string | null
+          id: string
+          notes: string | null
+          quantity: number | null
+          unit: string | null
+          updated_at: string
+          user_id: string
+          weather_conditions: string | null
+        }
+        Insert: {
+          activity_date?: string
+          activity_type: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          notes?: string | null
+          quantity?: number | null
+          unit?: string | null
+          updated_at?: string
+          user_id: string
+          weather_conditions?: string | null
+        }
+        Update: {
+          activity_date?: string
+          activity_type?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          notes?: string | null
+          quantity?: number | null
+          unit?: string | null
+          updated_at?: string
+          user_id?: string
+          weather_conditions?: string | null
+        }
+        Relationships: []
+      }
       marketplace_listings: {
         Row: {
           category: string

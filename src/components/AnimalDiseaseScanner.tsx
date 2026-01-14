@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Stethoscope, Camera, Loader2, Download, Crown } from 'lucide-react';
+import { Stethoscope, Camera, Loader2, Download, Crown, Upload } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
@@ -112,29 +112,47 @@ const AnimalDiseaseScanner = () => {
               type="file"
               accept="image/*"
               capture="environment"
+              id="animal-disease-capture"
+              className="hidden"
+              onChange={handleImageUpload}
+              disabled={loading}
+            />
+            <input
+              type="file"
+              accept="image/*"
               id="animal-disease-upload"
               className="hidden"
               onChange={handleImageUpload}
               disabled={loading}
             />
             
-            <label htmlFor="animal-disease-upload">
-              <Button className="w-full" size="lg" disabled={loading} asChild>
-                <span>
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      Analyzing...
-                    </>
-                  ) : (
-                    <>
-                      <Camera className="w-5 h-5 mr-2" />
-                      Take Photo
-                    </>
-                  )}
-                </span>
-              </Button>
-            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <label htmlFor="animal-disease-capture">
+                <Button className="w-full" size="lg" disabled={loading} asChild>
+                  <span>
+                    {loading ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        Analyzing...
+                      </>
+                    ) : (
+                      <>
+                        <Camera className="w-5 h-5 mr-2" />
+                        Camera
+                      </>
+                    )}
+                  </span>
+                </Button>
+              </label>
+              <label htmlFor="animal-disease-upload">
+                <Button variant="outline" className="w-full" size="lg" disabled={loading} asChild>
+                  <span>
+                    <Upload className="w-5 h-5 mr-2" />
+                    Upload
+                  </span>
+                </Button>
+              </label>
+            </div>
           </>
         )}
 
