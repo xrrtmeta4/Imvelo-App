@@ -302,6 +302,7 @@ const Profile = () => {
                     <SelectItem value="sk">Slovenčina (Slovak)</SelectItem>
                     <SelectItem value="sl">Slovenščina (Slovenian)</SelectItem>
                     <SelectItem value="ss">siSwati</SelectItem>
+                    <SelectItem value="sw">Kiswahili (Swahili)</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">

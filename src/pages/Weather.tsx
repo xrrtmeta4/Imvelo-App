@@ -53,58 +53,32 @@ const Weather = () => {
     setLoading(false);
   }, [user?.id]);
 
-  const reverseGeocode = useCallback(async (lat: number, lon: number): Promise<string> => {
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`
-      );
-      const data = await response.json();
-      const city = data.address?.city || data.address?.town || data.address?.village || data.address?.county;
-      const country = data.address?.country;
-      if (city && country) {
-        return `${city}, ${country}`;
-      } else if (city) {
-        return city;
-      } else if (country) {
-        return country;
-      }
-      return 'Unknown Location';
-    } catch {
-      return 'Unknown Location';
-    }
-  }, []);
-
   const getWeather = useCallback(async () => {
     try {
-      const defaultLat = -26.3054;
-      const defaultLon = 31.1367;
+      // Use IP geolocation API for precise location detection
+      const { data, error } = await supabase.functions.invoke('get-location', {});
       
-      if ('geolocation' in navigator) {
-        navigator.geolocation.getCurrentPosition(
-          async (position) => {
-            const { latitude, longitude } = position.coords;
-            const locationName = await reverseGeocode(latitude, longitude);
-            setLocation(locationName);
-            await fetchWeather(latitude, longitude);
-          },
-          async () => {
-            await fetchWeather(defaultLat, defaultLon);
-            setLocation('Mbabane, Eswatini');
-          },
-          { 
-            enableHighAccuracy: false, 
-            timeout: 5000, 
-            maximumAge: 300000
-          }
-        );
+      if (!error && data && data.latitude && data.longitude) {
+        const locationName = data.city && data.country_name 
+          ? `${data.city}, ${data.country_name}` 
+          : data.city || data.country_name || 'Unknown Location';
+        setLocation(locationName);
+        await fetchWeather(data.latitude, data.longitude);
       } else {
+        // Fallback to default location
+        const defaultLat = -26.3054;
+        const defaultLon = 31.1367;
         await fetchWeather(defaultLat, defaultLon);
         setLocation('Mbabane, Eswatini');
       }
     } catch {
-      setLoading(false);
+      // Fallback to default location on error
+      const defaultLat = -26.3054;
+      const defaultLon = 31.1367;
+      await fetchWeather(defaultLat, defaultLon);
+      setLocation('Mbabane, Eswatini');
     }
-  }, [fetchWeather, reverseGeocode]);
+  }, [fetchWeather]);
 
   useEffect(() => {
     getWeather();

@@ -14,32 +14,23 @@ const WeatherTicker = () => {
 
   const getWeather = async () => {
     try {
-      if ('geolocation' in navigator) {
-        navigator.geolocation.getCurrentPosition(
-          async (position) => {
-            const { latitude, longitude } = position.coords;
-            const { data, error } = await supabase.functions.invoke('get-weather', {
-              body: { latitude, longitude, user_id: user?.id }
-            });
-            if (!error) setWeather(data);
-            setLoading(false);
-          },
-          async () => {
-            // Default to Mbabane
-            const { data } = await supabase.functions.invoke('get-weather', {
-              body: { latitude: -26.3054, longitude: 31.1367, user_id: user?.id }
-            });
-            if (data) setWeather(data);
-            setLoading(false);
-          }
-        );
-      } else {
-        const { data } = await supabase.functions.invoke('get-weather', {
-          body: { latitude: -26.3054, longitude: 31.1367, user_id: user?.id }
-        });
-        if (data) setWeather(data);
-        setLoading(false);
+      // Use IP geolocation API for location detection
+      const { data: locationData, error: locationError } = await supabase.functions.invoke('get-location', {});
+      
+      let lat = -26.3054;
+      let lon = 31.1367;
+      
+      if (!locationError && locationData && locationData.latitude && locationData.longitude) {
+        lat = locationData.latitude;
+        lon = locationData.longitude;
       }
+      
+      const { data, error } = await supabase.functions.invoke('get-weather', {
+        body: { latitude: lat, longitude: lon, user_id: user?.id }
+      });
+      
+      if (!error) setWeather(data);
+      setLoading(false);
     } catch {
       setLoading(false);
     }
