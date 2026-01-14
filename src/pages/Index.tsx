@@ -1,5 +1,6 @@
 import WeatherCard from '@/components/WeatherCard';
 import WeatherTicker from '@/components/WeatherTicker';
+import WeatherAlerts from '@/components/WeatherAlerts';
 import PestScanner from '@/components/PestScanner';
 import BestPractices from '@/components/BestPractices';
 import ExtensionServices from '@/components/ExtensionServices';
@@ -41,6 +42,7 @@ const Index = () => {
       </header>
 
       <div className="max-w-screen-sm mx-auto px-4 py-6 space-y-6">
+        <WeatherAlerts />
         <WeatherCard />
         <PestScanner />
         <div className="grid grid-cols-1 gap-6">
