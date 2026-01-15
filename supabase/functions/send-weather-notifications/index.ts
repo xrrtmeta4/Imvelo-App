@@ -133,7 +133,7 @@ async function sendSMSNotification(phone: string, message: string): Promise<bool
       }
     }
 
-    // Africa's Talking SMS API with short code 17004
+    // Africa's Talking SMS API with alphanumeric sender ID
     const response = await fetch('https://api.africastalking.com/version1/messaging', {
       method: 'POST',
       headers: {
@@ -145,7 +145,7 @@ async function sendSMSNotification(phone: string, message: string): Promise<bool
         username: username,
         to: formattedPhone,
         message: message.substring(0, 160), // SMS character limit
-        from: '17004', // Africa's Talking short code
+        from: 'IMVELO LTD', // Alphanumeric sender ID
       }).toString(),
     });
 
@@ -347,7 +347,7 @@ Deno.serve(async (req) => {
       console.log(`Sending SMS to ${usersNeedingSMS.length} users without push`);
       
       for (const user of usersNeedingSMS) {
-        const smsMessage = `FarmAssist Alert: ${alert.message.replace(/[^\w\s.,!?°%]/g, '')}`;
+        const smsMessage = `IMVELO LTD Weather Alert: ${alert.message.replace(/[^\w\s.,!?°%]/g, '')}`;
         await sendSMSNotification(user.phone_number, smsMessage);
       }
     }
