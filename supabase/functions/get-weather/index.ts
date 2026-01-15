@@ -130,7 +130,7 @@ serve(async (req) => {
         });
       }
 
-      // Create alerts for extreme conditions
+      // Create alerts for extreme conditions and send push notifications
       if (extremeConditions.length > 0) {
         const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.38.4');
         const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -138,6 +138,7 @@ serve(async (req) => {
         const supabase = createClient(supabaseUrl, supabaseKey);
 
         for (const condition of extremeConditions) {
+          // Insert alert into database
           await supabase.from('weather_alerts').insert({
             user_id,
             alert_type: condition.type,
@@ -145,6 +146,30 @@ serve(async (req) => {
             severity: condition.severity,
             weather_data: result
           });
+
+          // Send push notification for this alert
+          try {
+            const { error: pushError } = await supabase.functions.invoke('send-push-notification', {
+              body: {
+                user_id,
+                title: `⚠️ Weather Alert: ${condition.type.replace('_', ' ').toUpperCase()}`,
+                body: condition.message,
+                data: {
+                  type: 'weather_alert',
+                  alert_type: condition.type,
+                  severity: condition.severity
+                }
+              }
+            });
+
+            if (pushError) {
+              console.error('Error sending push notification:', pushError);
+            } else {
+              console.log(`Push notification sent for ${condition.type} alert`);
+            }
+          } catch (pushErr) {
+            console.error('Failed to invoke push notification:', pushErr);
+          }
         }
         
         console.log(`Created ${extremeConditions.length} weather alerts for user ${user_id}`);
