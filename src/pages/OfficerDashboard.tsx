@@ -21,13 +21,18 @@ const OfficerDashboard = () => {
       return;
     }
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+    // Use the secure server-side function to check officer role
+    // This avoids relying on publicly readable profile data
+    const { data: isOfficer, error } = await supabase
+      .rpc('is_extension_officer', { _user_id: user.id });
 
-    if (profile?.role !== 'extension_officer') {
+    if (error) {
+      console.error('Error checking officer status:', error);
+      navigate('/');
+      return;
+    }
+
+    if (!isOfficer) {
       navigate('/');
       return;
     }

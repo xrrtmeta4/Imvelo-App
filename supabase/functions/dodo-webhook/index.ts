@@ -128,21 +128,34 @@ serve(async (req) => {
     const webhookSecret = Deno.env.get('DODO_WEBHOOK_SECRET');
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // SECURITY: Webhook secret must be configured
+    if (!webhookSecret) {
+      console.error('DODO_WEBHOOK_SECRET not configured - rejecting webhook');
+      return new Response(JSON.stringify({ error: 'Webhook not configured' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500
+      });
+    }
+
     const payload = await req.text();
     
-    // Verify webhook signature if secret is configured
-    if (webhookSecret) {
-      const signature = req.headers.get('dodo-signature') || req.headers.get('x-webhook-signature') || '';
-      if (signature) {
-        const isValid = await verifyWebhookSignature(payload, signature, webhookSecret);
-        if (!isValid) {
-          console.error('Invalid webhook signature');
-          return new Response(JSON.stringify({ error: 'Invalid signature' }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 401
-          });
-        }
-      }
+    // SECURITY: Signature verification is mandatory
+    const signature = req.headers.get('dodo-signature') || req.headers.get('x-webhook-signature');
+    if (!signature) {
+      console.error('Missing webhook signature');
+      return new Response(JSON.stringify({ error: 'Missing signature' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401
+      });
+    }
+
+    const isValid = await verifyWebhookSignature(payload, signature, webhookSecret);
+    if (!isValid) {
+      console.error('Invalid webhook signature');
+      return new Response(JSON.stringify({ error: 'Invalid signature' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401
+      });
     }
 
     const payloadJson = JSON.parse(payload);
