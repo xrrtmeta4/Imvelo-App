@@ -392,6 +392,7 @@ export type Database = {
         Args: { listing_id: string }
         Returns: undefined
       }
+      is_extension_officer: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "farmer" | "trader" | "extension_officer"
