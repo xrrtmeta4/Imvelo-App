@@ -5,14 +5,17 @@ import PestScanner from '@/components/PestScanner';
 import BestPractices from '@/components/BestPractices';
 import ExtensionServices from '@/components/ExtensionServices';
 import AIChatbot from '@/components/AIChatbot';
+import PushNotificationManager from '@/components/PushNotificationManager';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useUsageLimits } from '@/hooks/useUsageLimits';
+import { useAuth } from '@/hooks/useAuth';
 import { Sprout, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const Index = () => {
   useNotifications();
   const { isPremium, openUpgrade } = useUsageLimits();
+  const { user } = useAuth();
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -42,6 +45,7 @@ const Index = () => {
       </header>
 
       <div className="max-w-screen-sm mx-auto px-4 py-6 space-y-6">
+        {user && <PushNotificationManager />}
         <WeatherAlerts />
         <WeatherCard />
         <PestScanner />
