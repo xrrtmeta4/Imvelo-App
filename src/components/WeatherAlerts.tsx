@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { AlertTriangle, X, CloudRain, Thermometer, Wind, Droplets } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
+import { useLocation } from '@/hooks/useLocation';
 import { toast } from 'sonner';
 
 interface WeatherAlert {
@@ -31,6 +32,7 @@ const severityColors: Record<string, string> = {
 
 const WeatherAlerts = () => {
   const { user } = useAuth();
+  const { getLocation } = useLocation();
   const [alerts, setAlerts] = useState<WeatherAlert[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -57,8 +59,8 @@ const WeatherAlerts = () => {
     if (!user) return;
 
     try {
-      // Get user's location using IP geolocation
-      const { data: locationData } = await supabase.functions.invoke('get-location', {});
+      // Use location hook with GPS fallback
+      const locationData = await getLocation();
 
       if (locationData && locationData.latitude && locationData.longitude) {
         // Fetch weather which will automatically create alerts for extreme conditions
@@ -76,7 +78,7 @@ const WeatherAlerts = () => {
     } catch (error) {
       console.error('Error checking weather:', error);
     }
-  }, [user, fetchAlerts]);
+  }, [user, fetchAlerts, getLocation]);
 
   useEffect(() => {
     if (user) {

@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Cloud, Loader2 } from 'lucide-react';
+import { Cloud, Loader2, MapPin } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
+import { useLocation } from '@/hooks/useLocation';
 
 const WeatherCard = () => {
   const { user } = useAuth();
+  const { getLocation } = useLocation();
   const [weather, setWeather] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [locationName, setLocationName] = useState<string>('');
 
   useEffect(() => {
     getWeather();
@@ -15,15 +18,17 @@ const WeatherCard = () => {
 
   const getWeather = async () => {
     try {
-      // Use IP geolocation API for location detection
-      const { data: locationData, error: locationError } = await supabase.functions.invoke('get-location', {});
+      // Use location hook with GPS fallback
+      const locationData = await getLocation();
       
-      let lat = -26.3054;
-      let lon = 31.1367;
+      const lat = locationData.latitude;
+      const lon = locationData.longitude;
       
-      if (!locationError && locationData && locationData.latitude && locationData.longitude) {
-        lat = locationData.latitude;
-        lon = locationData.longitude;
+      // Set location display name
+      if (locationData.source === 'gps') {
+        setLocationName('📍 GPS Location');
+      } else if (locationData.city && locationData.country_name) {
+        setLocationName(`${locationData.city}, ${locationData.country_name}`);
       }
       
       const { data, error } = await supabase.functions.invoke('get-weather', {
@@ -58,6 +63,12 @@ const WeatherCard = () => {
           <Cloud className="w-5 h-5" />
           Weather Forecast
         </CardTitle>
+        {locationName && (
+          <p className="text-xs text-muted-foreground flex items-center gap-1">
+            <MapPin className="w-3 h-3" />
+            {locationName}
+          </p>
+        )}
       </CardHeader>
       <CardContent>
         <div className="space-y-3">

@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { Cloud, Sun, CloudRain, Thermometer } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
+import { useLocation } from '@/hooks/useLocation';
 
 const WeatherTicker = () => {
   const { user } = useAuth();
+  const { getLocation } = useLocation();
   const [weather, setWeather] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -14,16 +16,11 @@ const WeatherTicker = () => {
 
   const getWeather = async () => {
     try {
-      // Use IP geolocation API for location detection
-      const { data: locationData, error: locationError } = await supabase.functions.invoke('get-location', {});
+      // Use location hook with GPS fallback
+      const locationData = await getLocation();
       
-      let lat = -26.3054;
-      let lon = 31.1367;
-      
-      if (!locationError && locationData && locationData.latitude && locationData.longitude) {
-        lat = locationData.latitude;
-        lon = locationData.longitude;
-      }
+      const lat = locationData.latitude;
+      const lon = locationData.longitude;
       
       const { data, error } = await supabase.functions.invoke('get-weather', {
         body: { latitude: lat, longitude: lon, user_id: user?.id }
