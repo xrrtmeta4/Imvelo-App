@@ -14,10 +14,19 @@ serve(async (req) => {
     const apiKey = Deno.env.get('IPGEOLOCATION_API_KEY');
     
     if (!apiKey) {
-      console.error('IPGEOLOCATION_API_KEY not configured');
+      console.warn('IPGEOLOCATION_API_KEY not configured; using fallback location');
       return new Response(
-        JSON.stringify({ error: 'Geolocation API not configured' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({
+          latitude: -26.3054,
+          longitude: 31.1367,
+          city: 'Mbabane',
+          state: 'Hhohho',
+          country_name: 'Eswatini',
+          country_code: 'SZ',
+          timezone: 'Africa/Mbabane',
+          source: 'fallback'
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -34,11 +43,26 @@ serve(async (req) => {
       : `https://api.ipgeolocation.io/ipgeo?apiKey=${apiKey}`;
 
     const response = await fetch(url);
-    
+
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Geolocation API error:', response.status, errorText);
-      throw new Error('Failed to fetch location data');
+      console.warn('Falling back to default location (Mbabane, Eswatini)');
+
+      return new Response(
+        JSON.stringify({
+          latitude: -26.3054,
+          longitude: 31.1367,
+          city: 'Mbabane',
+          state: 'Hhohho',
+          country_name: 'Eswatini',
+          country_code: 'SZ',
+          timezone: 'Africa/Mbabane',
+          source: 'fallback',
+          error: 'ipgeolocation_failed'
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const data = await response.json();
