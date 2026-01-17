@@ -39,19 +39,36 @@ const getBrowserGeolocation = (): Promise<GeolocationPosition> => {
   });
 };
 
-// Reverse geocode coordinates to get city/country info
+// Reverse geocode coordinates to get city/country info using Nominatim (OpenStreetMap)
 const reverseGeocode = async (lat: number, lon: number): Promise<Partial<LocationData>> => {
   try {
-    // Using Open-Meteo's geocoding API (free, no key required)
     const response = await fetch(
-      `https://geocoding-api.open-meteo.com/v1/search?name=&latitude=${lat}&longitude=${lon}&count=1&language=en&format=json`
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&addressdetails=1`,
+      {
+        headers: {
+          'User-Agent': 'ImveloApp/1.0'
+        }
+      }
     );
     
-    // Open-Meteo geocoding doesn't do reverse lookup, so we'll use a simple approach
-    // Just return the coordinates with generic location info
+    if (!response.ok) {
+      throw new Error('Reverse geocoding request failed');
+    }
+    
+    const data = await response.json();
+    const address = data.address || {};
+    
+    // Extract city name - try multiple fields as Nominatim uses different ones based on location
+    const city = address.city || address.town || address.village || address.municipality || 
+                 address.county || address.state_district || 'Unknown';
+    
     return {
       latitude: lat,
       longitude: lon,
+      city: city,
+      state: address.state || address.region,
+      country_name: address.country || 'Unknown',
+      country_code: address.country_code?.toUpperCase() || 'XX',
       source: 'gps'
     };
   } catch (error) {
@@ -110,13 +127,12 @@ export const useLocation = () => {
         const locationData: LocationData = {
           latitude,
           longitude,
-          city: 'Your Location',
-          state: undefined,
-          country_name: 'Detected via GPS',
-          country_code: 'GPS',
+          city: geoInfo.city || 'Your Location',
+          state: geoInfo.state,
+          country_name: geoInfo.country_name || 'Detected via GPS',
+          country_code: geoInfo.country_code || 'GPS',
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           source: 'gps',
-          ...geoInfo
         };
         
         setLocation(locationData);
