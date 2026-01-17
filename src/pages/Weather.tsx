@@ -60,14 +60,14 @@ const Weather = () => {
       // Use location hook with GPS fallback
       const locationData = await getLocation();
       
-      // Set location display name based on source
+      // Set location display name based on available data
       let locationName = 'Unknown Location';
-      if (locationData.source === 'gps') {
-        locationName = 'Your Location (GPS)';
-      } else if (locationData.city && locationData.country_name) {
+      if (locationData.city && locationData.country_name) {
         locationName = `${locationData.city}, ${locationData.country_name}`;
       } else if (locationData.city) {
         locationName = locationData.city;
+      } else if (locationData.source === 'gps') {
+        locationName = 'GPS Location';
       }
       
       setLocationInfo({ 
