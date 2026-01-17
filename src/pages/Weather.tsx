@@ -57,8 +57,8 @@ const Weather = () => {
 
   const getWeatherData = useCallback(async () => {
     try {
-      // Use location hook with GPS fallback
-      const locationData = await getLocation();
+      // Prefer GPS on this page for the most accurate city/country
+      const locationData = await getLocation({ preferGps: true });
       
       // Set location display name based on available data
       let locationName = 'Unknown Location';
