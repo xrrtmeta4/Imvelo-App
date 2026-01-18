@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Cloud, CloudRain, Sun, Thermometer, Wind, Droplets, Loader2, MapPin, Navigation } from 'lucide-react';
+import { Cloud, CloudRain, Sun, Thermometer, Wind, Droplets, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
-import { useLocation, LocationData } from '@/hooks/useLocation';
+import { useLocation } from '@/hooks/useLocation';
 import { format, addDays } from 'date-fns';
 
 // Cache weather data in memory
@@ -15,7 +15,7 @@ const Weather = () => {
   const { getLocation } = useLocation();
   const [weather, setWeather] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [locationInfo, setLocationInfo] = useState<{ name: string; source: string }>({ name: 'Detecting location...', source: '' });
+  
 
   const fetchWeather = useCallback(async (lat: number, lon: number) => {
     const cacheKey = `${lat.toFixed(2)},${lon.toFixed(2)}`;
@@ -60,28 +60,12 @@ const Weather = () => {
       // Prefer GPS on this page for the most accurate city/country
       const locationData = await getLocation({ preferGps: true });
       
-      // Set location display name based on available data
-      let locationName = 'Unknown Location';
-      if (locationData.city && locationData.country_name) {
-        locationName = `${locationData.city}, ${locationData.country_name}`;
-      } else if (locationData.city) {
-        locationName = locationData.city;
-      } else if (locationData.source === 'gps') {
-        locationName = 'GPS Location';
-      }
-      
-      setLocationInfo({ 
-        name: locationName, 
-        source: locationData.source 
-      });
-      
       await fetchWeather(locationData.latitude, locationData.longitude);
     } catch {
       // Fallback to default location on error
       const defaultLat = -26.3054;
       const defaultLon = 31.1367;
       await fetchWeather(defaultLat, defaultLon);
-      setLocationInfo({ name: 'Mbabane, Eswatini', source: 'fallback' });
     }
   }, [fetchWeather, getLocation]);
 
@@ -105,12 +89,6 @@ const Weather = () => {
     return format(addDays(new Date(), index), 'EEEE');
   };
 
-  const getLocationIcon = () => {
-    if (locationInfo.source === 'gps') {
-      return <Navigation className="w-4 h-4" />;
-    }
-    return <MapPin className="w-4 h-4" />;
-  };
 
   if (loading) {
     return (
@@ -127,14 +105,7 @@ const Weather = () => {
       <header className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground py-8 px-4">
         <div className="max-w-screen-sm mx-auto text-center">
           <Cloud className="w-12 h-12 mx-auto mb-4" />
-          <h1 className="text-3xl font-bold mb-2">Weather</h1>
-          <div className="flex items-center justify-center gap-2 text-primary-foreground/90">
-            {getLocationIcon()}
-            <span>{locationInfo.name}</span>
-          </div>
-          {locationInfo.source === 'gps' && (
-            <p className="text-xs text-primary-foreground/70 mt-1">Using GPS for precise location</p>
-          )}
+          <h1 className="text-3xl font-bold">Weather</h1>
         </div>
       </header>
 
