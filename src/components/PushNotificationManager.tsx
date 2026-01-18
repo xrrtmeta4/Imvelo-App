@@ -113,12 +113,12 @@ const PushNotificationManager = () => {
       // Subscribe to push
       let subscription;
       try {
+        // Get the VAPID public key from the environment or use the one configured
+        const vapidPublicKey = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U';
+        
         subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(
-            // Public VAPID key - this is safe to expose
-            'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U'
-          ) as BufferSource,
+          applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as BufferSource,
         });
       } catch (pushError: any) {
         console.error('Push subscription error:', pushError);

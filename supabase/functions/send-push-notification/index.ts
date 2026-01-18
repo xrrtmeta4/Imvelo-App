@@ -1,61 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import webpush from "https://esm.sh/web-push@3.6.7";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-// Web Push utilities using built-in crypto
-async function generateVAPIDKeys() {
-  const keyPair = await crypto.subtle.generateKey(
-    { name: 'ECDSA', namedCurve: 'P-256' },
-    true,
-    ['sign', 'verify']
-  );
-  return keyPair;
-}
-
-function urlBase64ToUint8Array(base64String: string): Uint8Array {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding)
-    .replace(/-/g, '+')
-    .replace(/_/g, '/');
-  const rawData = atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
-}
-
-function uint8ArrayToBase64(array: Uint8Array): string {
-  let binary = '';
-  for (let i = 0; i < array.length; i++) {
-    binary += String.fromCharCode(array[i]);
-  }
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
-
-async function sendWebPush(subscription: any, payload: any): Promise<boolean> {
-  try {
-    // For now, we use the simple fetch approach which works with most push services
-    // In production, you'd want to use proper VAPID signing
-    const response = await fetch(subscription.endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'TTL': '86400',
-      },
-      body: JSON.stringify(payload),
-    });
-
-    console.log(`Push response status: ${response.status}`);
-    return response.ok || response.status === 201;
-  } catch (error) {
-    console.error('Error sending push:', error);
-    return false;
-  }
-}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -65,11 +14,21 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const vapidPublicKey = Deno.env.get('VAPID_PUBLIC_KEY')!;
+    const vapidPrivateKey = Deno.env.get('VAPID_PRIVATE_KEY')!;
+    
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { user_id, title, body, data } = await req.json();
+    // Configure web-push with VAPID keys
+    webpush.setVapidDetails(
+      'mailto:support@imveloapp.com',
+      vapidPublicKey,
+      vapidPrivateKey
+    );
 
-    console.log(`Sending push notification to user: ${user_id}`);
+    const { user_id, title, body, data, url } = await req.json();
+
+    console.log(`Sending push notification to user: ${user_id || 'all users'}`);
 
     // Get user's push subscriptions
     let query = supabase.from('push_subscriptions').select('*');
@@ -87,19 +46,29 @@ Deno.serve(async (req) => {
 
     console.log(`Found ${subscriptions?.length || 0} subscriptions`);
 
-    const payload = {
+    if (!subscriptions || subscriptions.length === 0) {
+      return new Response(
+        JSON.stringify({ success: true, sent: 0, message: 'No subscriptions found' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const payload = JSON.stringify({
       title: title || 'Imvelo Notification',
       body: body || 'You have a new notification',
       icon: '/icon-192.png',
       badge: '/icon-192.png',
       tag: 'imvelo-notification',
-      data: data || {},
-    };
+      data: {
+        ...data,
+        url: url || '/',
+      },
+    });
 
     let successCount = 0;
     const failedEndpoints: string[] = [];
 
-    for (const subscription of subscriptions || []) {
+    for (const subscription of subscriptions) {
       const pushSubscription = {
         endpoint: subscription.endpoint,
         keys: {
@@ -108,30 +77,37 @@ Deno.serve(async (req) => {
         },
       };
 
-      const success = await sendWebPush(pushSubscription, payload);
-      if (success) {
+      try {
+        await webpush.sendNotification(pushSubscription, payload);
         successCount++;
-      } else {
-        failedEndpoints.push(subscription.endpoint);
+        console.log(`Successfully sent to: ${subscription.endpoint.substring(0, 50)}...`);
+      } catch (error: any) {
+        console.error(`Failed to send to ${subscription.endpoint.substring(0, 50)}...`, error.message);
+        
+        // If subscription is expired or invalid, mark for cleanup
+        if (error.statusCode === 404 || error.statusCode === 410) {
+          failedEndpoints.push(subscription.endpoint);
+        }
       }
     }
 
-    // Clean up failed subscriptions (likely expired)
+    // Clean up expired/invalid subscriptions
     if (failedEndpoints.length > 0) {
-      console.log(`Cleaning up ${failedEndpoints.length} failed subscriptions`);
+      console.log(`Cleaning up ${failedEndpoints.length} expired subscriptions`);
       await supabase
         .from('push_subscriptions')
         .delete()
         .in('endpoint', failedEndpoints);
     }
 
-    console.log(`Successfully sent ${successCount} push notifications`);
+    console.log(`Successfully sent ${successCount}/${subscriptions.length} push notifications`);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
         sent: successCount,
-        failed: failedEndpoints.length 
+        failed: failedEndpoints.length,
+        total: subscriptions.length
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
