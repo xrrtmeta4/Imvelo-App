@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Scanner from "./pages/Scanner";
 import FarmActivities from "./pages/FarmActivities";
+import DigitalLedger from "./pages/DigitalLedger";
 import Weather from "./pages/Weather";
 import Profile from "./pages/Profile";
 import OfficerDashboard from "./pages/OfficerDashboard";
@@ -22,6 +23,7 @@ import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 import MobileNav from "./components/MobileNav";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
+import SubscriptionPopup from "./components/SubscriptionPopup";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +46,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     <>
       {children}
       <MobileNav />
+      <SubscriptionPopup />
     </>
   );
 };
@@ -79,6 +82,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <FarmActivities />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/ledger"
+              element={
+                <ProtectedRoute>
+                  <DigitalLedger />
                 </ProtectedRoute>
               }
             />
