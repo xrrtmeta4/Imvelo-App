@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 
-const DAILY_DETECTION_LIMIT = 3;
-const DAILY_CHAT_LIMIT = 10;
+const DAILY_DETECTION_LIMIT = 1;
+const DAILY_CHAT_LIMIT = 5;
 const UPGRADE_URL = 'https://checkout.dodopayments.com/buy/pdt_0NVKhwZKeJCCaRbxoTNno?quantity=1&redirect_url=https://imveloappsz.vercel.app';
 
 interface UsageData {
