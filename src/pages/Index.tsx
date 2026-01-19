@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import WeatherCard from '@/components/WeatherCard';
 import WeatherTicker from '@/components/WeatherTicker';
 import WeatherAlerts from '@/components/WeatherAlerts';
@@ -9,6 +10,7 @@ import PushNotificationManager from '@/components/PushNotificationManager';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/lib/supabase';
 import { Sprout, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -16,6 +18,22 @@ const Index = () => {
   useNotifications();
   const { isPremium, openUpgrade } = useUsageLimits();
   const { user } = useAuth();
+  const [userName, setUserName] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUserName = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('id', user.id)
+        .single();
+      if (data?.full_name) {
+        setUserName(data.full_name.split(' ')[0]); // Get first name
+      }
+    };
+    fetchUserName();
+  }, [user]);
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -28,7 +46,9 @@ const Index = () => {
               <Sprout className="w-10 h-10" />
             </div>
           </div>
-          <h1 className="text-3xl font-bold mb-2">Imvelo</h1>
+          <h1 className="text-3xl font-bold mb-2">
+            {userName ? `Hi, ${userName}!` : 'Imvelo'}
+          </h1>
           <p className="text-primary-foreground/90">Farmer's Best Friend</p>
           
           {!isPremium && (
