@@ -21,6 +21,7 @@ import TermsOfService from "./pages/TermsOfService";
 import Contact from "./pages/Contact";
 import About from "./pages/About";
 import NotFound from "./pages/NotFound";
+import PesticideCalendar from "./pages/PesticideCalendar";
 import MobileNav from "./components/MobileNav";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import SubscriptionPopup from "./components/SubscriptionPopup";
@@ -154,6 +155,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <ExtensionDirectory />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/pesticide-calendar"
+              element={
+                <ProtectedRoute>
+                  <PesticideCalendar />
                 </ProtectedRoute>
               }
             />

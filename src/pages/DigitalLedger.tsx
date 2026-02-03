@@ -10,10 +10,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Plus, Loader2, Trash2, Download, BookOpen, TrendingUp, TrendingDown, Crown, Lock, Target, AlertTriangle, Settings } from 'lucide-react';
+import { Plus, Loader2, Trash2, Download, BookOpen, TrendingUp, TrendingDown, Target, AlertTriangle, Brain, Sparkles } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
-import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { toast } from 'sonner';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import jsPDF from 'jspdf';
@@ -74,13 +73,14 @@ const paymentMethods = ['Cash', 'Bank Transfer', 'Mobile Money', 'Check', 'Credi
 
 const DigitalLedger = () => {
   const { user } = useAuth();
-  const { isPremium, loadingPremium, openUpgrade } = useUsageLimits();
   const [entries, setEntries] = useState<LedgerEntry[]>([]);
   const [budgets, setBudgets] = useState<BudgetLimit[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [budgetDialogOpen, setBudgetDialogOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'all' | 'income' | 'expense' | 'budgets'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'income' | 'expense' | 'budgets' | 'ai'>('all');
+  const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
   const [formData, setFormData] = useState({
     entry_date: format(new Date(), 'yyyy-MM-dd'),
     entry_type: 'expense' as 'income' | 'expense',
@@ -98,13 +98,13 @@ const DigitalLedger = () => {
   });
 
   useEffect(() => {
-    if (user && isPremium) {
+    if (user) {
       fetchEntries();
       fetchBudgets();
     } else {
       setLoading(false);
     }
-  }, [user, isPremium]);
+  }, [user]);
 
   const fetchEntries = async () => {
     const { data, error } = await supabase
@@ -339,66 +339,45 @@ const DigitalLedger = () => {
   };
 
   const getFilteredEntries = () => {
-    if (activeTab === 'all' || activeTab === 'budgets') return entries;
+    if (activeTab === 'all' || activeTab === 'budgets' || activeTab === 'ai') return entries;
     return entries.filter(e => e.entry_type === activeTab);
+  };
+
+  const analyzeWithAI = async (action: 'analyze' | 'forecast' | 'suggestions') => {
+    if (entries.length < 3) {
+      toast.error('Add at least 3 entries for AI analysis');
+      return;
+    }
+
+    setAiLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('analyze-ledger', {
+        body: { 
+          entries: entries.slice(0, 50).map(e => ({
+            date: e.entry_date,
+            type: e.entry_type,
+            category: e.category,
+            amount: e.amount,
+            description: e.description
+          })),
+          action 
+        }
+      });
+
+      if (error) throw error;
+      setAiAnalysis(data.analysis);
+    } catch (error) {
+      console.error('AI analysis error:', error);
+      toast.error('Failed to analyze. Please try again.');
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   const totalIncome = entries.filter(e => e.entry_type === 'income').reduce((sum, e) => sum + e.amount, 0);
   const totalExpense = entries.filter(e => e.entry_type === 'expense').reduce((sum, e) => sum + e.amount, 0);
+  const netBalance = totalIncome - totalExpense;
   const budgetAlerts = getOverBudgetAlerts();
-
-  if (loadingPremium) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!isPremium) {
-    return (
-      <div className="min-h-screen bg-background pb-20">
-        <header className="bg-primary text-primary-foreground py-4 px-4">
-          <h1 className="text-xl font-bold flex items-center gap-2">
-            <BookOpen className="w-6 h-6" />
-            Digital Ledger
-          </h1>
-        </header>
-        
-        <div className="max-w-screen-sm mx-auto px-4 py-12">
-          <Card className="text-center">
-            <CardContent className="pt-8 pb-8">
-              <div className="bg-primary/10 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Lock className="w-10 h-10 text-primary" />
-              </div>
-              <h2 className="text-2xl font-bold mb-3">Premium Feature</h2>
-              <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
-                The Digital Ledger helps you track farm expenses, income, and export professional financial reports. Upgrade to access this feature!
-              </p>
-              <ul className="text-left max-w-xs mx-auto mb-6 space-y-2">
-                <li className="flex items-center gap-2 text-sm">
-                  <TrendingUp className="w-4 h-4 text-primary" />
-                  Track income and expenses
-                </li>
-                <li className="flex items-center gap-2 text-sm">
-                  <Download className="w-4 h-4 text-primary" />
-                  Export PDF reports
-                </li>
-                <li className="flex items-center gap-2 text-sm">
-                  <Target className="w-4 h-4 text-primary" />
-                  Set budget limits with alerts
-                </li>
-              </ul>
-              <Button onClick={openUpgrade} className="gap-2">
-                <Crown className="w-4 h-4" />
-                Upgrade to Premium - $6.04
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -428,23 +407,34 @@ const DigitalLedger = () => {
         )}
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-3">
           <Card className="bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800">
-            <CardContent className="pt-4 pb-4">
-              <div className="flex items-center gap-2 text-green-700 dark:text-green-400 mb-1">
-                <TrendingUp className="w-4 h-4" />
+            <CardContent className="pt-3 pb-3 text-center">
+              <div className="flex items-center justify-center gap-1 text-green-700 dark:text-green-400 mb-1">
+                <TrendingUp className="w-3 h-3" />
                 <span className="text-xs font-medium">Income</span>
               </div>
-              <p className="text-xl font-bold text-green-800 dark:text-green-300">${totalIncome.toFixed(2)}</p>
+              <p className="text-lg font-bold text-green-800 dark:text-green-300">${totalIncome.toFixed(0)}</p>
             </CardContent>
           </Card>
           <Card className="bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800">
-            <CardContent className="pt-4 pb-4">
-              <div className="flex items-center gap-2 text-red-700 dark:text-red-400 mb-1">
-                <TrendingDown className="w-4 h-4" />
+            <CardContent className="pt-3 pb-3 text-center">
+              <div className="flex items-center justify-center gap-1 text-red-700 dark:text-red-400 mb-1">
+                <TrendingDown className="w-3 h-3" />
                 <span className="text-xs font-medium">Expenses</span>
               </div>
-              <p className="text-xl font-bold text-red-800 dark:text-red-300">${totalExpense.toFixed(2)}</p>
+              <p className="text-lg font-bold text-red-800 dark:text-red-300">${totalExpense.toFixed(0)}</p>
+            </CardContent>
+          </Card>
+          <Card className={`${netBalance >= 0 ? 'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800' : 'bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-800'}`}>
+            <CardContent className="pt-3 pb-3 text-center">
+              <div className={`flex items-center justify-center gap-1 mb-1 ${netBalance >= 0 ? 'text-blue-700 dark:text-blue-400' : 'text-orange-700 dark:text-orange-400'}`}>
+                <Sparkles className="w-3 h-3" />
+                <span className="text-xs font-medium">Balance</span>
+              </div>
+              <p className={`text-lg font-bold ${netBalance >= 0 ? 'text-blue-800 dark:text-blue-300' : 'text-orange-800 dark:text-orange-300'}`}>
+                {netBalance >= 0 ? '+' : ''}${netBalance.toFixed(0)}
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -585,16 +575,76 @@ const DigitalLedger = () => {
         <Card>
           <CardHeader className="pb-2">
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="income">Income</TabsTrigger>
-                <TabsTrigger value="expense">Expenses</TabsTrigger>
-                <TabsTrigger value="budgets">Budgets</TabsTrigger>
+                <TabsTrigger value="income">In</TabsTrigger>
+                <TabsTrigger value="expense">Out</TabsTrigger>
+                <TabsTrigger value="budgets">Budget</TabsTrigger>
+                <TabsTrigger value="ai" className="gap-1">
+                  <Brain className="w-3 h-3" />
+                  AI
+                </TabsTrigger>
               </TabsList>
             </Tabs>
           </CardHeader>
           <CardContent>
-            {activeTab === 'budgets' ? (
+            {activeTab === 'ai' ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-3 gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="h-auto py-3 flex-col gap-1"
+                    onClick={() => analyzeWithAI('analyze')}
+                    disabled={aiLoading}
+                  >
+                    <Brain className="w-4 h-4" />
+                    <span className="text-xs">Analyze</span>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="h-auto py-3 flex-col gap-1"
+                    onClick={() => analyzeWithAI('forecast')}
+                    disabled={aiLoading}
+                  >
+                    <TrendingUp className="w-4 h-4" />
+                    <span className="text-xs">Forecast</span>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="h-auto py-3 flex-col gap-1"
+                    onClick={() => analyzeWithAI('suggestions')}
+                    disabled={aiLoading}
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span className="text-xs">Tips</span>
+                  </Button>
+                </div>
+                
+                {aiLoading ? (
+                  <div className="flex flex-col items-center justify-center py-8">
+                    <Loader2 className="w-8 h-8 animate-spin text-primary mb-2" />
+                    <p className="text-sm text-muted-foreground">Analyzing your finances...</p>
+                  </div>
+                ) : aiAnalysis ? (
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Brain className="w-4 h-4 text-primary" />
+                      <span className="font-medium text-sm">AI Analysis</span>
+                    </div>
+                    <p className="text-sm whitespace-pre-wrap">{aiAnalysis}</p>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Brain className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <p className="text-sm">Get AI-powered insights</p>
+                    <p className="text-xs">Click a button above to analyze your finances</p>
+                  </div>
+                )}
+              </div>
+            ) : activeTab === 'budgets' ? (
               <div className="space-y-4">
                 <Dialog open={budgetDialogOpen} onOpenChange={setBudgetDialogOpen}>
                   <DialogTrigger asChild>

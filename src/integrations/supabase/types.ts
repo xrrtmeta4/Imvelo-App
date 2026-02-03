@@ -292,6 +292,48 @@ export type Database = {
         }
         Relationships: []
       }
+      pesticide_schedules: {
+        Row: {
+          application_date: string
+          created_at: string
+          crop_name: string
+          id: string
+          notes: string | null
+          pesticide_name: string
+          reminder_sent: boolean | null
+          repeat_interval_days: number | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          application_date: string
+          created_at?: string
+          crop_name: string
+          id?: string
+          notes?: string | null
+          pesticide_name: string
+          reminder_sent?: boolean | null
+          repeat_interval_days?: number | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          application_date?: string
+          created_at?: string
+          crop_name?: string
+          id?: string
+          notes?: string | null
+          pesticide_name?: string
+          reminder_sent?: boolean | null
+          repeat_interval_days?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       premium_subscriptions: {
         Row: {
           created_at: string

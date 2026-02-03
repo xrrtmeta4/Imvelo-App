@@ -1,4 +1,4 @@
-import { Home, Bug, Cloud, BookOpen, User } from 'lucide-react';
+import { Home, Bug, Cloud, BookOpen, User, Droplets } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { cn } from '@/lib/utils';
 
@@ -6,7 +6,7 @@ const MobileNav = () => {
   const navItems = [
     { to: '/', icon: Home, label: 'Home' },
     { to: '/scanner', icon: Bug, label: 'Scan' },
-    { to: '/weather', icon: Cloud, label: 'Weather' },
+    { to: '/pesticide-calendar', icon: Droplets, label: 'Spray' },
     { to: '/ledger', icon: BookOpen, label: 'Ledger' },
     { to: '/profile', icon: User, label: 'Profile' },
   ];
