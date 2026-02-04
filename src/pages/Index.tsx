@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import WeatherCard from '@/components/WeatherCard';
 import WeatherTicker from '@/components/WeatherTicker';
-import WeatherAlerts from '@/components/WeatherAlerts';
 import PestScanner from '@/components/PestScanner';
 import BestPractices from '@/components/BestPractices';
 import ExtensionServices from '@/components/ExtensionServices';
 import AIChatbot from '@/components/AIChatbot';
 import PushNotificationManager from '@/components/PushNotificationManager';
+import NotificationBell from '@/components/NotificationBell';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { useAuth } from '@/hooks/useAuth';
@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 
 const Index = () => {
   useNotifications();
-  const { isPremium, openUpgrade } = useUsageLimits();
+  const { isPremium, openUpgrade, getFormattedPrice } = useUsageLimits();
   const { user } = useAuth();
   const [userName, setUserName] = useState<string | null>(null);
 
@@ -40,11 +40,12 @@ const Index = () => {
       <WeatherTicker />
       
       <header className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground py-8 px-4">
-        <div className="max-w-screen-sm mx-auto text-center">
-          <div className="flex justify-center mb-4">
+        <div className="max-w-screen-sm mx-auto">
+          <div className="flex justify-between items-start mb-4">
             <div className="bg-primary-foreground/10 p-3 rounded-full">
               <Sprout className="w-10 h-10" />
             </div>
+            <NotificationBell />
           </div>
           <h1 className="text-3xl font-bold mb-2">
             {userName ? `Hi, ${userName}!` : 'Imvelo'}
@@ -58,7 +59,7 @@ const Index = () => {
               className="mt-4 gap-2"
             >
               <Crown className="w-4 h-4" />
-              Upgrade to Premium - $6.04
+              Upgrade - {getFormattedPrice()}
             </Button>
           )}
         </div>
@@ -66,7 +67,6 @@ const Index = () => {
 
       <div className="max-w-screen-sm mx-auto px-4 py-6 space-y-6">
         {user && <PushNotificationManager />}
-        <WeatherAlerts />
         <WeatherCard />
         <PestScanner />
         <div className="grid grid-cols-1 gap-6">
