@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Crown, TrendingUp, Shield, Zap, BarChart3, FileText } from 'lucide-react';
-import { useUsageLimits } from '@/hooks/useUsageLimits';
+import { useUsageLimits, subscriptionPricing } from '@/hooks/useUsageLimits';
 
 const popupMessages = [
   {
@@ -39,13 +40,13 @@ interface SubscriptionPopupProps {
 const SubscriptionPopup = ({ enabled = true }: SubscriptionPopupProps) => {
   const [open, setOpen] = useState(false);
   const [currentMessage, setCurrentMessage] = useState(0);
-  const { isPremium, loadingPremium, openUpgrade } = useUsageLimits();
+  const { isPremium, loadingPremium, openUpgrade, userCurrency, setPreferredCurrency, getFormattedPrice } = useUsageLimits();
 
   useEffect(() => {
     if (!enabled || loadingPremium || isPremium) return;
 
-    // Show popup randomly between 30-90 seconds after mount
-    const initialDelay = Math.random() * 60000 + 30000;
+    // Show popup after 5 minutes, then every 10 minutes (less aggressive)
+    const initialDelay = 5 * 60 * 1000; // 5 minutes
     
     const timer = setTimeout(() => {
       setCurrentMessage(Math.floor(Math.random() * popupMessages.length));
@@ -58,14 +59,11 @@ const SubscriptionPopup = ({ enabled = true }: SubscriptionPopupProps) => {
   useEffect(() => {
     if (!enabled || loadingPremium || isPremium) return;
 
-    // Show popup every 2-5 minutes
+    // Show popup every 10 minutes (less intrusive)
     const interval = setInterval(() => {
-      const shouldShow = Math.random() > 0.5; // 50% chance
-      if (shouldShow) {
-        setCurrentMessage(Math.floor(Math.random() * popupMessages.length));
-        setOpen(true);
-      }
-    }, Math.random() * 180000 + 120000);
+      setCurrentMessage(Math.floor(Math.random() * popupMessages.length));
+      setOpen(true);
+    }, 10 * 60 * 1000); // 10 minutes
 
     return () => clearInterval(interval);
   }, [enabled, isPremium, loadingPremium]);
@@ -90,16 +88,30 @@ const SubscriptionPopup = ({ enabled = true }: SubscriptionPopupProps) => {
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3 mt-4">
-          <Button 
-            onClick={() => {
-              openUpgrade();
-              setOpen(false);
-            }}
-            className="w-full gap-2"
-          >
-            <Crown className="w-4 h-4" />
-            Upgrade to Premium - $6.04
-          </Button>
+          <div className="flex items-center gap-2">
+            <Select value={userCurrency} onValueChange={setPreferredCurrency}>
+              <SelectTrigger className="w-24">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(subscriptionPricing).map(([code, { symbol }]) => (
+                  <SelectItem key={code} value={code}>
+                    {code}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button 
+              onClick={() => {
+                openUpgrade();
+                setOpen(false);
+              }}
+              className="flex-1 gap-2"
+            >
+              <Crown className="w-4 h-4" />
+              Upgrade - {getFormattedPrice()}
+            </Button>
+          </div>
           <Button 
             variant="ghost" 
             onClick={() => setOpen(false)}

@@ -10,9 +10,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Plus, Loader2, Trash2, Download, BookOpen, TrendingUp, TrendingDown, Target, AlertTriangle, Brain, Sparkles } from 'lucide-react';
+import { Plus, Loader2, Trash2, Download, BookOpen, TrendingUp, TrendingDown, Target, AlertTriangle, Brain, Sparkles, Settings } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
+import { useCurrency, currencies } from '@/hooks/useCurrency';
 import { toast } from 'sonner';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import jsPDF from 'jspdf';
@@ -73,11 +74,13 @@ const paymentMethods = ['Cash', 'Bank Transfer', 'Mobile Money', 'Check', 'Credi
 
 const DigitalLedger = () => {
   const { user } = useAuth();
+  const { selectedCurrency, setCurrency, formatAmount } = useCurrency();
   const [entries, setEntries] = useState<LedgerEntry[]>([]);
   const [budgets, setBudgets] = useState<BudgetLimit[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [budgetDialogOpen, setBudgetDialogOpen] = useState(false);
+  const [currencyDialogOpen, setCurrencyDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'all' | 'income' | 'expense' | 'budgets' | 'ai'>('all');
   const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
@@ -281,6 +284,7 @@ const DigitalLedger = () => {
     doc.setFontSize(12);
     doc.setFont('times', 'normal');
     doc.text(`Generated: ${format(new Date(), 'MMMM d, yyyy')}`, 105, 30, { align: 'center' });
+    doc.text(`Currency: ${selectedCurrency.name} (${selectedCurrency.code})`, 105, 38, { align: 'center' });
     
     const totalIncome = filteredEntries.filter(e => e.entry_type === 'income').reduce((sum, e) => sum + e.amount, 0);
     const totalExpense = filteredEntries.filter(e => e.entry_type === 'expense').reduce((sum, e) => sum + e.amount, 0);
@@ -288,19 +292,19 @@ const DigitalLedger = () => {
     
     doc.setFontSize(14);
     doc.setFont('times', 'bold');
-    doc.text('Summary', 20, 45);
+    doc.text('Summary', 20, 52);
     
     doc.setFontSize(11);
     doc.setFont('times', 'normal');
-    doc.text(`Total Income: $${totalIncome.toFixed(2)}`, 20, 55);
-    doc.text(`Total Expenses: $${totalExpense.toFixed(2)}`, 20, 62);
-    doc.text(`Net Balance: $${netBalance.toFixed(2)}`, 20, 69);
+    doc.text(`Total Income: ${formatAmount(totalIncome)}`, 20, 62);
+    doc.text(`Total Expenses: ${formatAmount(totalExpense)}`, 20, 69);
+    doc.text(`Net Balance: ${formatAmount(netBalance)}`, 20, 76);
     
     doc.setFontSize(14);
     doc.setFont('times', 'bold');
-    doc.text('Transaction Details', 20, 85);
+    doc.text('Transaction Details', 20, 92);
     
-    let yPos = 95;
+    let yPos = 102;
     doc.setFontSize(9);
     doc.setFont('times', 'bold');
     doc.text('Date', 20, yPos);
@@ -321,7 +325,7 @@ const DigitalLedger = () => {
       doc.text(format(new Date(entry.entry_date), 'MM/dd/yy'), 20, yPos);
       doc.text(entry.entry_type, 45, yPos);
       doc.text(entry.category.substring(0, 20), 70, yPos);
-      doc.text(`$${entry.amount.toFixed(2)}`, 130, yPos);
+      doc.text(formatAmount(entry.amount), 130, yPos);
       doc.text((entry.description || '-').substring(0, 25), 155, yPos);
       
       yPos += 7;
@@ -382,10 +386,42 @@ const DigitalLedger = () => {
   return (
     <div className="min-h-screen bg-background pb-20">
       <header className="bg-primary text-primary-foreground py-4 px-4">
-        <h1 className="text-xl font-bold flex items-center gap-2">
-          <BookOpen className="w-6 h-6" />
-          Digital Ledger
-        </h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-bold flex items-center gap-2">
+            <BookOpen className="w-6 h-6" />
+            Digital Ledger
+          </h1>
+          <Dialog open={currencyDialogOpen} onOpenChange={setCurrencyDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="ghost" size="sm" className="text-primary-foreground gap-1">
+                <Settings className="w-4 h-4" />
+                {selectedCurrency.code}
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Select Currency</DialogTitle>
+              </DialogHeader>
+              <div className="grid grid-cols-2 gap-2 mt-4 max-h-[300px] overflow-y-auto">
+                {currencies.map((currency) => (
+                  <Button
+                    key={currency.code}
+                    variant={selectedCurrency.code === currency.code ? 'default' : 'outline'}
+                    className="justify-start gap-2"
+                    onClick={() => {
+                      setCurrency(currency.code);
+                      setCurrencyDialogOpen(false);
+                      toast.success(`Currency set to ${currency.name}`);
+                    }}
+                  >
+                    <span className="font-bold">{currency.symbol}</span>
+                    <span>{currency.code}</span>
+                  </Button>
+                ))}
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       </header>
 
       <div className="max-w-screen-sm mx-auto px-4 py-6 space-y-6">
@@ -399,7 +435,7 @@ const DigitalLedger = () => {
                   {status === 'exceeded' ? 'Budget Exceeded!' : 'Budget Warning'}
                 </AlertTitle>
                 <AlertDescription className="text-xs">
-                  {budget.category}: ${spent.toFixed(2)} / ${budget.monthly_limit.toFixed(2)} ({percentage.toFixed(0)}%)
+                  {budget.category}: {formatAmount(spent)} / {formatAmount(budget.monthly_limit)} ({percentage.toFixed(0)}%)
                 </AlertDescription>
               </Alert>
             ))}
@@ -414,7 +450,7 @@ const DigitalLedger = () => {
                 <TrendingUp className="w-3 h-3" />
                 <span className="text-xs font-medium">Income</span>
               </div>
-              <p className="text-lg font-bold text-green-800 dark:text-green-300">${totalIncome.toFixed(0)}</p>
+              <p className="text-lg font-bold text-green-800 dark:text-green-300">{formatAmount(totalIncome)}</p>
             </CardContent>
           </Card>
           <Card className="bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800">
@@ -423,7 +459,7 @@ const DigitalLedger = () => {
                 <TrendingDown className="w-3 h-3" />
                 <span className="text-xs font-medium">Expenses</span>
               </div>
-              <p className="text-lg font-bold text-red-800 dark:text-red-300">${totalExpense.toFixed(0)}</p>
+              <p className="text-lg font-bold text-red-800 dark:text-red-300">{formatAmount(totalExpense)}</p>
             </CardContent>
           </Card>
           <Card className={`${netBalance >= 0 ? 'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800' : 'bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-800'}`}>
@@ -433,7 +469,7 @@ const DigitalLedger = () => {
                 <span className="text-xs font-medium">Balance</span>
               </div>
               <p className={`text-lg font-bold ${netBalance >= 0 ? 'text-blue-800 dark:text-blue-300' : 'text-orange-800 dark:text-orange-300'}`}>
-                {netBalance >= 0 ? '+' : ''}${netBalance.toFixed(0)}
+                {netBalance >= 0 ? '+' : ''}{formatAmount(Math.abs(netBalance))}
               </p>
             </CardContent>
           </Card>
@@ -497,7 +533,7 @@ const DigitalLedger = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Amount ($) *</Label>
+                  <Label>Amount ({selectedCurrency.symbol}) *</Label>
                   <Input
                     type="number"
                     step="0.01"
@@ -676,7 +712,7 @@ const DigitalLedger = () => {
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Monthly Limit ($) *</Label>
+                        <Label>Monthly Limit ({selectedCurrency.symbol}) *</Label>
                         <Input
                           type="number"
                           step="0.01"
@@ -722,7 +758,7 @@ const DigitalLedger = () => {
                             <div>
                               <p className="font-medium text-sm">{budget.category}</p>
                               <p className="text-xs text-muted-foreground">
-                                ${spent.toFixed(2)} of ${budget.monthly_limit.toFixed(2)}
+                                {formatAmount(spent)} of {formatAmount(budget.monthly_limit)}
                               </p>
                             </div>
                             <Button
@@ -793,7 +829,7 @@ const DigitalLedger = () => {
                         <TableCell className={`text-right font-medium text-sm ${
                           entry.entry_type === 'income' ? 'text-green-600' : 'text-red-600'
                         }`}>
-                          {entry.entry_type === 'income' ? '+' : '-'}${entry.amount.toFixed(2)}
+                          {entry.entry_type === 'income' ? '+' : '-'}{formatAmount(entry.amount)}
                         </TableCell>
                         <TableCell>
                           <Button

@@ -4,7 +4,27 @@ import { supabase } from '@/lib/supabase';
 
 const DAILY_DETECTION_LIMIT = 1;
 const DAILY_CHAT_LIMIT = 5;
-const UPGRADE_URL = 'https://checkout.dodopayments.com/buy/pdt_0NVKhwZKeJCCaRbxoTNno?quantity=1&redirect_url=https://imveloappsz.vercel.app';
+
+// Subscription pricing in different currencies
+export const subscriptionPricing: Record<string, { amount: number; symbol: string; currency: string }> = {
+  USD: { amount: 6.04, symbol: '$', currency: 'USD' },
+  EUR: { amount: 5.50, symbol: '€', currency: 'EUR' },
+  GBP: { amount: 4.80, symbol: '£', currency: 'GBP' },
+  ZAR: { amount: 110.00, symbol: 'R', currency: 'ZAR' },
+  SZL: { amount: 110.00, symbol: 'E', currency: 'SZL' },
+  KES: { amount: 780.00, symbol: 'KSh', currency: 'KES' },
+  NGN: { amount: 9000.00, symbol: '₦', currency: 'NGN' },
+  GHS: { amount: 75.00, symbol: 'GH₵', currency: 'GHS' },
+  TZS: { amount: 15000.00, symbol: 'TSh', currency: 'TZS' },
+  UGX: { amount: 22500.00, symbol: 'USh', currency: 'UGX' },
+  INR: { amount: 500.00, symbol: '₹', currency: 'INR' },
+  BRL: { amount: 30.00, symbol: 'R$', currency: 'BRL' },
+  MXN: { amount: 110.00, symbol: '$', currency: 'MXN' },
+  AUD: { amount: 9.50, symbol: 'A$', currency: 'AUD' },
+  CAD: { amount: 8.50, symbol: 'C$', currency: 'CAD' },
+};
+
+const BASE_UPGRADE_URL = 'https://checkout.dodopayments.com/buy/pdt_0NVKhwZKeJCCaRbxoTNno?quantity=1&redirect_url=https://imveloappsz.vercel.app';
 
 interface UsageData {
   detectionCount: number;
@@ -25,13 +45,34 @@ export const useUsageLimits = () => {
   });
   const [isPremium, setIsPremium] = useState(false);
   const [loadingPremium, setLoadingPremium] = useState(true);
+  const [userCurrency, setUserCurrency] = useState<string>('USD');
 
   useEffect(() => {
     if (user) {
       loadUsage();
       checkPremiumStatus();
+      detectUserCurrency();
     }
   }, [user]);
+
+  const detectUserCurrency = async () => {
+    // Try to get currency from user's location or default to USD
+    try {
+      const storedCurrency = localStorage.getItem(`imvelo_preferred_currency_${user?.id}`);
+      if (storedCurrency && subscriptionPricing[storedCurrency]) {
+        setUserCurrency(storedCurrency);
+      }
+    } catch (error) {
+      console.error('Error detecting currency:', error);
+    }
+  };
+
+  const setPreferredCurrency = (currency: string) => {
+    if (user && subscriptionPricing[currency]) {
+      setUserCurrency(currency);
+      localStorage.setItem(`imvelo_preferred_currency_${user.id}`, currency);
+    }
+  };
 
   const checkPremiumStatus = async () => {
     if (!user) {
@@ -112,8 +153,15 @@ export const useUsageLimits = () => {
   const getRemainingDetections = () => isPremium ? Infinity : DAILY_DETECTION_LIMIT - usage.detectionCount;
   const getRemainingChats = () => isPremium ? Infinity : DAILY_CHAT_LIMIT - usage.chatCount;
 
+  const getPricing = () => subscriptionPricing[userCurrency] || subscriptionPricing.USD;
+
+  const getFormattedPrice = () => {
+    const pricing = getPricing();
+    return `${pricing.symbol}${pricing.amount.toFixed(2)}`;
+  };
+
   const openUpgrade = () => {
-    window.open(UPGRADE_URL, '_blank');
+    window.open(BASE_UPGRADE_URL, '_blank');
   };
 
   return {
@@ -126,6 +174,11 @@ export const useUsageLimits = () => {
     openUpgrade,
     isPremium,
     loadingPremium,
-    UPGRADE_URL
+    userCurrency,
+    setPreferredCurrency,
+    getPricing,
+    getFormattedPrice,
+    subscriptionPricing,
+    UPGRADE_URL: BASE_UPGRADE_URL
   };
 };
