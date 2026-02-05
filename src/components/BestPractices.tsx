@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen, TrendingUp } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; 
+import { BookOpen, TrendingUp, Leaf, CloudLightning } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const BestPractices = () => {
@@ -7,19 +7,34 @@ const BestPractices = () => {
 
   const practices = [
     {
+      title: "Crop Health Monitoring",
+      description: "AI-powered phenotype analysis for early stress detection",
+      path: "/crop-monitoring",
+      icon: Leaf
+    },
+    {
+      title: "Climate Risk Engine",
+      description: "Forecast volatility and adaptive recommendations",
+      path: "/climate-risk",
+      icon: CloudLightning
+    },
+    {
       title: "Seasonal Planting Guide",
       description: "Learn the best time to plant your crops",
-      path: "/planting-guide"
+      path: "/planting-guide",
+      icon: TrendingUp
     },
     {
       title: "Soil Management",
       description: "Keep your soil healthy for better harvests",
-      path: "/soil-management"
+      path: "/soil-management",
+      icon: TrendingUp
     },
     {
       title: "Water Conservation",
       description: "Tips for efficient water management",
-      path: "/water-conservation"
+      path: "/water-conservation",
+      icon: TrendingUp
     }
   ];
 
@@ -38,7 +53,7 @@ const BestPractices = () => {
             onClick={() => navigate(practice.path)}
             className="flex items-start gap-3 p-3 rounded-lg bg-accent/50 hover:bg-accent transition-colors cursor-pointer"
           >
-            <TrendingUp className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+            <practice.icon className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
             <div>
               <p className="font-medium text-sm">{practice.title}</p>
               <p className="text-xs text-muted-foreground mt-1">{practice.description}</p>

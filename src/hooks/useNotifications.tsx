@@ -63,19 +63,8 @@ export const useNotifications = () => {
               description: alert.message,
               duration: 10000
             });
-          } else {
-            const severity = alert.severity === 'high' ? 'error' : 'warning';
-            
-            if (severity === 'error') {
-              toast.error('Silumkiso Sesimoselitulu!', {
-                description: alert.message
-              });
-            } else {
-              toast.warning('Silumkiso Sesimoselitulu', {
-                description: alert.message
-              });
-            }
           }
+          // Weather alerts are now shown in the notification bell only, no popup
         }
       )
       .subscribe();

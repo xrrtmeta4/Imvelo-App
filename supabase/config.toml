@@ -38,3 +38,12 @@ verify_jwt = false
 
 [functions.ussd-callback]
 verify_jwt = false
+
+[functions.analyze-ledger]
+verify_jwt = false
+
+[functions.analyze-crop-health]
+verify_jwt = false
+
+[functions.climate-risk-analysis]
+verify_jwt = false
