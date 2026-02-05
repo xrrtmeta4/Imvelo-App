@@ -22,6 +22,8 @@ import Contact from "./pages/Contact";
 import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 import PesticideCalendar from "./pages/PesticideCalendar";
+import CropMonitoring from "./pages/CropMonitoring";
+import ClimateRisk from "./pages/ClimateRisk";
 import MobileNav from "./components/MobileNav";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import SubscriptionPopup from "./components/SubscriptionPopup";
@@ -163,6 +165,22 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <PesticideCalendar />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/crop-monitoring"
+              element={
+                <ProtectedRoute>
+                  <CropMonitoring />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/climate-risk"
+              element={
+                <ProtectedRoute>
+                  <ClimateRisk />
                 </ProtectedRoute>
               }
             />

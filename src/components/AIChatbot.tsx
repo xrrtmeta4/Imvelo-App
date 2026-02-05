@@ -86,7 +86,7 @@ const AIChatbot = () => {
         <div>
           <CardTitle className="text-base">AI Assistant</CardTitle>
           {!isPremium && (
-            <p className="text-xs text-muted-foreground">{remainingChats}/10 messages left today</p>
+            <p className="text-xs text-muted-foreground">{remainingChats} daily messages left</p>
           )}
         </div>
         <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
