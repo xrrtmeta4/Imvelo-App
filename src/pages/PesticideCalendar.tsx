@@ -446,22 +446,56 @@ const PesticideCalendar = () => {
         {completedSchedules.length > 0 && (
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Check className="w-4 h-4" />
-                Recent History
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Check className="w-4 h-4" />
+                  Recent History
+                </CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10 gap-1 h-8"
+                  onClick={async () => {
+                    const ids = completedSchedules.map(s => s.id);
+                    const { error } = await supabase
+                      .from('pesticide_schedules')
+                      .delete()
+                      .in('id', ids)
+                      .eq('user_id', user?.id);
+                    if (error) {
+                      toast.error('Failed to clear history');
+                    } else {
+                      setSchedules(schedules.filter(s => s.status === 'scheduled'));
+                      toast.success('History cleared');
+                    }
+                  }}
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Clear All
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {completedSchedules.slice(0, 5).map((schedule) => (
+                {completedSchedules.slice(0, 10).map((schedule) => (
                   <div key={schedule.id} className="flex justify-between items-center p-2 border rounded text-sm">
-                    <div>
-                      <p className="font-medium">{schedule.crop_name} - {schedule.pesticide_name}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">{schedule.crop_name} - {schedule.pesticide_name}</p>
                       <p className="text-xs text-muted-foreground">
                         {format(new Date(schedule.application_date), 'MMM d, yyyy')}
                       </p>
                     </div>
-                    {getStatusBadge(schedule)}
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {getStatusBadge(schedule)}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => deleteSchedule(schedule.id)}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>

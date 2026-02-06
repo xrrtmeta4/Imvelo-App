@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
@@ -273,73 +273,270 @@ const DigitalLedger = () => {
     }
   };
 
-  const exportToPdf = () => {
+  const exportToPdf = async () => {
     const doc = new jsPDF();
     const filteredEntries = getFilteredEntries();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 20;
+    const contentWidth = pageWidth - margin * 2;
     
-    doc.setFontSize(20);
-    doc.setFont('times', 'bold');
-    doc.text('Farm Financial Ledger', 105, 20, { align: 'center' });
-    
-    doc.setFontSize(12);
-    doc.setFont('times', 'normal');
-    doc.text(`Generated: ${format(new Date(), 'MMMM d, yyyy')}`, 105, 30, { align: 'center' });
-    doc.text(`Currency: ${selectedCurrency.name} (${selectedCurrency.code})`, 105, 38, { align: 'center' });
-    
-    const totalIncome = filteredEntries.filter(e => e.entry_type === 'income').reduce((sum, e) => sum + e.amount, 0);
-    const totalExpense = filteredEntries.filter(e => e.entry_type === 'expense').reduce((sum, e) => sum + e.amount, 0);
-    const netBalance = totalIncome - totalExpense;
-    
-    doc.setFontSize(14);
-    doc.setFont('times', 'bold');
-    doc.text('Summary', 20, 52);
-    
-    doc.setFontSize(11);
-    doc.setFont('times', 'normal');
-    doc.text(`Total Income: ${formatAmount(totalIncome)}`, 20, 62);
-    doc.text(`Total Expenses: ${formatAmount(totalExpense)}`, 20, 69);
-    doc.text(`Net Balance: ${formatAmount(netBalance)}`, 20, 76);
-    
-    doc.setFontSize(14);
-    doc.setFont('times', 'bold');
-    doc.text('Transaction Details', 20, 92);
-    
-    let yPos = 102;
-    doc.setFontSize(9);
-    doc.setFont('times', 'bold');
-    doc.text('Date', 20, yPos);
-    doc.text('Type', 45, yPos);
-    doc.text('Category', 70, yPos);
-    doc.text('Amount', 130, yPos);
-    doc.text('Description', 155, yPos);
-    
-    doc.setFont('times', 'normal');
-    yPos += 8;
-    
-    filteredEntries.slice(0, 30).forEach((entry) => {
-      if (yPos > 270) {
-        doc.addPage();
-        yPos = 20;
+    const totalInc = filteredEntries.filter(e => e.entry_type === 'income').reduce((sum, e) => sum + e.amount, 0);
+    const totalExp = filteredEntries.filter(e => e.entry_type === 'expense').reduce((sum, e) => sum + e.amount, 0);
+    const netBal = totalInc - totalExp;
+
+    // Load logo
+    let logoLoaded = false;
+    const logoImg = new Image();
+    try {
+      logoImg.crossOrigin = 'anonymous';
+      await new Promise((resolve, reject) => {
+        logoImg.onload = resolve;
+        logoImg.onerror = reject;
+        logoImg.src = '/imvelo-logo.png';
+      });
+      logoLoaded = true;
+    } catch { /* continue without logo */ }
+
+    const addHeader = (isFirstPage: boolean) => {
+      if (isFirstPage) {
+        // Logo
+        if (logoLoaded) {
+          doc.addImage(logoImg, 'PNG', (pageWidth - 30) / 2, 10, 30, 30);
+        }
+        doc.setFont('times', 'bold');
+        doc.setFontSize(20);
+        doc.setTextColor(34, 139, 34);
+        doc.text('Imvelo', pageWidth / 2, 48, { align: 'center' });
+        doc.setFont('times', 'italic');
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        doc.text("Farmer's Best Friend", pageWidth / 2, 55, { align: 'center' });
       }
-      
-      doc.text(format(new Date(entry.entry_date), 'MM/dd/yy'), 20, yPos);
-      doc.text(entry.entry_type, 45, yPos);
-      doc.text(entry.category.substring(0, 20), 70, yPos);
-      doc.text(formatAmount(entry.amount), 130, yPos);
-      doc.text((entry.description || '-').substring(0, 25), 155, yPos);
-      
-      yPos += 7;
-    });
-    
-    const pageCount = doc.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
+    };
+
+    const addFooter = (pageNum: number, totalPages: number) => {
+      const footerY = pageHeight - 25;
+      // Divider
+      doc.setDrawColor(34, 139, 34);
+      doc.setLineWidth(0.5);
+      doc.line(margin, footerY - 5, pageWidth - margin, footerY - 5);
+      // Logo text
+      if (logoLoaded) {
+        doc.addImage(logoImg, 'PNG', margin, footerY - 3, 10, 10);
+      }
+      doc.setFont('times', 'bold');
       doc.setFontSize(8);
-      doc.text('Imvelo - Farmer\'s Best Friend | USSD: *384*51139#', 105, 290, { align: 'center' });
+      doc.setTextColor(34, 139, 34);
+      doc.text('Imvelo - Farmer\'s Best Friend', margin + 13, footerY + 1);
+      doc.setFont('times', 'normal');
+      doc.setFontSize(7);
+      doc.setTextColor(100, 100, 100);
+      doc.text('Email: imveloapps@gmail.com | Phone: +268 7921 5621 | USSD: *384*51139#', margin + 13, footerY + 6);
+      // Page number
+      doc.setFont('times', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(120, 120, 120);
+      doc.text(`Page ${pageNum} of ${totalPages}`, pageWidth - margin, footerY + 1, { align: 'right' });
+    };
+
+    // ---- PAGE 1: Cover & Summary ----
+    addHeader(true);
+    
+    // Title block
+    doc.setDrawColor(34, 139, 34);
+    doc.setLineWidth(0.8);
+    doc.line(margin, 60, pageWidth - margin, 60);
+
+    doc.setFont('times', 'bold');
+    doc.setFontSize(16);
+    doc.setTextColor(0, 0, 0);
+    doc.text('FINANCIAL STATEMENT', pageWidth / 2, 72, { align: 'center' });
+    
+    doc.setFont('times', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(80, 80, 80);
+    const periodText = filteredEntries.length > 0
+      ? `${format(new Date(filteredEntries[filteredEntries.length - 1].entry_date), 'dd MMM yyyy')} — ${format(new Date(filteredEntries[0].entry_date), 'dd MMM yyyy')}`
+      : format(new Date(), 'dd MMM yyyy');
+    doc.text(`Period: ${periodText}`, pageWidth / 2, 80, { align: 'center' });
+    doc.text(`Currency: ${selectedCurrency.name} (${selectedCurrency.code})`, pageWidth / 2, 86, { align: 'center' });
+    doc.text(`Generated: ${format(new Date(), 'dd MMMM yyyy, HH:mm')}`, pageWidth / 2, 92, { align: 'center' });
+
+    // Summary box
+    let y = 105;
+    doc.setFillColor(245, 245, 245);
+    doc.roundedRect(margin, y - 5, contentWidth, 45, 3, 3, 'F');
+    doc.setFont('times', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text('Financial Summary', margin + 5, y + 5);
+    
+    doc.setFont('times', 'normal');
+    doc.setFontSize(11);
+    doc.setTextColor(34, 139, 34);
+    doc.text(`Total Income:`, margin + 5, y + 18);
+    doc.text(`${formatAmount(totalInc)}`, pageWidth - margin - 5, y + 18, { align: 'right' });
+    
+    doc.setTextColor(200, 0, 0);
+    doc.text(`Total Expenses:`, margin + 5, y + 27);
+    doc.text(`${formatAmount(totalExp)}`, pageWidth - margin - 5, y + 27, { align: 'right' });
+    
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.3);
+    doc.line(margin + 5, y + 30, pageWidth - margin - 5, y + 30);
+    
+    const balColor = netBal >= 0 ? [34, 139, 34] : [200, 0, 0];
+    doc.setFont('times', 'bold');
+    doc.setTextColor(balColor[0], balColor[1], balColor[2]);
+    doc.text(`Net Balance:`, margin + 5, y + 37);
+    doc.text(`${netBal >= 0 ? '' : '-'}${formatAmount(Math.abs(netBal))}`, pageWidth - margin - 5, y + 37, { align: 'right' });
+
+    // Category breakdown
+    y = 165;
+    doc.setFont('times', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text('Income by Category', margin, y);
+    y += 8;
+    doc.setFont('times', 'normal');
+    doc.setFontSize(9);
+    
+    const incomeByCategory: Record<string, number> = {};
+    const expenseByCategory: Record<string, number> = {};
+    filteredEntries.forEach(e => {
+      if (e.entry_type === 'income') {
+        incomeByCategory[e.category] = (incomeByCategory[e.category] || 0) + e.amount;
+      } else {
+        expenseByCategory[e.category] = (expenseByCategory[e.category] || 0) + e.amount;
+      }
+    });
+
+    Object.entries(incomeByCategory).sort((a, b) => b[1] - a[1]).forEach(([cat, amt]) => {
+      doc.setTextColor(60, 60, 60);
+      doc.text(cat, margin + 5, y);
+      doc.text(formatAmount(amt), pageWidth - margin - 5, y, { align: 'right' });
+      y += 6;
+    });
+    if (Object.keys(incomeByCategory).length === 0) {
+      doc.setTextColor(150, 150, 150);
+      doc.text('No income recorded', margin + 5, y);
+      y += 6;
+    }
+
+    y += 6;
+    doc.setFont('times', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text('Expenses by Category', margin, y);
+    y += 8;
+    doc.setFont('times', 'normal');
+    doc.setFontSize(9);
+
+    Object.entries(expenseByCategory).sort((a, b) => b[1] - a[1]).forEach(([cat, amt]) => {
+      doc.setTextColor(60, 60, 60);
+      doc.text(cat, margin + 5, y);
+      doc.text(formatAmount(amt), pageWidth - margin - 5, y, { align: 'right' });
+      y += 6;
+    });
+    if (Object.keys(expenseByCategory).length === 0) {
+      doc.setTextColor(150, 150, 150);
+      doc.text('No expenses recorded', margin + 5, y);
+      y += 6;
+    }
+
+    // ---- PAGE 2+: Transaction Details (table) ----
+    doc.addPage();
+    const colDate = margin;
+    const colRef = margin + 22;
+    const colType = margin + 48;
+    const colCategory = margin + 64;
+    const colDesc = margin + 102;
+    const colAmount = pageWidth - margin;
+    const rowH = 6;
+
+    let tableY = 20;
+    doc.setFont('times', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text('Transaction Details', margin, tableY);
+    tableY += 10;
+
+    // Table header
+    const drawTableHeader = () => {
+      doc.setFillColor(34, 139, 34);
+      doc.rect(margin, tableY - 4, contentWidth, rowH + 2, 'F');
+      doc.setFont('times', 'bold');
+      doc.setFontSize(8);
+      doc.setTextColor(255, 255, 255);
+      doc.text('Date', colDate + 2, tableY);
+      doc.text('Ref #', colRef + 2, tableY);
+      doc.text('Type', colType + 2, tableY);
+      doc.text('Category', colCategory + 2, tableY);
+      doc.text('Description', colDesc + 2, tableY);
+      doc.text('Amount', colAmount - 2, tableY, { align: 'right' });
+      tableY += rowH + 2;
+    };
+
+    drawTableHeader();
+
+    doc.setFont('times', 'normal');
+    doc.setFontSize(8);
+    let rowIndex = 0;
+
+    filteredEntries.forEach((entry) => {
+      if (tableY > pageHeight - 35) {
+        doc.addPage();
+        tableY = 20;
+        drawTableHeader();
+      }
+
+      // Alternating row color
+      if (rowIndex % 2 === 0) {
+        doc.setFillColor(250, 250, 250);
+        doc.rect(margin, tableY - 4, contentWidth, rowH, 'F');
+      }
+
+      doc.setTextColor(60, 60, 60);
+      doc.text(format(new Date(entry.entry_date), 'dd/MM/yy'), colDate + 2, tableY);
+      doc.text((entry.reference_number || '-').substring(0, 12), colRef + 2, tableY);
+      doc.text(entry.entry_type === 'income' ? 'CR' : 'DR', colType + 2, tableY);
+      doc.text(entry.category.substring(0, 18), colCategory + 2, tableY);
+      doc.text((entry.description || '-').substring(0, 22), colDesc + 2, tableY);
+      
+      const amtColor = entry.entry_type === 'income' ? [34, 139, 34] : [200, 0, 0];
+      doc.setTextColor(amtColor[0], amtColor[1], amtColor[2]);
+      doc.text(
+        `${entry.entry_type === 'income' ? '+' : '-'}${formatAmount(entry.amount)}`,
+        colAmount - 2, tableY, { align: 'right' }
+      );
+
+      tableY += rowH;
+      rowIndex++;
+    });
+
+    // Bottom line totals
+    tableY += 4;
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.5);
+    doc.line(margin, tableY - 2, pageWidth - margin, tableY - 2);
+    doc.setFont('times', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(0, 0, 0);
+    doc.text('TOTAL', colCategory + 2, tableY + 2);
+    const balStr = `${netBal >= 0 ? '+' : '-'}${formatAmount(Math.abs(netBal))}`;
+    doc.setTextColor(balColor[0], balColor[1], balColor[2]);
+    doc.text(balStr, colAmount - 2, tableY + 2, { align: 'right' });
+
+    // Add footers to all pages
+    const totalPages = doc.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      addFooter(i, totalPages);
     }
     
-    doc.save(`farm-ledger-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
-    toast.success('Ledger exported successfully!');
+    doc.save(`imvelo-financial-statement-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
+    toast.success('Financial statement exported!');
   };
 
   const getFilteredEntries = () => {
@@ -800,51 +997,47 @@ const DigitalLedger = () => {
                 <p className="text-sm">Start tracking your farm finances!</p>
               </div>
             ) : (
-              <div className="overflow-x-auto -mx-6 px-6">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead className="text-right">Amount</TableHead>
-                      <TableHead className="w-10"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {getFilteredEntries().map((entry) => (
-                      <TableRow key={entry.id}>
-                        <TableCell className="text-sm">
-                          {format(new Date(entry.entry_date), 'MMM d')}
-                        </TableCell>
-                        <TableCell className="text-sm">
-                          <div className="flex items-center gap-2">
-                            {entry.entry_type === 'income' ? (
-                              <TrendingUp className="w-3 h-3 text-green-600" />
-                            ) : (
-                              <TrendingDown className="w-3 h-3 text-red-600" />
-                            )}
-                            <span className="truncate max-w-[120px]">{entry.category}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className={`text-right font-medium text-sm ${
-                          entry.entry_type === 'income' ? 'text-green-600' : 'text-red-600'
-                        }`}>
-                          {entry.entry_type === 'income' ? '+' : '-'}{formatAmount(entry.amount)}
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => deleteEntry(entry.id)}
-                            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+              <div className="space-y-2">
+                {getFilteredEntries().map((entry) => (
+                  <div key={entry.id} className="flex items-center gap-3 p-3 border rounded-lg">
+                    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                      entry.entry_type === 'income' ? 'bg-green-100 dark:bg-green-950/30' : 'bg-red-100 dark:bg-red-950/30'
+                    }`}>
+                      {entry.entry_type === 'income' ? (
+                        <TrendingUp className="w-4 h-4 text-green-600" />
+                      ) : (
+                        <TrendingDown className="w-4 h-4 text-red-600" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{entry.category}</p>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span>{format(new Date(entry.entry_date), 'MMM d')}</span>
+                        {entry.description && (
+                          <>
+                            <span>•</span>
+                            <span className="truncate">{entry.description}</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <span className={`text-sm font-semibold ${
+                        entry.entry_type === 'income' ? 'text-green-600' : 'text-red-600'
+                      }`}>
+                        {entry.entry_type === 'income' ? '+' : '-'}{formatAmount(entry.amount)}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => deleteEntry(entry.id)}
+                        className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </CardContent>
