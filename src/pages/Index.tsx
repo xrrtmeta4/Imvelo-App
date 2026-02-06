@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import WeatherCard from '@/components/WeatherCard';
 import WeatherTicker from '@/components/WeatherTicker';
-import PestScanner from '@/components/PestScanner';
 import BestPractices from '@/components/BestPractices';
 import ExtensionServices from '@/components/ExtensionServices';
 import AIChatbot from '@/components/AIChatbot';
@@ -96,7 +95,6 @@ const Index = () => {
         </div>
 
         <WeatherCard />
-        <PestScanner />
         <div className="grid grid-cols-1 gap-6">
           <ExtensionServices />
           <BestPractices />

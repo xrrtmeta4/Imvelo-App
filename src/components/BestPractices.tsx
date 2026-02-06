@@ -1,23 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; 
-import { BookOpen, TrendingUp, Leaf, CloudLightning } from "lucide-react";
+import { BookOpen, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const BestPractices = () => {
   const navigate = useNavigate();
 
   const practices = [
-    {
-      title: "Crop Health Monitoring",
-      description: "AI-powered phenotype analysis for early stress detection",
-      path: "/crop-monitoring",
-      icon: Leaf
-    },
-    {
-      title: "Climate Risk Engine",
-      description: "Forecast volatility and adaptive recommendations",
-      path: "/climate-risk",
-      icon: CloudLightning
-    },
     {
       title: "Seasonal Planting Guide",
       description: "Learn the best time to plant your crops",
