@@ -5,19 +5,20 @@ import PestScanner from '@/components/PestScanner';
 import BestPractices from '@/components/BestPractices';
 import ExtensionServices from '@/components/ExtensionServices';
 import AIChatbot from '@/components/AIChatbot';
-import PushNotificationManager from '@/components/PushNotificationManager';
 import NotificationBell from '@/components/NotificationBell';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
-import { Sprout, Crown } from 'lucide-react';
+import { Sprout, Crown, Leaf, CloudLightning } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
   useNotifications();
   const { isPremium, openUpgrade, getFormattedPrice } = useUsageLimits();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [userName, setUserName] = useState<string | null>(null);
 
   useEffect(() => {
@@ -66,7 +67,34 @@ const Index = () => {
       </header>
 
       <div className="max-w-screen-sm mx-auto px-4 py-6 space-y-6">
-        {user && <PushNotificationManager />}
+        {/* Quick Access: Crop Monitoring & Climate Risk */}
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={() => navigate('/crop-monitoring')}
+            className="flex items-center gap-3 p-4 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-colors text-left"
+          >
+            <div className="bg-primary/20 p-2.5 rounded-lg">
+              <Leaf className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <p className="font-semibold text-sm text-foreground">Crop Monitor</p>
+              <p className="text-xs text-muted-foreground">AI health scan</p>
+            </div>
+          </button>
+          <button
+            onClick={() => navigate('/climate-risk')}
+            className="flex items-center gap-3 p-4 rounded-xl bg-destructive/10 border border-destructive/20 hover:bg-destructive/20 transition-colors text-left"
+          >
+            <div className="bg-destructive/20 p-2.5 rounded-lg">
+              <CloudLightning className="w-5 h-5 text-destructive" />
+            </div>
+            <div>
+              <p className="font-semibold text-sm text-foreground">Climate Risk</p>
+              <p className="text-xs text-muted-foreground">Volatility engine</p>
+            </div>
+          </button>
+        </div>
+
         <WeatherCard />
         <PestScanner />
         <div className="grid grid-cols-1 gap-6">
