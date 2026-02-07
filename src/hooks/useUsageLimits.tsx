@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 
 const DAILY_DETECTION_LIMIT = 1;
-const DAILY_CHAT_LIMIT = 5;
+const DAILY_CHAT_LIMIT = 1;
 
 // Subscription pricing in different currencies
 export const subscriptionPricing: Record<string, { amount: number; symbol: string; currency: string }> = {
