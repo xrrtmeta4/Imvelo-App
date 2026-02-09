@@ -12,6 +12,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { format, addDays, isPast, isToday, isTomorrow, differenceInDays } from 'date-fns';
+import PremiumGate from '@/components/PremiumGate';
 
 interface PesticideSchedule {
   id: string;
@@ -67,7 +68,7 @@ const repeatOptions = [
   { value: '30', label: 'Monthly' }
 ];
 
-const PesticideCalendar = () => {
+const PesticideCalendarContent = () => {
   const { user } = useAuth();
   const [schedules, setSchedules] = useState<PesticideSchedule[]>([]);
   const [loading, setLoading] = useState(true);
@@ -506,5 +507,11 @@ const PesticideCalendar = () => {
     </div>
   );
 };
+
+const PesticideCalendar = () => (
+  <PremiumGate feature="Spray Scheduling Calendar">
+    <PesticideCalendarContent />
+  </PremiumGate>
+);
 
 export default PesticideCalendar;

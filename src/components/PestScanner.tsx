@@ -92,7 +92,7 @@ const PestScanner = () => {
           </span>
           {!isPremium && (
             <span className="text-xs font-normal text-muted-foreground">
-              {remaining} detection left
+              {remaining} scan this week
             </span>
           )}
         </CardTitle>
@@ -100,8 +100,8 @@ const PestScanner = () => {
       <CardContent className="space-y-4">
         {!canUseDetection() ? (
           <div className="text-center py-4 space-y-3">
-            <p className="text-sm text-muted-foreground">
-              You've used your free detection today.
+           <p className="text-sm text-muted-foreground">
+              You've used your free scan this week.
             </p>
             <Button onClick={openUpgrade} className="gap-2">
               <Crown className="w-4 h-4" />

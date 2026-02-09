@@ -1,3 +1,4 @@
+import PremiumGate from '@/components/PremiumGate';
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -72,7 +73,7 @@ const expenseCategories = [
 
 const paymentMethods = ['Cash', 'Bank Transfer', 'Mobile Money', 'Check', 'Credit', 'Other'];
 
-const DigitalLedger = () => {
+const DigitalLedgerContent = () => {
   const { user } = useAuth();
   const { selectedCurrency, setCurrency, formatAmount } = useCurrency();
   const [entries, setEntries] = useState<LedgerEntry[]>([]);
@@ -1046,5 +1047,11 @@ const DigitalLedger = () => {
     </div>
   );
 };
+
+const DigitalLedger = () => (
+  <PremiumGate feature="Digital Financial Ledger">
+    <DigitalLedgerContent />
+  </PremiumGate>
+);
 
 export default DigitalLedger;

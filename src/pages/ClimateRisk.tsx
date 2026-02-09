@@ -1,3 +1,4 @@
+ import PremiumGate from '@/components/PremiumGate';
  import { useState, useEffect, useCallback } from 'react';
  import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
  import { Button } from '@/components/ui/button';
@@ -8,7 +9,7 @@
  import { useAuth } from '@/hooks/useAuth';
  import { useLocation } from '@/hooks/useLocation';
  
- const ClimateRisk = () => {
+ const ClimateRiskContent = () => {
    const { user } = useAuth();
    const { getLocation } = useLocation();
    const [loading, setLoading] = useState(true);
@@ -300,4 +301,10 @@
    );
  };
  
+ const ClimateRisk = () => (
+   <PremiumGate feature="Climate Risk Analysis">
+     <ClimateRiskContent />
+   </PremiumGate>
+ );
+
  export default ClimateRisk;

@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Cloud, CloudRain, Sun, Thermometer, Wind, Droplets, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Cloud, CloudRain, Sun, Thermometer, Wind, Droplets, Loader2, Crown, Lock } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation } from '@/hooks/useLocation';
+import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { format, addDays } from 'date-fns';
 
 // Cache weather data in memory
@@ -12,6 +14,7 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 const Weather = () => {
   const { user } = useAuth();
+  const { isPremium, openUpgrade, getFormattedPrice } = useUsageLimits();
   const { getLocation } = useLocation();
   const [weather, setWeather] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -148,77 +151,99 @@ const Weather = () => {
             </Card>
 
             {/* 7-Day Forecast */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Cloud className="w-5 h-5" />
-                  7 Days Forecast
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {weather.forecast?.map((day: any, index: number) => (
-                  <div 
-                    key={index} 
-                    className={`flex items-center justify-between py-3 ${
-                      index !== weather.forecast.length - 1 ? 'border-b border-border' : ''
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-20">
-                        <p className={`text-sm ${index === 0 ? 'font-bold' : ''}`}>
-                          {getDayName(index)}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {format(addDays(new Date(), index), 'MMM d')}
-                        </p>
-                      </div>
-                      {day.precipitation_probability > 30 ? (
-                        <CloudRain className="w-6 h-6 text-blue-500" />
-                      ) : (
-                        <Sun className="w-6 h-6 text-yellow-500" />
-                      )}
-                    </div>
-                    
-                    <div className="flex items-center gap-4">
-                      {day.precipitation_probability > 0 && (
-                        <div className="flex items-center gap-1 text-blue-500">
-                          <Droplets className="w-4 h-4" />
-                          <span className="text-sm">{day.precipitation_probability}%</span>
+            {isPremium ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Cloud className="w-5 h-5" />
+                    7 Days Forecast
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {weather.forecast?.map((day: any, index: number) => (
+                    <div 
+                      key={index} 
+                      className={`flex items-center justify-between py-3 ${
+                        index !== weather.forecast.length - 1 ? 'border-b border-border' : ''
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-20">
+                          <p className={`text-sm ${index === 0 ? 'font-bold' : ''}`}>
+                            {getDayName(index)}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {format(addDays(new Date(), index), 'MMM d')}
+                          </p>
                         </div>
-                      )}
-                      <div className="text-right">
-                        <span className="font-medium">{day.max_temp}°</span>
-                        <span className="text-muted-foreground text-sm ml-1">/ {day.min_temp}°</span>
+                        {day.precipitation_probability > 30 ? (
+                          <CloudRain className="w-6 h-6 text-blue-500" />
+                        ) : (
+                          <Sun className="w-6 h-6 text-yellow-500" />
+                        )}
+                      </div>
+                      
+                      <div className="flex items-center gap-4">
+                        {day.precipitation_probability > 0 && (
+                          <div className="flex items-center gap-1 text-blue-500">
+                            <Droplets className="w-4 h-4" />
+                            <span className="text-sm">{day.precipitation_probability}%</span>
+                          </div>
+                        )}
+                        <div className="text-right">
+                          <span className="font-medium">{day.max_temp}°</span>
+                          <span className="text-muted-foreground text-sm ml-1">/ {day.min_temp}°</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+                  ))}
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="border-primary/30">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Lock className="w-5 h-5 text-muted-foreground" />
+                    7 Days Forecast
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="text-center space-y-4 py-6">
+                  <p className="text-sm text-muted-foreground">
+                    Upgrade to Premium to see the full 7-day forecast, detailed farming tips, and more.
+                  </p>
+                  <Button onClick={openUpgrade} className="gap-2">
+                    <Crown className="w-4 h-4" />
+                    Upgrade for {getFormattedPrice()}/mo
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
 
-            {/* Weather Tips */}
-            <Card className="bg-muted/50">
-              <CardHeader>
-                <CardTitle className="text-lg">Farming Tips for Today</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 text-sm">
-                {weather.current.temperature > 30 && (
-                  <p className="text-orange-600">🌡️ High temperature - Water your crops early morning or late evening to reduce evaporation.</p>
-                )}
-                {weather.daily.precipitation_probability > 50 && (
-                  <p className="text-blue-600">🌧️ High chance of rain - Avoid spraying pesticides, as they may wash away.</p>
-                )}
-                {weather.current.wind_speed > 20 && (
-                  <p className="text-gray-600">💨 Windy conditions - Secure lightweight structures and avoid burning activities.</p>
-                )}
-                {weather.current.humidity > 80 && (
-                  <p className="text-teal-600">💧 High humidity - Monitor crops for fungal diseases.</p>
-                )}
-                {weather.daily.precipitation_probability < 20 && weather.current.temperature < 30 && (
-                  <p className="text-green-600">🌱 Good conditions for planting and outdoor farming activities.</p>
-                )}
-              </CardContent>
-            </Card>
+            {/* Weather Tips - Premium Only */}
+            {isPremium && (
+              <Card className="bg-muted/50">
+                <CardHeader>
+                  <CardTitle className="text-lg">Farming Tips for Today</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2 text-sm">
+                  {weather.current.temperature > 30 && (
+                    <p className="text-orange-600">🌡️ High temperature - Water your crops early morning or late evening to reduce evaporation.</p>
+                  )}
+                  {weather.daily.precipitation_probability > 50 && (
+                    <p className="text-blue-600">🌧️ High chance of rain - Avoid spraying pesticides, as they may wash away.</p>
+                  )}
+                  {weather.current.wind_speed > 20 && (
+                    <p className="text-gray-600">💨 Windy conditions - Secure lightweight structures and avoid burning activities.</p>
+                  )}
+                  {weather.current.humidity > 80 && (
+                    <p className="text-teal-600">💧 High humidity - Monitor crops for fungal diseases.</p>
+                  )}
+                  {weather.daily.precipitation_probability < 20 && weather.current.temperature < 30 && (
+                    <p className="text-green-600">🌱 Good conditions for planting and outdoor farming activities.</p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
           </>
         ) : (
           <Card>
