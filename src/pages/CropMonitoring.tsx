@@ -1,3 +1,4 @@
+ import PremiumGate from '@/components/PremiumGate';
  import { useState } from 'react';
  import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
  import { Button } from '@/components/ui/button';
@@ -21,7 +22,7 @@
    'Seedling', 'Vegetative', 'Flowering', 'Fruiting', 'Maturity'
  ];
  
- const CropMonitoring = () => {
+ const CropMonitoringContent = () => {
    const { user } = useAuth();
    const { canUseDetection, incrementDetection, getRemainingDetections, openUpgrade, isPremium } = useUsageLimits();
    const [loading, setLoading] = useState(false);
@@ -359,4 +360,10 @@
    );
  };
  
+ const CropMonitoring = () => (
+   <PremiumGate feature="Crop Monitoring">
+     <CropMonitoringContent />
+   </PremiumGate>
+ );
+
  export default CropMonitoring;

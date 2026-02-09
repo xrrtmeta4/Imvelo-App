@@ -2,26 +2,26 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 
-const DAILY_DETECTION_LIMIT = 1;
+const WEEKLY_DETECTION_LIMIT = 1;
 const DAILY_CHAT_LIMIT = 1;
 
 // Subscription pricing in different currencies
 export const subscriptionPricing: Record<string, { amount: number; symbol: string; currency: string }> = {
-  USD: { amount: 6.04, symbol: '$', currency: 'USD' },
-  EUR: { amount: 5.50, symbol: '€', currency: 'EUR' },
-  GBP: { amount: 4.80, symbol: '£', currency: 'GBP' },
-  ZAR: { amount: 110.00, symbol: 'R', currency: 'ZAR' },
-  SZL: { amount: 110.00, symbol: 'E', currency: 'SZL' },
-  KES: { amount: 780.00, symbol: 'KSh', currency: 'KES' },
-  NGN: { amount: 9000.00, symbol: '₦', currency: 'NGN' },
-  GHS: { amount: 75.00, symbol: 'GH₵', currency: 'GHS' },
-  TZS: { amount: 15000.00, symbol: 'TSh', currency: 'TZS' },
-  UGX: { amount: 22500.00, symbol: 'USh', currency: 'UGX' },
-  INR: { amount: 500.00, symbol: '₹', currency: 'INR' },
-  BRL: { amount: 30.00, symbol: 'R$', currency: 'BRL' },
-  MXN: { amount: 110.00, symbol: '$', currency: 'MXN' },
-  AUD: { amount: 9.50, symbol: 'A$', currency: 'AUD' },
-  CAD: { amount: 8.50, symbol: 'C$', currency: 'CAD' },
+  USD: { amount: 30.00, symbol: '$', currency: 'USD' },
+  EUR: { amount: 27.50, symbol: '€', currency: 'EUR' },
+  GBP: { amount: 24.00, symbol: '£', currency: 'GBP' },
+  ZAR: { amount: 550.00, symbol: 'R', currency: 'ZAR' },
+  SZL: { amount: 550.00, symbol: 'E', currency: 'SZL' },
+  KES: { amount: 3900.00, symbol: 'KSh', currency: 'KES' },
+  NGN: { amount: 45000.00, symbol: '₦', currency: 'NGN' },
+  GHS: { amount: 375.00, symbol: 'GH₵', currency: 'GHS' },
+  TZS: { amount: 75000.00, symbol: 'TSh', currency: 'TZS' },
+  UGX: { amount: 112500.00, symbol: 'USh', currency: 'UGX' },
+  INR: { amount: 2500.00, symbol: '₹', currency: 'INR' },
+  BRL: { amount: 150.00, symbol: 'R$', currency: 'BRL' },
+  MXN: { amount: 550.00, symbol: '$', currency: 'MXN' },
+  AUD: { amount: 47.00, symbol: 'A$', currency: 'AUD' },
+  CAD: { amount: 42.00, symbol: 'C$', currency: 'CAD' },
 };
 
 const BASE_UPGRADE_URL = 'https://checkout.dodopayments.com/buy/pdt_0NVKhwZKeJCCaRbxoTNno?quantity=1&redirect_url=https://imveloappsz.vercel.app';
@@ -30,18 +30,27 @@ interface UsageData {
   detectionCount: number;
   chatCount: number;
   lastResetDate: string;
+  weekResetDate: string;
 }
 
 const getStorageKey = (userId: string) => `imvelo_usage_${userId}`;
 
 const getTodayDate = () => new Date().toISOString().split('T')[0];
 
+const getWeekStart = () => {
+  const now = new Date();
+  const day = now.getDay();
+  const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+  return new Date(now.setDate(diff)).toISOString().split('T')[0];
+};
+
 export const useUsageLimits = () => {
   const { user } = useAuth();
   const [usage, setUsage] = useState<UsageData>({
     detectionCount: 0,
     chatCount: 0,
-    lastResetDate: getTodayDate()
+    lastResetDate: getTodayDate(),
+    weekResetDate: getWeekStart()
   });
   const [isPremium, setIsPremium] = useState(false);
   const [loadingPremium, setLoadingPremium] = useState(true);
@@ -106,18 +115,27 @@ export const useUsageLimits = () => {
     const stored = localStorage.getItem(getStorageKey(user.id));
     if (stored) {
       const data: UsageData = JSON.parse(stored);
-      // Reset if it's a new day
-      if (data.lastResetDate !== getTodayDate()) {
-        const resetData = {
-          detectionCount: 0,
-          chatCount: 0,
-          lastResetDate: getTodayDate()
-        };
-        localStorage.setItem(getStorageKey(user.id), JSON.stringify(resetData));
-        setUsage(resetData);
-      } else {
-        setUsage(data);
+      const currentWeek = getWeekStart();
+      const today = getTodayDate();
+      let needsUpdate = false;
+
+      // Reset weekly detection count
+      if (data.weekResetDate !== currentWeek) {
+        data.detectionCount = 0;
+        data.weekResetDate = currentWeek;
+        needsUpdate = true;
       }
+      // Reset daily chat count
+      if (data.lastResetDate !== today) {
+        data.chatCount = 0;
+        data.lastResetDate = today;
+        needsUpdate = true;
+      }
+
+      if (needsUpdate) {
+        localStorage.setItem(getStorageKey(user.id), JSON.stringify(data));
+      }
+      setUsage(data);
     }
   };
 
@@ -127,7 +145,7 @@ export const useUsageLimits = () => {
     setUsage(newUsage);
   };
 
-  const canUseDetection = () => isPremium || usage.detectionCount < DAILY_DETECTION_LIMIT;
+  const canUseDetection = () => isPremium || usage.detectionCount < WEEKLY_DETECTION_LIMIT;
   const canUseChat = () => isPremium || usage.chatCount < DAILY_CHAT_LIMIT;
 
   const incrementDetection = () => {
@@ -135,7 +153,8 @@ export const useUsageLimits = () => {
     const newUsage = {
       ...usage,
       detectionCount: usage.detectionCount + 1,
-      lastResetDate: getTodayDate()
+      lastResetDate: getTodayDate(),
+      weekResetDate: usage.weekResetDate || getWeekStart()
     };
     saveUsage(newUsage);
   };
@@ -150,7 +169,7 @@ export const useUsageLimits = () => {
     saveUsage(newUsage);
   };
 
-  const getRemainingDetections = () => isPremium ? Infinity : DAILY_DETECTION_LIMIT - usage.detectionCount;
+  const getRemainingDetections = () => isPremium ? Infinity : WEEKLY_DETECTION_LIMIT - usage.detectionCount;
   const getRemainingChats = () => isPremium ? Infinity : DAILY_CHAT_LIMIT - usage.chatCount;
 
   const getPricing = () => subscriptionPricing[userCurrency] || subscriptionPricing.USD;
