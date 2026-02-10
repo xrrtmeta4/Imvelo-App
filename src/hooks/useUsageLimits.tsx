@@ -5,24 +5,8 @@ import { supabase } from '@/lib/supabase';
 const WEEKLY_DETECTION_LIMIT = 1;
 const DAILY_CHAT_LIMIT = 1;
 
-// Subscription pricing in different currencies
-export const subscriptionPricing: Record<string, { amount: number; symbol: string; currency: string }> = {
-  USD: { amount: 30.00, symbol: '$', currency: 'USD' },
-  EUR: { amount: 27.50, symbol: '€', currency: 'EUR' },
-  GBP: { amount: 24.00, symbol: '£', currency: 'GBP' },
-  ZAR: { amount: 550.00, symbol: 'R', currency: 'ZAR' },
-  SZL: { amount: 550.00, symbol: 'E', currency: 'SZL' },
-  KES: { amount: 3900.00, symbol: 'KSh', currency: 'KES' },
-  NGN: { amount: 45000.00, symbol: '₦', currency: 'NGN' },
-  GHS: { amount: 375.00, symbol: 'GH₵', currency: 'GHS' },
-  TZS: { amount: 75000.00, symbol: 'TSh', currency: 'TZS' },
-  UGX: { amount: 112500.00, symbol: 'USh', currency: 'UGX' },
-  INR: { amount: 2500.00, symbol: '₹', currency: 'INR' },
-  BRL: { amount: 150.00, symbol: 'R$', currency: 'BRL' },
-  MXN: { amount: 550.00, symbol: '$', currency: 'MXN' },
-  AUD: { amount: 47.00, symbol: 'A$', currency: 'AUD' },
-  CAD: { amount: 42.00, symbol: 'C$', currency: 'CAD' },
-};
+// Subscription pricing - USD only
+export const SUBSCRIPTION_PRICE = { amount: 30.00, symbol: '$', currency: 'USD' };
 
 const BASE_UPGRADE_URL = 'https://checkout.dodopayments.com/buy/pdt_0NVKhwZKeJCCaRbxoTNno?quantity=1&redirect_url=https://imveloappsz.vercel.app';
 
@@ -54,34 +38,14 @@ export const useUsageLimits = () => {
   });
   const [isPremium, setIsPremium] = useState(false);
   const [loadingPremium, setLoadingPremium] = useState(true);
-  const [userCurrency, setUserCurrency] = useState<string>('USD');
+  const [trialDaysLeft, setTrialDaysLeft] = useState<number | null>(null);
 
   useEffect(() => {
     if (user) {
       loadUsage();
       checkPremiumStatus();
-      detectUserCurrency();
     }
   }, [user]);
-
-  const detectUserCurrency = async () => {
-    // Try to get currency from user's location or default to USD
-    try {
-      const storedCurrency = localStorage.getItem(`imvelo_preferred_currency_${user?.id}`);
-      if (storedCurrency && subscriptionPricing[storedCurrency]) {
-        setUserCurrency(storedCurrency);
-      }
-    } catch (error) {
-      console.error('Error detecting currency:', error);
-    }
-  };
-
-  const setPreferredCurrency = (currency: string) => {
-    if (user && subscriptionPricing[currency]) {
-      setUserCurrency(currency);
-      localStorage.setItem(`imvelo_preferred_currency_${user.id}`, currency);
-    }
-  };
 
   const checkPremiumStatus = async () => {
     if (!user) {
@@ -92,7 +56,7 @@ export const useUsageLimits = () => {
     try {
       const { data, error } = await supabase
         .from('premium_subscriptions')
-        .select('status, expires_at')
+        .select('status, expires_at, payment_reference')
         .eq('user_id', user.id)
         .maybeSingle();
 
@@ -100,6 +64,11 @@ export const useUsageLimits = () => {
         // Check if subscription hasn't expired
         if (!data.expires_at || new Date(data.expires_at) > new Date()) {
           setIsPremium(true);
+          // Calculate trial days left if it's a free trial
+          if (data.payment_reference === 'free_trial' && data.expires_at) {
+            const daysLeft = Math.ceil((new Date(data.expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+            setTrialDaysLeft(Math.max(0, daysLeft));
+          }
         }
       }
     } catch (error) {
@@ -172,12 +141,7 @@ export const useUsageLimits = () => {
   const getRemainingDetections = () => isPremium ? Infinity : WEEKLY_DETECTION_LIMIT - usage.detectionCount;
   const getRemainingChats = () => isPremium ? Infinity : DAILY_CHAT_LIMIT - usage.chatCount;
 
-  const getPricing = () => subscriptionPricing[userCurrency] || subscriptionPricing.USD;
-
-  const getFormattedPrice = () => {
-    const pricing = getPricing();
-    return `${pricing.symbol}${pricing.amount.toFixed(2)}`;
-  };
+  const getFormattedPrice = () => `${SUBSCRIPTION_PRICE.symbol}${SUBSCRIPTION_PRICE.amount.toFixed(2)}`;
 
   const openUpgrade = () => {
     window.open(BASE_UPGRADE_URL, '_blank');
@@ -193,11 +157,8 @@ export const useUsageLimits = () => {
     openUpgrade,
     isPremium,
     loadingPremium,
-    userCurrency,
-    setPreferredCurrency,
-    getPricing,
+    trialDaysLeft,
     getFormattedPrice,
-    subscriptionPricing,
     UPGRADE_URL: BASE_UPGRADE_URL
   };
 };

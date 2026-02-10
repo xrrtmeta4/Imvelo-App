@@ -32,6 +32,7 @@ const PremiumGate = ({ feature, children }: PremiumGateProps) => {
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">Unlock all features for just</p>
               <p className="text-3xl font-bold text-primary">{getFormattedPrice()}/mo</p>
+              <p className="text-xs text-muted-foreground">New users get a 7-day free trial!</p>
             </div>
             <ul className="text-sm text-left space-y-2 max-w-xs mx-auto">
               <li className="flex items-center gap-2">✅ Unlimited pest & disease scans</li>

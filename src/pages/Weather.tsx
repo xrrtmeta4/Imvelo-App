@@ -18,6 +18,7 @@ const Weather = () => {
   const { getLocation } = useLocation();
   const [weather, setWeather] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [locationName, setLocationName] = useState<string>('');
   
 
   const fetchWeather = useCallback(async (lat: number, lon: number) => {
@@ -60,15 +61,12 @@ const Weather = () => {
 
   const getWeatherData = useCallback(async () => {
     try {
-      // Prefer GPS on this page for the most accurate city/country
       const locationData = await getLocation({ preferGps: true });
-      
+      setLocationName(locationData.city ? `${locationData.city}${locationData.country_name ? ', ' + locationData.country_name : ''}` : '');
       await fetchWeather(locationData.latitude, locationData.longitude);
     } catch {
-      // Fallback to default location on error
-      const defaultLat = -26.3054;
-      const defaultLon = 31.1367;
-      await fetchWeather(defaultLat, defaultLon);
+      setLocationName('Mbabane, Eswatini');
+      await fetchWeather(-26.3054, 31.1367);
     }
   }, [fetchWeather, getLocation]);
 
@@ -109,6 +107,7 @@ const Weather = () => {
         <div className="max-w-screen-sm mx-auto text-center">
           <Cloud className="w-12 h-12 mx-auto mb-4" />
           <h1 className="text-3xl font-bold">Weather</h1>
+          {locationName && <p className="text-sm opacity-80 mt-1">📍 {locationName}</p>}
         </div>
       </header>
 
