@@ -2,13 +2,42 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 
-const WEEKLY_DETECTION_LIMIT = 1;
-const DAILY_CHAT_LIMIT = 1;
+export type PlanTier = 'free' | 'starter' | 'pro' | 'enterprise';
 
-// Subscription pricing - USD only
-export const SUBSCRIPTION_PRICE = { amount: 30.00, symbol: '$', currency: 'USD' };
-
-const BASE_UPGRADE_URL = 'https://checkout.dodopayments.com/buy/pdt_0NVKhwZKeJCCaRbxoTNno?quantity=1&redirect_url=https://imveloappsz.vercel.app';
+export const PLANS = {
+  free: {
+    name: 'Free',
+    price: 0,
+    weeklyDetections: 0,
+    dailyChats: 0,
+    features: ['Basic weather info', 'Best practices library', 'Extension directory'],
+    checkoutUrl: '',
+  },
+  starter: {
+    name: 'Starter',
+    price: 5.99,
+    weeklyDetections: 1,
+    dailyChats: 1,
+    features: ['1 pest/disease scan per week', '1 AI chat message per day', 'Basic weather info', 'Best practices library', 'Extension directory'],
+    checkoutUrl: 'https://checkout.dodopayments.com/buy/pdt_0NVKhwZKeJCCaRbxoTNno?quantity=1&redirect_url=https://imveloappsz.vercel.app',
+  },
+  pro: {
+    name: 'Pro',
+    price: 29.99,
+    weeklyDetections: 10,
+    dailyChats: 20,
+    features: ['10 scans per week', '20 AI chats per day', '7-day weather forecast', 'Farming tips', 'Spray scheduling calendar', 'Digital financial ledger', 'Produce estimation'],
+    checkoutUrl: 'https://checkout.dodopayments.com/buy/pdt_0NYZaqcOARihEXXOPIdmC?quantity=1&redirect_url=https://imveloappsz.vercel.app',
+  },
+  enterprise: {
+    name: 'Enterprise',
+    price: 99.99,
+    weeklyDetections: Infinity,
+    dailyChats: Infinity,
+    features: ['Unlimited scans', 'Unlimited AI chat', '7-day weather forecast', 'Farming tips', 'Spray scheduling calendar', 'Digital financial ledger', 'Produce estimation', 'Crop monitoring (phenotype)', 'Climate risk engine', 'Priority support'],
+    checkoutUrl: 'https://checkout.dodopayments.com/buy/pdt_0NYZb3ccdGubedVQypzZn?quantity=1&redirect_url=https://imveloappsz.vercel.app',
+  },
+};
 
 interface UsageData {
   detectionCount: number;
@@ -18,7 +47,6 @@ interface UsageData {
 }
 
 const getStorageKey = (userId: string) => `imvelo_usage_${userId}`;
-
 const getTodayDate = () => new Date().toISOString().split('T')[0];
 
 const getWeekStart = () => {
@@ -36,7 +64,7 @@ export const useUsageLimits = () => {
     lastResetDate: getTodayDate(),
     weekResetDate: getWeekStart()
   });
-  const [isPremium, setIsPremium] = useState(false);
+  const [currentPlan, setCurrentPlan] = useState<PlanTier>('free');
   const [loadingPremium, setLoadingPremium] = useState(true);
   const [trialDaysLeft, setTrialDaysLeft] = useState<number | null>(null);
 
@@ -56,15 +84,14 @@ export const useUsageLimits = () => {
     try {
       const { data, error } = await supabase
         .from('premium_subscriptions')
-        .select('status, expires_at, payment_reference')
+        .select('status, expires_at, payment_reference, plan')
         .eq('user_id', user.id)
         .maybeSingle();
 
       if (data && data.status === 'active') {
-        // Check if subscription hasn't expired
         if (!data.expires_at || new Date(data.expires_at) > new Date()) {
-          setIsPremium(true);
-          // Calculate trial days left if it's a free trial
+          const plan = (data as any).plan as PlanTier || 'starter';
+          setCurrentPlan(plan);
           if (data.payment_reference === 'free_trial' && data.expires_at) {
             const daysLeft = Math.ceil((new Date(data.expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
             setTrialDaysLeft(Math.max(0, daysLeft));
@@ -80,7 +107,6 @@ export const useUsageLimits = () => {
 
   const loadUsage = () => {
     if (!user) return;
-    
     const stored = localStorage.getItem(getStorageKey(user.id));
     if (stored) {
       const data: UsageData = JSON.parse(stored);
@@ -88,19 +114,16 @@ export const useUsageLimits = () => {
       const today = getTodayDate();
       let needsUpdate = false;
 
-      // Reset weekly detection count
       if (data.weekResetDate !== currentWeek) {
         data.detectionCount = 0;
         data.weekResetDate = currentWeek;
         needsUpdate = true;
       }
-      // Reset daily chat count
       if (data.lastResetDate !== today) {
         data.chatCount = 0;
         data.lastResetDate = today;
         needsUpdate = true;
       }
-
       if (needsUpdate) {
         localStorage.setItem(getStorageKey(user.id), JSON.stringify(data));
       }
@@ -114,11 +137,13 @@ export const useUsageLimits = () => {
     setUsage(newUsage);
   };
 
-  const canUseDetection = () => isPremium || usage.detectionCount < WEEKLY_DETECTION_LIMIT;
-  const canUseChat = () => isPremium || usage.chatCount < DAILY_CHAT_LIMIT;
+  const planConfig = PLANS[currentPlan];
+
+  const canUseDetection = () => usage.detectionCount < planConfig.weeklyDetections;
+  const canUseChat = () => usage.chatCount < planConfig.dailyChats;
 
   const incrementDetection = () => {
-    if (isPremium) return; // Don't track for premium users
+    if (planConfig.weeklyDetections === Infinity) return;
     const newUsage = {
       ...usage,
       detectionCount: usage.detectionCount + 1,
@@ -129,7 +154,7 @@ export const useUsageLimits = () => {
   };
 
   const incrementChat = () => {
-    if (isPremium) return; // Don't track for premium users
+    if (planConfig.dailyChats === Infinity) return;
     const newUsage = {
       ...usage,
       chatCount: usage.chatCount + 1,
@@ -138,13 +163,41 @@ export const useUsageLimits = () => {
     saveUsage(newUsage);
   };
 
-  const getRemainingDetections = () => isPremium ? Infinity : WEEKLY_DETECTION_LIMIT - usage.detectionCount;
-  const getRemainingChats = () => isPremium ? Infinity : DAILY_CHAT_LIMIT - usage.chatCount;
+  const getRemainingDetections = () => planConfig.weeklyDetections === Infinity ? Infinity : Math.max(0, planConfig.weeklyDetections - usage.detectionCount);
+  const getRemainingChats = () => planConfig.dailyChats === Infinity ? Infinity : Math.max(0, planConfig.dailyChats - usage.chatCount);
 
-  const getFormattedPrice = () => `${SUBSCRIPTION_PRICE.symbol}${SUBSCRIPTION_PRICE.amount.toFixed(2)}`;
+  const isPremium = currentPlan !== 'free';
+  const hasFeature = (feature: 'spray' | 'ledger' | 'cropMonitor' | 'climateRisk' | 'forecast' | 'farmingTips') => {
+    switch (feature) {
+      case 'spray':
+      case 'ledger':
+        return currentPlan === 'pro' || currentPlan === 'enterprise';
+      case 'cropMonitor':
+      case 'climateRisk':
+        return currentPlan === 'enterprise';
+      case 'forecast':
+      case 'farmingTips':
+        return currentPlan === 'pro' || currentPlan === 'enterprise';
+      default:
+        return false;
+    }
+  };
 
-  const openUpgrade = () => {
-    window.open(BASE_UPGRADE_URL, '_blank');
+  const getFormattedPrice = () => `$${planConfig.price.toFixed(2)}`;
+
+  const openUpgrade = (planOrEvent?: PlanTier | React.MouseEvent) => {
+    const targetPlan = (typeof planOrEvent === 'string' ? planOrEvent : undefined) || getNextPlan();
+    const url = PLANS[targetPlan].checkoutUrl;
+    if (url) window.open(url, '_blank');
+  };
+
+  const getNextPlan = (): PlanTier => {
+    switch (currentPlan) {
+      case 'free': return 'starter';
+      case 'starter': return 'pro';
+      case 'pro': return 'enterprise';
+      default: return 'enterprise';
+    }
   };
 
   return {
@@ -156,9 +209,11 @@ export const useUsageLimits = () => {
     getRemainingChats,
     openUpgrade,
     isPremium,
+    currentPlan,
+    hasFeature,
     loadingPremium,
     trialDaysLeft,
     getFormattedPrice,
-    UPGRADE_URL: BASE_UPGRADE_URL
+    PLANS,
   };
 };

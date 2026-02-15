@@ -509,7 +509,7 @@ const PesticideCalendarContent = () => {
 };
 
 const PesticideCalendar = () => (
-  <PremiumGate feature="Spray Scheduling Calendar">
+  <PremiumGate feature="Spray Scheduling Calendar" requiredPlan="pro">
     <PesticideCalendarContent />
   </PremiumGate>
 );

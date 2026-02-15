@@ -1049,7 +1049,7 @@ const DigitalLedgerContent = () => {
 };
 
 const DigitalLedger = () => (
-  <PremiumGate feature="Digital Financial Ledger">
+  <PremiumGate feature="Digital Financial Ledger" requiredPlan="pro">
     <DigitalLedgerContent />
   </PremiumGate>
 );

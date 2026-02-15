@@ -360,10 +360,10 @@
    );
  };
  
- const CropMonitoring = () => (
-   <PremiumGate feature="Crop Monitoring">
-     <CropMonitoringContent />
-   </PremiumGate>
- );
+const CropMonitoring = () => (
+  <PremiumGate feature="Crop Monitoring" requiredPlan="enterprise">
+    <CropMonitoringContent />
+  </PremiumGate>
+);
 
  export default CropMonitoring;
