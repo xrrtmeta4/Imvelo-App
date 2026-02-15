@@ -301,10 +301,10 @@
    );
  };
  
- const ClimateRisk = () => (
-   <PremiumGate feature="Climate Risk Analysis">
-     <ClimateRiskContent />
-   </PremiumGate>
- );
+const ClimateRisk = () => (
+  <PremiumGate feature="Climate Risk Analysis" requiredPlan="enterprise">
+    <ClimateRiskContent />
+  </PremiumGate>
+);
 
  export default ClimateRisk;

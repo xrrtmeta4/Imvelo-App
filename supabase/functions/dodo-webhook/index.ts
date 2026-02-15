@@ -161,11 +161,17 @@ serve(async (req) => {
     const payloadJson = JSON.parse(payload);
     console.log('Dodo Payment webhook received:', JSON.stringify(payloadJson, null, 2));
 
+    // Map product IDs to plan tiers
+    const PRODUCT_PLAN_MAP: Record<string, string> = {
+      'pdt_0NVKhwZKeJCCaRbxoTNno': 'starter',
+      'pdt_0NYZaqcOARihEXXOPIdmC': 'pro',
+      'pdt_0NYZb3ccdGubedVQypzZn': 'enterprise',
+    };
+
     // Handle payment completed event
     if (payloadJson.type === 'payment.succeeded' || payloadJson.type === 'payment_intent.succeeded' || payloadJson.event_type === 'payment.completed') {
       const paymentData = payloadJson.data || payloadJson;
       
-      // Extract customer email from various possible locations
       const customerEmail = paymentData.customer_email || 
                            paymentData.customer?.email || 
                            paymentData.metadata?.email ||
@@ -179,6 +185,10 @@ serve(async (req) => {
       const paymentReference = paymentData.payment_id || 
                                paymentData.id || 
                                paymentData.payment_intent_id;
+
+      // Determine plan from product ID
+      const productId = paymentData.product_id || paymentData.metadata?.product_id || '';
+      const plan = PRODUCT_PLAN_MAP[productId] || 'starter';
 
       console.log('Processing payment for email:', customerEmail);
       console.log('Payment reference:', paymentReference);
@@ -220,7 +230,8 @@ serve(async (req) => {
               .update({
                 status: 'active',
                 payment_reference: paymentReference,
-                expires_at: null // Lifetime access
+                expires_at: null,
+                plan: plan
               })
               .eq('user_id', user.id);
 
@@ -237,7 +248,8 @@ serve(async (req) => {
                 user_id: user.id,
                 status: 'active',
                 payment_reference: paymentReference,
-                expires_at: null // Lifetime access
+                expires_at: null,
+                plan: plan
               });
 
             if (insertError) {

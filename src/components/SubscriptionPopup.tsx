@@ -2,34 +2,14 @@ import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Crown, TrendingUp, Shield, Zap, BarChart3, FileText } from 'lucide-react';
-import { useUsageLimits } from '@/hooks/useUsageLimits';
+import { useUsageLimits, PLANS, PlanTier } from '@/hooks/useUsageLimits';
 
 const popupMessages = [
-  {
-    icon: TrendingUp,
-    title: "Unlock Unlimited Scans",
-    description: "Premium members get unlimited pest and disease detection scans every day. Never worry about limits again!"
-  },
-  {
-    icon: Shield,
-    title: "Protect Your Farm",
-    description: "With premium, get instant AI-powered diagnostics anytime. Early detection saves crops and livestock!"
-  },
-  {
-    icon: Zap,
-    title: "Unlimited AI Assistance",
-    description: "Ask the AI assistant unlimited questions about farming, weather, and best practices. Get expert advice 24/7!"
-  },
-  {
-    icon: BarChart3,
-    title: "Track Your Finances",
-    description: "Premium members can access the Digital Ledger to track expenses, income, and export financial reports!"
-  },
-  {
-    icon: FileText,
-    title: "Export Professional Reports",
-    description: "Generate and download professional PDF reports of your farm finances and activities anytime!"
-  }
+  { icon: TrendingUp, title: "Unlock More Scans", description: "Upgrade your plan for more pest and disease detection scans every week!" },
+  { icon: Shield, title: "Protect Your Farm", description: "Higher plans give you instant AI-powered diagnostics anytime. Early detection saves crops!" },
+  { icon: Zap, title: "More AI Assistance", description: "Ask the AI assistant more questions about farming, weather, and best practices!" },
+  { icon: BarChart3, title: "Track Your Finances", description: "Pro members can access the Digital Ledger to track expenses, income, and export financial reports!" },
+  { icon: FileText, title: "Advanced Analytics", description: "Enterprise members get crop monitoring, climate risk analysis, and unlimited access to everything!" }
 ];
 
 interface SubscriptionPopupProps {
@@ -39,36 +19,33 @@ interface SubscriptionPopupProps {
 const SubscriptionPopup = ({ enabled = true }: SubscriptionPopupProps) => {
   const [open, setOpen] = useState(false);
   const [currentMessage, setCurrentMessage] = useState(0);
-  const { isPremium, loadingPremium, openUpgrade, getFormattedPrice, trialDaysLeft } = useUsageLimits();
+  const { currentPlan, loadingPremium, openUpgrade, trialDaysLeft } = useUsageLimits();
 
   useEffect(() => {
-    if (!enabled || loadingPremium || isPremium) return;
-
-    const initialDelay = 5 * 60 * 1000;
-    
+    if (!enabled || loadingPremium || currentPlan === 'enterprise') return;
     const timer = setTimeout(() => {
       setCurrentMessage(Math.floor(Math.random() * popupMessages.length));
       setOpen(true);
-    }, initialDelay);
-
+    }, 5 * 60 * 1000);
     return () => clearTimeout(timer);
-  }, [enabled, isPremium, loadingPremium]);
+  }, [enabled, currentPlan, loadingPremium]);
 
   useEffect(() => {
-    if (!enabled || loadingPremium || isPremium) return;
-
+    if (!enabled || loadingPremium || currentPlan === 'enterprise') return;
     const interval = setInterval(() => {
       setCurrentMessage(Math.floor(Math.random() * popupMessages.length));
       setOpen(true);
     }, 10 * 60 * 1000);
-
     return () => clearInterval(interval);
-  }, [enabled, isPremium, loadingPremium]);
+  }, [enabled, currentPlan, loadingPremium]);
 
-  if (isPremium || loadingPremium) return null;
+  if (currentPlan === 'enterprise' || loadingPremium) return null;
 
   const message = popupMessages[currentMessage];
   const IconComponent = message.icon;
+
+  const suggestedPlan: PlanTier = currentPlan === 'free' ? 'starter' : currentPlan === 'starter' ? 'pro' : 'enterprise';
+  const suggestedConfig = PLANS[suggestedPlan];
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -86,20 +63,13 @@ const SubscriptionPopup = ({ enabled = true }: SubscriptionPopupProps) => {
         </DialogHeader>
         <div className="space-y-3 mt-4">
           <Button 
-            onClick={() => {
-              openUpgrade();
-              setOpen(false);
-            }}
+            onClick={() => { openUpgrade(suggestedPlan); setOpen(false); }}
             className="w-full gap-2"
           >
             <Crown className="w-4 h-4" />
-            Upgrade - {getFormattedPrice()}/mo
+            Upgrade to {suggestedConfig.name} - ${suggestedConfig.price.toFixed(2)}/mo
           </Button>
-          <Button 
-            variant="ghost" 
-            onClick={() => setOpen(false)}
-            className="w-full text-muted-foreground"
-          >
+          <Button variant="ghost" onClick={() => setOpen(false)} className="w-full text-muted-foreground">
             Maybe Later
           </Button>
         </div>

@@ -14,7 +14,7 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 const Weather = () => {
   const { user } = useAuth();
-  const { isPremium, openUpgrade, getFormattedPrice } = useUsageLimits();
+  const { hasFeature, openUpgrade, currentPlan } = useUsageLimits();
   const { getLocation } = useLocation();
   const [weather, setWeather] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -150,7 +150,7 @@ const Weather = () => {
             </Card>
 
             {/* 7-Day Forecast */}
-            {isPremium ? (
+            {hasFeature('forecast') ? (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -208,18 +208,18 @@ const Weather = () => {
                 </CardHeader>
                 <CardContent className="text-center space-y-4 py-6">
                   <p className="text-sm text-muted-foreground">
-                    Upgrade to Premium to see the full 7-day forecast, detailed farming tips, and more.
+                    Upgrade to Pro or Enterprise to see the full 7-day forecast and farming tips.
                   </p>
-                  <Button onClick={openUpgrade} className="gap-2">
+                  <Button onClick={() => openUpgrade('pro')} className="gap-2">
                     <Crown className="w-4 h-4" />
-                    Upgrade for {getFormattedPrice()}/mo
+                    Upgrade to Pro - $29.99/mo
                   </Button>
                 </CardContent>
               </Card>
             )}
 
             {/* Weather Tips - Premium Only */}
-            {isPremium && (
+            {hasFeature('farmingTips') && (
               <Card className="bg-muted/50">
                 <CardHeader>
                   <CardTitle className="text-lg">Farming Tips for Today</CardTitle>
