@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Sprout, Loader2, ArrowLeft, Phone } from 'lucide-react';
+import { Sprout, Loader2, ArrowLeft } from 'lucide-react';
 import { z } from 'zod';
 import { Separator } from '@/components/ui/separator';
 
@@ -21,16 +21,14 @@ const signupSchema = z.object({
 
 const Auth = () => {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<'login' | 'signup' | 'forgot' | 'reset' | 'phone'>('login');
+  const [mode, setMode] = useState<'login' | 'signup' | 'forgot' | 'reset'>('login');
   const [loading, setLoading] = useState(false);
-  const [phoneOtpSent, setPhoneOtpSent] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     confirmPassword: '',
     full_name: '',
     phone: '',
-    otp: '',
     role: 'farmer' as 'farmer' | 'trader' | 'extension_officer',
   });
 
@@ -59,7 +57,6 @@ const Auth = () => {
           navigate('/');
         }
       } else if (mode === 'signup') {
-        // Validate signup data
         const validation = signupSchema.safeParse({
           email: formData.email,
           password: formData.password,
@@ -73,7 +70,7 @@ const Auth = () => {
         }
 
         const redirectUrl = `${window.location.origin}/`;
-        
+
         const { data, error } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
@@ -149,92 +146,15 @@ const Auth = () => {
       const { error } = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: window.location.origin,
       });
-      
+
       if (error) {
         console.error('Google OAuth error:', error);
         toast.error(error.message || 'Failed to sign in with Google');
         return;
       }
-      
-      toast.success('Login successful!');
-      navigate('/');
     } catch (error: any) {
       console.error('Google sign-in error:', error);
       toast.error('Failed to sign in with Google. Please try email login.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleAppleSignIn = async () => {
-    setLoading(true);
-    try {
-      const { error } = await lovable.auth.signInWithOAuth("apple", {
-        redirect_uri: window.location.origin,
-      });
-      
-      if (error) {
-        console.error('Apple OAuth error:', error);
-        toast.error(error.message || 'Failed to sign in with Apple');
-        return;
-      }
-      
-      toast.success('Login successful!');
-      navigate('/');
-    } catch (error: any) {
-      console.error('Apple sign-in error:', error);
-      toast.error('Failed to sign in with Apple. Please try email login.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handlePhoneSignIn = async () => {
-    setLoading(true);
-    try {
-      let formattedPhone = formData.phone.replace(/\s+/g, '').replace(/-/g, '');
-      if (!formattedPhone.startsWith('+')) {
-        if (formattedPhone.startsWith('268')) {
-          formattedPhone = '+' + formattedPhone;
-        } else if (formattedPhone.startsWith('0')) {
-          formattedPhone = '+268' + formattedPhone.substring(1);
-        } else {
-          formattedPhone = '+268' + formattedPhone;
-        }
-      }
-
-      if (!phoneOtpSent) {
-        const { error } = await supabase.auth.signInWithOtp({
-          phone: formattedPhone,
-        });
-
-        if (error) {
-          toast.error(error.message);
-          return;
-        }
-
-        setPhoneOtpSent(true);
-        toast.success('OTP sent to your phone!');
-      } else {
-        const { data, error } = await supabase.auth.verifyOtp({
-          phone: formattedPhone,
-          token: formData.otp,
-          type: 'sms',
-        });
-
-        if (error) {
-          toast.error(error.message);
-          return;
-        }
-
-        if (data.user) {
-          toast.success('Login successful!');
-          navigate('/');
-        }
-      }
-    } catch (error: any) {
-      console.error('Phone auth error:', error);
-      toast.error('Failed to sign in with phone. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -254,7 +174,6 @@ const Auth = () => {
       case 'signup': return 'Create Account';
       case 'forgot': return 'Reset Password';
       case 'reset': return 'Set New Password';
-      case 'phone': return phoneOtpSent ? 'Enter OTP' : 'Send OTP';
     }
   };
 
@@ -264,7 +183,6 @@ const Auth = () => {
       case 'signup': return 'Register for Imvelo';
       case 'forgot': return 'Enter your email to receive a reset link';
       case 'reset': return 'Enter your new password';
-      case 'phone': return phoneOtpSent ? 'Enter the code sent to your phone' : 'Sign in with your phone number';
     }
   };
 
@@ -281,11 +199,11 @@ const Auth = () => {
           <CardDescription>{getDescription()}</CardDescription>
         </CardHeader>
         <CardContent>
-          {(mode === 'forgot' || mode === 'reset' || mode === 'phone') && (
+          {(mode === 'forgot' || mode === 'reset') && (
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => { setMode('login'); setPhoneOtpSent(false); }}
+              onClick={() => setMode('login')}
               className="mb-4"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -293,56 +211,6 @@ const Auth = () => {
             </Button>
           )}
 
-          {mode === 'phone' ? (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="phone_login">Phone Number</Label>
-                <Input
-                  id="phone_login"
-                  type="tel"
-                  placeholder="+268 7921 5621"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  required
-                  disabled={loading || phoneOtpSent}
-                />
-              </div>
-              {phoneOtpSent && (
-                <div className="space-y-2">
-                  <Label htmlFor="otp">Verification Code</Label>
-                  <Input
-                    id="otp"
-                    type="text"
-                    placeholder="Enter 6-digit code"
-                    value={formData.otp}
-                    onChange={(e) => setFormData({ ...formData, otp: e.target.value })}
-                    required
-                    disabled={loading}
-                    maxLength={6}
-                  />
-                </div>
-              )}
-              <Button className="w-full" onClick={handlePhoneSignIn} disabled={loading}>
-                {loading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Please wait...
-                  </>
-                ) : phoneOtpSent ? 'Verify Code' : 'Send OTP'}
-              </Button>
-              {phoneOtpSent && (
-                <Button
-                  variant="link"
-                  className="w-full text-sm"
-                  onClick={() => { setPhoneOtpSent(false); setFormData({ ...formData, otp: '' }); }}
-                  disabled={loading}
-                >
-                  Resend Code
-                </Button>
-              )}
-            </div>
-          ) : (
-          
           <form onSubmit={handleAuth} className="space-y-4">
             {mode === 'signup' && (
               <>
@@ -389,7 +257,7 @@ const Auth = () => {
                 </div>
               </>
             )}
-            
+
             {mode !== 'reset' && (
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
@@ -403,7 +271,7 @@ const Auth = () => {
                 />
               </div>
             )}
-            
+
             {(mode === 'login' || mode === 'signup' || mode === 'reset') && (
               <div className="space-y-2">
                 <Label htmlFor="password">{mode === 'reset' ? 'New Password' : 'Password'}</Label>
@@ -418,7 +286,7 @@ const Auth = () => {
                 />
               </div>
             )}
-            
+
             {mode === 'reset' && (
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Confirm Password</Label>
@@ -433,7 +301,7 @@ const Auth = () => {
                 />
               </div>
             )}
-            
+
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? (
                 <>
@@ -441,12 +309,11 @@ const Auth = () => {
                   Please wait...
                 </>
               ) : (
-              <>{getTitle()}</>
+                <>{getTitle()}</>
               )}
             </Button>
           </form>
-          )}
-          
+
           {(mode === 'login' || mode === 'signup') && (
             <>
               <div className="relative my-4">
@@ -455,7 +322,7 @@ const Auth = () => {
                   or
                 </span>
               </div>
-              
+
               <Button
                 type="button"
                 variant="outline"
@@ -471,83 +338,37 @@ const Auth = () => {
                 </svg>
                 Continue with Google
               </Button>
-              
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={handleAppleSignIn}
-                disabled={loading}
-              >
-                <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
-                </svg>
-                Continue with Apple
-              </Button>
-              
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={() => setMode('phone')}
-                disabled={loading}
-              >
-                <Phone className="w-5 h-5 mr-2" />
-                Continue with Phone
-              </Button>
             </>
           )}
-          
+
           {mode === 'login' && (
             <div className="mt-4 text-center space-y-2">
-              <Button
-                variant="link"
-                onClick={() => setMode('forgot')}
-                disabled={loading}
-                className="text-sm"
-              >
+              <Button variant="link" onClick={() => setMode('forgot')} disabled={loading} className="text-sm">
                 Forgot Password?
               </Button>
               <div>
-                <Button
-                  variant="link"
-                  onClick={() => setMode('signup')}
-                  disabled={loading}
-                >
+                <Button variant="link" onClick={() => setMode('signup')} disabled={loading}>
                   Don't have an account? Sign Up
                 </Button>
               </div>
             </div>
           )}
-          
+
           {mode === 'signup' && (
             <div className="mt-4 text-center">
-              <Button
-                variant="link"
-                onClick={() => setMode('login')}
-                disabled={loading}
-              >
+              <Button variant="link" onClick={() => setMode('login')} disabled={loading}>
                 Already have an account? Sign In
               </Button>
             </div>
           )}
         </CardContent>
       </Card>
-      
-      {/* Footer Links for Google Ads Compliance */}
+
       <div className="mt-6 flex flex-wrap justify-center gap-4 text-sm">
-        <Link to="/about" className="text-primary-foreground/80 hover:text-primary-foreground underline">
-          About Us
-        </Link>
-        <Link to="/contact" className="text-primary-foreground/80 hover:text-primary-foreground underline">
-          Contact
-        </Link>
-        <Link to="/privacy-policy" className="text-primary-foreground/80 hover:text-primary-foreground underline">
-          Privacy Policy
-        </Link>
-        <Link to="/terms-of-service" className="text-primary-foreground/80 hover:text-primary-foreground underline">
-          Terms of Service
-        </Link>
+        <Link to="/about" className="text-primary-foreground/80 hover:text-primary-foreground underline">About Us</Link>
+        <Link to="/contact" className="text-primary-foreground/80 hover:text-primary-foreground underline">Contact</Link>
+        <Link to="/privacy-policy" className="text-primary-foreground/80 hover:text-primary-foreground underline">Privacy Policy</Link>
+        <Link to="/terms-of-service" className="text-primary-foreground/80 hover:text-primary-foreground underline">Terms of Service</Link>
       </div>
     </div>
   );

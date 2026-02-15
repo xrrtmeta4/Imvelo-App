@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { User, LogOut, Camera, Crown, Languages } from 'lucide-react';
+import { User, LogOut, Camera, Crown, Languages, Zap } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
@@ -210,6 +210,15 @@ const Profile = () => {
                     Expires: {new Date(premiumExpiry).toLocaleDateString()}
                   </p>
                 )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-3 gap-2"
+                  onClick={() => navigate('/upgrade')}
+                >
+                  <Zap className="w-4 h-4" />
+                  {isPremium ? 'Manage Plan' : 'Upgrade Plan'}
+                </Button>
               </div>
               {uploading && (
                 <p className="text-sm text-muted-foreground">Uploading...</p>

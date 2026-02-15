@@ -95,23 +95,27 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Check if we already sent today's notification (prevent duplicates)
+    // Check if we already sent today's notification — check PER USER with a global marker
     const today = new Date().toISOString().split('T')[0];
-    const { data: existingAlerts } = await supabase
-      .from('weather_alerts')
-      .select('id')
-      .eq('alert_type', 'daily_weather')
-      .gte('created_at', today + 'T00:00:00Z')
-      .limit(1);
+    const todayStart = today + 'T00:00:00Z';
+    const todayEnd = today + 'T23:59:59Z';
 
-    if (existingAlerts && existingAlerts.length > 0) {
-      console.log('Daily notification already sent today, skipping.');
-      return new Response(JSON.stringify({ success: true, message: 'Already sent today' }), {
+    // Check for ANY daily_weather alert created today (global dedup)
+    const { count: todayCount } = await supabase
+      .from('weather_alerts')
+      .select('id', { count: 'exact', head: true })
+      .eq('alert_type', 'daily_weather')
+      .gte('created_at', todayStart)
+      .lte('created_at', todayEnd);
+
+    if (todayCount && todayCount > 0) {
+      console.log(`Daily notification already sent today (${todayCount} alerts exist), skipping entirely.`);
+      return new Response(JSON.stringify({ success: true, message: 'Already sent today', alertsExist: todayCount }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    console.log('Fetching daily weather forecast...');
+    console.log('No daily alerts found for today, proceeding with weather fetch...');
     const weatherResponse = await fetch(
       'https://api.open-meteo.com/v1/forecast?latitude=-26.3167&longitude=31.1333&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,precipitation&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_sum,precipitation_probability_max&timezone=Africa/Johannesburg&forecast_days=1'
     );
@@ -146,26 +150,30 @@ Deno.serve(async (req) => {
     const { data: users, error: usersError } = await supabase.from('profiles').select('id, phone_number');
     if (usersError) throw usersError;
 
-    // Create ONE alert per user (combined weather + climate warning)
-    const alerts = users?.map(user => ({
+    if (!users || users.length === 0) {
+      return new Response(JSON.stringify({ success: true, message: 'No users found' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Create ONE alert per user
+    const alerts = users.map(user => ({
       user_id: user.id,
       alert_type: 'daily_weather',
       message: dailyMessage,
       severity: climateWarning ? 'warning' : 'info',
       weather_data: weather,
       read: false
-    })) || [];
+    }));
 
-    if (alerts.length > 0) {
-      const { error: insertError } = await supabase.from('weather_alerts').insert(alerts);
-      if (insertError) throw insertError;
-    }
+    const { error: insertError } = await supabase.from('weather_alerts').insert(alerts);
+    if (insertError) throw insertError;
 
-    // Get push subscriptions
+    // Get push subscriptions and track which users have push
     const { data: pushSubs } = await supabase.from('push_subscriptions').select('*');
     const usersWithPush = new Set(pushSubs?.map(s => s.user_id) || []);
 
-    // Send ONE push notification per device
+    // Send ONE push notification per device (tag ensures dedup on device)
     if (pushSubs && pushSubs.length > 0) {
       for (const sub of pushSubs) {
         await sendWebPush(sub.endpoint, {
@@ -173,21 +181,21 @@ Deno.serve(async (req) => {
           body: dailyMessage,
           icon: '/icon-192.png',
           badge: '/icon-192.png',
-          tag: 'daily-weather',
+          tag: `daily-weather-${today}`,
           data: { type: 'weather', weather }
         });
       }
     }
 
     // Send ONE SMS only to users WITHOUT push subscriptions
-    const smsUsers = users?.filter(u => u.phone_number && !usersWithPush.has(u.id)) || [];
+    const smsUsers = users.filter(u => u.phone_number && !usersWithPush.has(u.id));
     const smsMsg = `IMVELO: ${weatherDesc}, H${Math.round(weather.temperatureMax)}C/L${Math.round(weather.temperatureMin)}C.${weather.precipitationProbability > 20 ? ` Rain ${weather.precipitationProbability}%.` : ''} ${farmingTip}`;
-    
+
     for (const user of smsUsers) {
-      await sendSMSNotification(user.phone_number, smsMsg);
+      await sendSMSNotification(user.phone_number!, smsMsg);
     }
 
-    console.log(`Sent ${alerts.length} daily weather notifications (1 per user)`);
+    console.log(`Successfully sent ${alerts.length} daily weather notifications (1 per user)`);
 
     return new Response(
       JSON.stringify({ success: true, message: `Sent ${alerts.length} notifications`, weather, dailyMessage }),
