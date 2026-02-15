@@ -2,6 +2,7 @@ import { Crown, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useUsageLimits, PlanTier, PLANS } from '@/hooks/useUsageLimits';
+import { useNavigate } from 'react-router-dom';
 
 interface PremiumGateProps {
   feature: string;
@@ -10,7 +11,8 @@ interface PremiumGateProps {
 }
 
 const PremiumGate = ({ feature, requiredPlan, children }: PremiumGateProps) => {
-  const { currentPlan, loadingPremium, openUpgrade } = useUsageLimits();
+  const { currentPlan, loadingPremium } = useUsageLimits();
+  const navigate = useNavigate();
 
   if (loadingPremium) return null;
 
@@ -36,18 +38,9 @@ const PremiumGate = ({ feature, requiredPlan, children }: PremiumGateProps) => {
                 <strong>{feature}</strong> requires the {requiredPlanConfig.name} plan or higher.
               </p>
             </div>
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">Unlock this feature for just</p>
-              <p className="text-3xl font-bold text-primary">${requiredPlanConfig.price.toFixed(2)}/mo</p>
-            </div>
-            <ul className="text-sm text-left space-y-2 max-w-xs mx-auto">
-              {requiredPlanConfig.features.map((f, i) => (
-                <li key={i} className="flex items-center gap-2">✅ {f}</li>
-              ))}
-            </ul>
-            <Button onClick={() => openUpgrade(requiredPlan)} size="lg" className="gap-2 w-full max-w-xs">
+            <Button onClick={() => navigate('/upgrade')} size="lg" className="gap-2 w-full max-w-xs">
               <Crown className="w-5 h-5" />
-              Upgrade to {requiredPlanConfig.name}
+              View Plans & Upgrade
             </Button>
           </CardContent>
         </Card>

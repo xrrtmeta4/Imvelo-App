@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { LanguageProvider } from "@/hooks/useLanguage";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Scanner from "./pages/Scanner";
@@ -63,6 +64,7 @@ const App = () => (
       <PWAInstallPrompt />
       <BrowserRouter>
         <AuthProvider>
+          <LanguageProvider>
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route
@@ -199,6 +201,7 @@ const App = () => (
             <Route path="/about" element={<About />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </LanguageProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

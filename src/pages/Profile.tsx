@@ -8,12 +8,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { User, LogOut, Camera, Crown, Languages, Zap } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/hooks/useLanguage';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import PushNotificationManager from '@/components/PushNotificationManager';
 
 const Profile = () => {
   const { user } = useAuth();
+  const { t, setLang } = useLanguage();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -84,6 +86,10 @@ const Profile = () => {
       toast.error('Failed to update profile');
     } else {
       toast.success('Profile updated successfully!');
+      // Sync UI language when profile language changes
+      if (formData.preferred_language) {
+        setLang(formData.preferred_language);
+      }
       fetchProfile();
     }
     setLoading(false);
@@ -155,7 +161,7 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-background pb-20">
       <header className="bg-primary text-primary-foreground py-4 px-4">
-        <h1 className="text-xl font-bold">My Profile</h1>
+        <h1 className="text-xl font-bold">{t('myProfile')}</h1>
       </header>
 
       <div className="max-w-screen-sm mx-auto px-4 py-6 space-y-6">
@@ -234,13 +240,13 @@ const Profile = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <User className="w-5 h-5" />
-              My Information
+              {t('myInfo')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleUpdate} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="full_name">Full Name</Label>
+                <Label htmlFor="full_name">{t('fullName')}</Label>
                 <Input
                   id="full_name"
                   value={formData.full_name}
@@ -252,7 +258,7 @@ const Profile = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="phone_number">Phone Number</Label>
+                <Label htmlFor="phone_number">{t('phone')}</Label>
                 <Input
                   id="phone_number"
                   type="tel"
@@ -265,7 +271,7 @@ const Profile = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="location">Location</Label>
+                <Label htmlFor="location">{t('location')}</Label>
                 <Input
                   id="location"
                   value={formData.location}
@@ -279,7 +285,7 @@ const Profile = () => {
               <div className="space-y-2">
                 <Label htmlFor="preferred_language" className="flex items-center gap-2">
                   <Languages className="w-4 h-4" />
-                  AI Assistant Language
+                  {t('language')}
                 </Label>
                 <Select
                   value={formData.preferred_language}
@@ -320,12 +326,12 @@ const Profile = () => {
               </div>
 
               <div className="space-y-2">
-                <Label>Role</Label>
+                <Label>{t('role')}</Label>
                 <p className="text-sm font-medium capitalize">{profile?.role}</p>
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>
-                Save Changes
+                {t('save')}
               </Button>
             </form>
 
@@ -335,7 +341,7 @@ const Profile = () => {
               onClick={handleLogout}
             >
               <LogOut className="w-4 h-4 mr-2" />
-              Logout
+              {t('logout')}
             </Button>
           </CardContent>
         </Card>

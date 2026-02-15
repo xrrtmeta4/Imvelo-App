@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useUsageLimits, PLANS, PlanTier } from '@/hooks/useUsageLimits';
+import { useLanguage } from '@/hooks/useLanguage';
 import { useNavigate } from 'react-router-dom';
 
 const planIcons: Record<PlanTier, React.ReactNode> = {
@@ -21,6 +22,7 @@ const planColors: Record<PlanTier, string> = {
 
 const Upgrade = () => {
   const { currentPlan, openUpgrade, trialDaysLeft } = useUsageLimits();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   const tiers: PlanTier[] = ['starter', 'pro', 'enterprise'];
@@ -31,10 +33,10 @@ const Upgrade = () => {
         <div className="max-w-screen-sm mx-auto">
           <Button variant="ghost" size="sm" className="mb-4 text-primary-foreground/80 hover:text-primary-foreground" onClick={() => navigate(-1)}>
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
+            {t('back')}
           </Button>
-          <h1 className="text-3xl font-bold">Choose Your Plan</h1>
-          <p className="text-primary-foreground/90 mt-1">Unlock powerful farming tools</p>
+          <h1 className="text-3xl font-bold">{t('choosePlan')}</h1>
+          <p className="text-primary-foreground/90 mt-1">{t('unlockTools')}</p>
           {trialDaysLeft !== null && trialDaysLeft > 0 && (
             <Badge variant="secondary" className="mt-3">
               {trialDaysLeft} days left on free trial
@@ -82,12 +84,12 @@ const Upgrade = () => {
 
                 {isCurrent ? (
                   <Button disabled className="w-full" variant="outline">
-                    Current Plan
+                    {t('currentPlan')}
                   </Button>
                 ) : isUpgrade ? (
                   <Button className="w-full gap-2" onClick={() => openUpgrade(tier)}>
                     <Crown className="w-4 h-4" />
-                    Upgrade to {plan.name}
+                    {t('upgradeTo')} {plan.name}
                   </Button>
                 ) : (
                   <Button disabled variant="ghost" className="w-full text-muted-foreground">
