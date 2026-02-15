@@ -24,6 +24,7 @@ import NotFound from "./pages/NotFound";
 import PesticideCalendar from "./pages/PesticideCalendar";
 import CropMonitoring from "./pages/CropMonitoring";
 import ClimateRisk from "./pages/ClimateRisk";
+import Upgrade from "./pages/Upgrade";
 import MobileNav from "./components/MobileNav";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import SubscriptionPopup from "./components/SubscriptionPopup";
@@ -181,6 +182,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <ClimateRisk />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/upgrade"
+              element={
+                <ProtectedRoute>
+                  <Upgrade />
                 </ProtectedRoute>
               }
             />

@@ -54,12 +54,12 @@ const Index = () => {
           
           {!isPremium && (
             <Button 
-              onClick={openUpgrade}
+              onClick={() => navigate('/upgrade')}
               variant="secondary"
               className="mt-4 gap-2"
             >
               <Crown className="w-4 h-4" />
-              Upgrade - {getFormattedPrice()}
+              Upgrade Plan
             </Button>
           )}
         </div>
