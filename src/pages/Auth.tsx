@@ -17,6 +17,7 @@ const signupSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
   full_name: z.string().min(2, 'Name must be at least 2 characters'),
   phone: z.string().min(8, 'Phone number is required').regex(/^[+]?[0-9\s-]+$/, 'Invalid phone number format'),
+  country: z.string().min(2, 'Country is required'),
 });
 
 const Auth = () => {
@@ -29,6 +30,7 @@ const Auth = () => {
     confirmPassword: '',
     full_name: '',
     phone: '',
+    country: '',
     role: 'farmer' as 'farmer' | 'trader' | 'extension_officer',
   });
 
@@ -62,6 +64,7 @@ const Auth = () => {
           password: formData.password,
           full_name: formData.full_name,
           phone: formData.phone,
+          country: formData.country,
         });
 
         if (!validation.success) {
@@ -79,6 +82,7 @@ const Auth = () => {
             data: {
               full_name: formData.full_name,
               phone: formData.phone,
+              country: formData.country,
               role: formData.role,
             },
           },
@@ -236,7 +240,19 @@ const Auth = () => {
                     required
                     disabled={loading}
                   />
-                  <p className="text-xs text-muted-foreground">For SMS weather alerts and farming tips</p>
+                   <p className="text-xs text-muted-foreground">For SMS weather alerts and farming tips</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="country">Country *</Label>
+                  <Input
+                    id="country"
+                    type="text"
+                    placeholder="e.g. Eswatini"
+                    value={formData.country}
+                    onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                    required
+                    disabled={loading}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="role">Role</Label>

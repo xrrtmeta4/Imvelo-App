@@ -8,6 +8,7 @@ import NotificationBell from '@/components/NotificationBell';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/lib/supabase';
 import { Sprout, Crown, Leaf, CloudLightning } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -15,8 +16,9 @@ import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
   useNotifications();
-  const { isPremium, openUpgrade, getFormattedPrice } = useUsageLimits();
+  const { isPremium } = useUsageLimits();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [userName, setUserName] = useState<string | null>(null);
 
@@ -50,7 +52,7 @@ const Index = () => {
           <h1 className="text-3xl font-bold mb-2">
             {userName ? `Hi, ${userName}!` : 'Imvelo'}
           </h1>
-          <p className="text-primary-foreground/90">Farmer's Best Friend</p>
+          <p className="text-primary-foreground/90">{t('farmersBestFriend')}</p>
           
           {!isPremium && (
             <Button 
@@ -59,7 +61,7 @@ const Index = () => {
               className="mt-4 gap-2"
             >
               <Crown className="w-4 h-4" />
-              Upgrade Plan
+              {t('upgrade')}
             </Button>
           )}
         </div>
@@ -76,8 +78,8 @@ const Index = () => {
               <Leaf className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <p className="font-semibold text-sm text-foreground">Crop Monitor</p>
-              <p className="text-xs text-muted-foreground">AI health scan</p>
+              <p className="font-semibold text-sm text-foreground">{t('cropMonitor')}</p>
+              <p className="text-xs text-muted-foreground">{t('aiHealthScan')}</p>
             </div>
           </button>
           <button
@@ -88,8 +90,8 @@ const Index = () => {
               <CloudLightning className="w-5 h-5 text-destructive" />
             </div>
             <div>
-              <p className="font-semibold text-sm text-foreground">Climate Risk</p>
-              <p className="text-xs text-muted-foreground">Volatility engine</p>
+              <p className="font-semibold text-sm text-foreground">{t('climateRisk')}</p>
+              <p className="text-xs text-muted-foreground">{t('volatilityEngine')}</p>
             </div>
           </button>
         </div>

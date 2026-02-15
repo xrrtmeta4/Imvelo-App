@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button';
 import { Crown, TrendingUp, Shield, Zap, BarChart3, FileText } from 'lucide-react';
 import { useUsageLimits, PLANS, PlanTier } from '@/hooks/useUsageLimits';
+import { useNavigate } from 'react-router-dom';
 
 const popupMessages = [
   { icon: TrendingUp, title: "Unlock More Scans", description: "Upgrade your plan for more pest and disease detection scans every week!" },
@@ -19,7 +20,8 @@ interface SubscriptionPopupProps {
 const SubscriptionPopup = ({ enabled = true }: SubscriptionPopupProps) => {
   const [open, setOpen] = useState(false);
   const [currentMessage, setCurrentMessage] = useState(0);
-  const { currentPlan, loadingPremium, openUpgrade, trialDaysLeft } = useUsageLimits();
+  const { currentPlan, loadingPremium, trialDaysLeft } = useUsageLimits();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!enabled || loadingPremium || currentPlan === 'enterprise') return;
@@ -44,9 +46,6 @@ const SubscriptionPopup = ({ enabled = true }: SubscriptionPopupProps) => {
   const message = popupMessages[currentMessage];
   const IconComponent = message.icon;
 
-  const suggestedPlan: PlanTier = currentPlan === 'free' ? 'starter' : currentPlan === 'starter' ? 'pro' : 'enterprise';
-  const suggestedConfig = PLANS[suggestedPlan];
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-w-sm">
@@ -63,11 +62,11 @@ const SubscriptionPopup = ({ enabled = true }: SubscriptionPopupProps) => {
         </DialogHeader>
         <div className="space-y-3 mt-4">
           <Button 
-            onClick={() => { openUpgrade(suggestedPlan); setOpen(false); }}
+            onClick={() => { navigate('/upgrade'); setOpen(false); }}
             className="w-full gap-2"
           >
             <Crown className="w-4 h-4" />
-            Upgrade to {suggestedConfig.name} - ${suggestedConfig.price.toFixed(2)}/mo
+            View Plans & Upgrade
           </Button>
           <Button variant="ghost" onClick={() => setOpen(false)} className="w-full text-muted-foreground">
             Maybe Later

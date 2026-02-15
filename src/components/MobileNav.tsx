@@ -1,14 +1,17 @@
 import { Home, Bug, Cloud, BookOpen, User, Droplets } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/hooks/useLanguage';
 
 const MobileNav = () => {
+  const { t } = useLanguage();
+
   const navItems = [
-    { to: '/', icon: Home, label: 'Home' },
-    { to: '/scanner', icon: Bug, label: 'Scan' },
-    { to: '/pesticide-calendar', icon: Droplets, label: 'Spray' },
-    { to: '/ledger', icon: BookOpen, label: 'Ledger' },
-    { to: '/profile', icon: User, label: 'Profile' },
+    { to: '/', icon: Home, label: t('home') },
+    { to: '/scanner', icon: Bug, label: t('scan') },
+    { to: '/pesticide-calendar', icon: Droplets, label: t('spray') },
+    { to: '/ledger', icon: BookOpen, label: t('ledger') },
+    { to: '/profile', icon: User, label: t('profile') },
   ];
 
   return (
