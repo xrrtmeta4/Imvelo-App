@@ -374,6 +374,16 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Verify the request comes from Africa's Talking using a shared API key
+  const ussdApiKey = Deno.env.get('USSD_API_KEY');
+  if (ussdApiKey) {
+    const providedKey = req.headers.get('x-ussd-api-key') || new URL(req.url).searchParams.get('apiKey');
+    if (providedKey !== ussdApiKey) {
+      console.error('USSD request rejected: invalid API key');
+      return new Response('END Unauthorized', { status: 401, headers: { 'Content-Type': 'text/plain' } });
+    }
+  }
+
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -387,7 +397,23 @@ serve(async (req) => {
     const phoneNumber = formData.get('phoneNumber') as string;
     const text = formData.get('text') as string || '';
 
-    console.log('USSD Request:', { sessionId, serviceCode, phoneNumber, text });
+    // Validate required fields
+    if (!sessionId || !phoneNumber) {
+      console.error('USSD request rejected: missing sessionId or phoneNumber');
+      return new Response('END Invalid request', { status: 400, headers: { 'Content-Type': 'text/plain' } });
+    }
+
+    // Validate phone number format (E.164: + followed by 7-15 digits)
+    const e164Regex = /^\+[1-9]\d{6,14}$/;
+    if (!e164Regex.test(phoneNumber)) {
+      console.error('USSD request rejected: invalid phone number format', phoneNumber);
+      return new Response('END Invalid phone number', { status: 400, headers: { 'Content-Type': 'text/plain' } });
+    }
+
+    // Sanitize text input - only allow digits, asterisks, and hashes (valid USSD input)
+    const sanitizedText = text.replace(/[^0-9*#]/g, '');
+
+    console.log('USSD Request:', { sessionId, serviceCode, phoneNumber: phoneNumber.slice(0, 4) + '****' });
 
     // Get user's preferred language from profile based on phone number
     const preferredLang = await getUserLanguage(supabase, phoneNumber);
@@ -401,13 +427,13 @@ serve(async (req) => {
     }
     
     // Parse user input (text comes as "1*2*3" for multiple selections)
-    const userInput = text.split('*').pop() || '';
-    const inputPath = text.split('*');
+    const userInput = sanitizedText.split('*').pop() || '';
+    const inputPath = sanitizedText.split('*');
 
     let response = '';
 
     // Handle menu navigation based on input path
-    if (text === '') {
+    if (sanitizedText === '') {
       // Main menu
       response = `CON ${getText('main_welcome', preferredLang)}
 
