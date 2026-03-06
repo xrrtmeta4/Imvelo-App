@@ -9,16 +9,20 @@ export const PLANS = {
     name: 'Free',
     price: 0,
     weeklyDetections: 1,
-    dailyChats: 1,
-    features: ['1 pest/disease scan per week', '1 AI chat message per day', 'Basic weather info', 'Best practices library', 'Extension directory'],
+    dailyChats: 3,
+    maxLedgerEntries: 10,
+    maxSprayEntries: 5,
+    features: ['1 pest/disease scan per week', '3 AI chat messages per day', 'Basic weather info', 'Best practices library', 'Extension directory', 'Spray calendar (5 entries)', 'Digital ledger (10 entries)'],
     checkoutUrl: '',
   },
   starter: {
     name: 'Starter',
     price: 0,
     weeklyDetections: 1,
-    dailyChats: 1,
-    features: ['1 pest/disease scan per week', '1 AI chat message per day', 'Basic weather info', 'Best practices library', 'Extension directory'],
+    dailyChats: 3,
+    maxLedgerEntries: 10,
+    maxSprayEntries: 5,
+    features: ['1 pest/disease scan per week', '3 AI chat messages per day', 'Basic weather info', 'Best practices library', 'Extension directory', 'Spray calendar (5 entries)', 'Digital ledger (10 entries)'],
     checkoutUrl: '',
   },
   pro: {
@@ -26,7 +30,9 @@ export const PLANS = {
     price: 6,
     weeklyDetections: 10,
     dailyChats: 20,
-    features: ['10 scans per week', '20 AI chats per day', '7-day weather forecast', 'Farming tips', 'Spray scheduling calendar', 'Digital financial ledger', 'Produce estimation'],
+    maxLedgerEntries: Infinity,
+    maxSprayEntries: Infinity,
+    features: ['10 scans per week', '20 AI chats per day', '7-day weather forecast', 'Farming tips', 'Unlimited spray scheduling', 'Unlimited digital ledger', 'Produce estimation'],
     checkoutUrl: 'https://checkout.dodopayments.com/buy/pdt_0NYZaqcOARihEXXOPIdmC?quantity=1&redirect_url=https://imveloappsz.vercel.app',
   },
   enterprise: {
@@ -34,7 +40,9 @@ export const PLANS = {
     price: 0,
     weeklyDetections: Infinity,
     dailyChats: Infinity,
-    features: ['Unlimited scans', 'Unlimited AI chat', '7-day weather forecast', 'Farming tips', 'Spray scheduling calendar', 'Digital financial ledger', 'Produce estimation', 'Crop monitoring (phenotype)', 'Climate risk engine', 'Priority support'],
+    maxLedgerEntries: Infinity,
+    maxSprayEntries: Infinity,
+    features: ['Unlimited scans', 'Unlimited AI chat', '7-day weather forecast', 'Farming tips', 'Unlimited spray scheduling', 'Unlimited digital ledger', 'Produce estimation', 'Crop monitoring (phenotype)', 'Advanced climate resilience tools', 'Priority support'],
     checkoutUrl: '',
   },
 };
@@ -141,6 +149,10 @@ export const useUsageLimits = () => {
 
   const canUseDetection = () => usage.detectionCount < planConfig.weeklyDetections;
   const canUseChat = () => usage.chatCount < planConfig.dailyChats;
+  const canAddLedgerEntry = (currentCount: number) => currentCount < planConfig.maxLedgerEntries;
+  const canAddSprayEntry = (currentCount: number) => currentCount < planConfig.maxSprayEntries;
+  const getMaxLedgerEntries = () => planConfig.maxLedgerEntries;
+  const getMaxSprayEntries = () => planConfig.maxSprayEntries;
 
   const incrementDetection = () => {
     if (planConfig.weeklyDetections === Infinity) return;
@@ -171,10 +183,11 @@ export const useUsageLimits = () => {
     switch (feature) {
       case 'spray':
       case 'ledger':
-        return currentPlan === 'pro' || currentPlan === 'enterprise';
+        return true; // Available to all plans with entry limits
       case 'cropMonitor':
-      case 'climateRisk':
         return currentPlan === 'enterprise';
+      case 'climateRisk':
+        return currentPlan === 'pro' || currentPlan === 'enterprise';
       case 'forecast':
       case 'farmingTips':
         return currentPlan === 'pro' || currentPlan === 'enterprise';
@@ -203,6 +216,10 @@ export const useUsageLimits = () => {
   return {
     canUseDetection,
     canUseChat,
+    canAddLedgerEntry,
+    canAddSprayEntry,
+    getMaxLedgerEntries,
+    getMaxSprayEntries,
     incrementDetection,
     incrementChat,
     getRemainingDetections,
