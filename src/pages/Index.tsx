@@ -4,8 +4,6 @@ import WeatherTicker from '@/components/WeatherTicker';
 import BestPractices from '@/components/BestPractices';
 import ExtensionServices from '@/components/ExtensionServices';
 import AIChatbot from '@/components/AIChatbot';
-import NotificationBell from '@/components/NotificationBell';
-import { useNotifications } from '@/hooks/useNotifications';
 import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -15,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
-  useNotifications();
+  
   const { isPremium } = useUsageLimits();
   const { user } = useAuth();
   const { t } = useLanguage();
@@ -47,7 +45,7 @@ const Index = () => {
             <div className="bg-primary-foreground/10 p-3 rounded-full">
               <Sprout className="w-10 h-10" />
             </div>
-            <NotificationBell />
+            
           </div>
           <h1 className="text-3xl font-bold mb-2">
             {userName ? `Hi, ${userName}!` : 'Imvelo'}
