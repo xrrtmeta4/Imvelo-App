@@ -1,4 +1,3 @@
-import PremiumGate from '@/components/PremiumGate';
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,17 +5,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Plus, Loader2, Trash2, Download, BookOpen, TrendingUp, TrendingDown, Target, AlertTriangle, Brain, Sparkles, Settings } from 'lucide-react';
+import { Plus, Loader2, Trash2, Download, BookOpen, TrendingUp, TrendingDown, Target, AlertTriangle, Brain, Sparkles, Settings, Crown } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useCurrency, currencies } from '@/hooks/useCurrency';
+import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { toast } from 'sonner';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 import jsPDF from 'jspdf';
 
 interface LedgerEntry {
@@ -76,6 +76,8 @@ const paymentMethods = ['Cash', 'Bank Transfer', 'Mobile Money', 'Check', 'Credi
 const DigitalLedgerContent = () => {
   const { user } = useAuth();
   const { selectedCurrency, setCurrency, formatAmount } = useCurrency();
+  const { canAddLedgerEntry, getMaxLedgerEntries, currentPlan } = useUsageLimits();
+  const navigate = useNavigate();
   const [entries, setEntries] = useState<LedgerEntry[]>([]);
   const [budgets, setBudgets] = useState<BudgetLimit[]>([]);
   const [loading, setLoading] = useState(true);
@@ -171,6 +173,11 @@ const DigitalLedgerContent = () => {
     e.preventDefault();
     if (!user || !formData.category || !formData.amount) {
       toast.error('Please fill in required fields');
+      return;
+    }
+
+    if (!canAddLedgerEntry(entries.length)) {
+      toast.error(`Entry limit reached (${getMaxLedgerEntries()}). Upgrade for unlimited entries!`);
       return;
     }
 
@@ -1048,10 +1055,4 @@ const DigitalLedgerContent = () => {
   );
 };
 
-const DigitalLedger = () => (
-  <PremiumGate feature="Digital Financial Ledger" requiredPlan="pro">
-    <DigitalLedgerContent />
-  </PremiumGate>
-);
-
-export default DigitalLedger;
+export default DigitalLedgerContent;

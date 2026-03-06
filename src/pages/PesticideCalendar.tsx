@@ -10,9 +10,10 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Loader2, Trash2, Calendar, Check, SkipForward, Bell, Droplets } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
+import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { toast } from 'sonner';
 import { format, addDays, isPast, isToday, isTomorrow, differenceInDays } from 'date-fns';
-import PremiumGate from '@/components/PremiumGate';
+import { useNavigate } from 'react-router-dom';
 
 interface PesticideSchedule {
   id: string;
@@ -70,6 +71,8 @@ const repeatOptions = [
 
 const PesticideCalendarContent = () => {
   const { user } = useAuth();
+  const { canAddSprayEntry, getMaxSprayEntries, currentPlan } = useUsageLimits();
+  const navigate = useNavigate();
   const [schedules, setSchedules] = useState<PesticideSchedule[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -107,6 +110,11 @@ const PesticideCalendarContent = () => {
     e.preventDefault();
     if (!user || !formData.crop_name || !formData.application_date) {
       toast.error('Please fill in required fields');
+      return;
+    }
+
+    if (!canAddSprayEntry(schedules.length)) {
+      toast.error(`Entry limit reached (${getMaxSprayEntries()}). Upgrade for unlimited entries!`);
       return;
     }
 
@@ -508,10 +516,4 @@ const PesticideCalendarContent = () => {
   );
 };
 
-const PesticideCalendar = () => (
-  <PremiumGate feature="Spray Scheduling Calendar" requiredPlan="pro">
-    <PesticideCalendarContent />
-  </PremiumGate>
-);
-
-export default PesticideCalendar;
+export default PesticideCalendarContent;

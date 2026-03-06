@@ -302,7 +302,7 @@
  };
  
 const ClimateRisk = () => (
-  <PremiumGate feature="Climate Risk Analysis" requiredPlan="enterprise">
+  <PremiumGate feature="Advanced Climate Resilience Tools" requiredPlan="pro">
     <ClimateRiskContent />
   </PremiumGate>
 );
