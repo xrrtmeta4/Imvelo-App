@@ -8,22 +8,22 @@ export const PLANS = {
   free: {
     name: 'Free',
     price: 0,
-    weeklyDetections: 0,
-    dailyChats: 0,
-    features: ['Basic weather info', 'Best practices library', 'Extension directory'],
+    weeklyDetections: 1,
+    dailyChats: 1,
+    features: ['1 pest/disease scan per week', '1 AI chat message per day', 'Basic weather info', 'Best practices library', 'Extension directory'],
     checkoutUrl: '',
   },
   starter: {
     name: 'Starter',
-    price: 5.99,
+    price: 0,
     weeklyDetections: 1,
     dailyChats: 1,
     features: ['1 pest/disease scan per week', '1 AI chat message per day', 'Basic weather info', 'Best practices library', 'Extension directory'],
-    checkoutUrl: 'https://checkout.dodopayments.com/buy/pdt_0NVKhwZKeJCCaRbxoTNno?quantity=1&redirect_url=https://imveloappsz.vercel.app',
+    checkoutUrl: '',
   },
   pro: {
     name: 'Pro',
-    price: 29.99,
+    price: 6,
     weeklyDetections: 10,
     dailyChats: 20,
     features: ['10 scans per week', '20 AI chats per day', '7-day weather forecast', 'Farming tips', 'Spray scheduling calendar', 'Digital financial ledger', 'Produce estimation'],
@@ -31,11 +31,11 @@ export const PLANS = {
   },
   enterprise: {
     name: 'Enterprise',
-    price: 99.99,
+    price: 0,
     weeklyDetections: Infinity,
     dailyChats: Infinity,
     features: ['Unlimited scans', 'Unlimited AI chat', '7-day weather forecast', 'Farming tips', 'Spray scheduling calendar', 'Digital financial ledger', 'Produce estimation', 'Crop monitoring (phenotype)', 'Climate risk engine', 'Priority support'],
-    checkoutUrl: 'https://checkout.dodopayments.com/buy/pdt_0NYZb3ccdGubedVQypzZn?quantity=1&redirect_url=https://imveloappsz.vercel.app',
+    checkoutUrl: '',
   },
 };
 

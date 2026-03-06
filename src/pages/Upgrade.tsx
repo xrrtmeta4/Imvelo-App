@@ -25,7 +25,7 @@ const Upgrade = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
 
-  const tiers: PlanTier[] = ['starter', 'pro', 'enterprise'];
+  const tiers: PlanTier[] = ['pro', 'enterprise'];
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -37,11 +37,6 @@ const Upgrade = () => {
           </Button>
           <h1 className="text-3xl font-bold">{t('choosePlan')}</h1>
           <p className="text-primary-foreground/90 mt-1">{t('unlockTools')}</p>
-          {trialDaysLeft !== null && trialDaysLeft > 0 && (
-            <Badge variant="secondary" className="mt-3">
-              {trialDaysLeft} days left on free trial
-            </Badge>
-          )}
         </div>
       </header>
 
@@ -65,10 +60,16 @@ const Upgrade = () => {
                   </div>
                   <div>
                     <CardTitle className="text-lg">{plan.name}</CardTitle>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-2xl font-bold text-foreground">${plan.price.toFixed(2)}</span>
-                      <span className="text-sm text-muted-foreground">/month</span>
-                    </div>
+                    {tier === 'enterprise' ? (
+                      <>
+                        <span className="text-2xl font-bold text-foreground">Contact Us</span>
+                      </>
+                    ) : (
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-2xl font-bold text-foreground">${plan.price.toFixed(2)}</span>
+                        <span className="text-sm text-muted-foreground">/month</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardHeader>
@@ -86,6 +87,11 @@ const Upgrade = () => {
                   <Button disabled className="w-full" variant="outline">
                     {t('currentPlan')}
                   </Button>
+                ) : isUpgrade && tier === 'enterprise' ? (
+                  <Button className="w-full gap-2" onClick={() => window.open('mailto:support@imveloapp.com?subject=Enterprise Plan Inquiry', '_blank')}>
+                    <Building2 className="w-4 h-4" />
+                    Contact Sales
+                  </Button>
                 ) : isUpgrade ? (
                   <Button className="w-full gap-2" onClick={() => openUpgrade(tier)}>
                     <Crown className="w-4 h-4" />
@@ -102,7 +108,7 @@ const Upgrade = () => {
         })}
 
         <p className="text-center text-xs text-muted-foreground pt-4">
-          All plans include a 7-day free trial. Cancel anytime.
+          Cancel anytime. Enterprise plans are custom — contact our team.
         </p>
       </div>
     </div>
