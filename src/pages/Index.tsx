@@ -8,7 +8,7 @@ import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/lib/supabase';
-import { Sprout, Crown, Leaf, CloudLightning, Scan } from 'lucide-react';
+import { Sprout, Crown, Leaf, CloudLightning, Scan, Droplets } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 
@@ -67,38 +67,53 @@ const Index = () => {
 
       <div className="max-w-screen-sm mx-auto px-4 py-6 space-y-6">
         {/* Quick Access: Crop Monitoring & Climate Risk */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <button
             onClick={() => navigate('/crop-monitoring')}
-            className="flex flex-col items-center gap-2 p-4 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-colors text-center"
+            className="flex items-center gap-3 p-4 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-colors text-left"
           >
             <div className="bg-primary/20 p-2.5 rounded-lg">
               <Leaf className="w-5 h-5 text-primary" />
             </div>
             <div>
               <p className="font-semibold text-xs text-foreground">{t('cropMonitor')}</p>
+              <p className="text-[10px] text-muted-foreground">AI health scan</p>
             </div>
           </button>
           <button
             onClick={() => navigate('/climate-risk')}
-            className="flex flex-col items-center gap-2 p-4 rounded-xl bg-destructive/10 border border-destructive/20 hover:bg-destructive/20 transition-colors text-center"
+            className="flex items-center gap-3 p-4 rounded-xl bg-destructive/10 border border-destructive/20 hover:bg-destructive/20 transition-colors text-left"
           >
             <div className="bg-destructive/20 p-2.5 rounded-lg">
               <CloudLightning className="w-5 h-5 text-destructive" />
             </div>
             <div>
               <p className="font-semibold text-xs text-foreground">{t('climateRisk')}</p>
+              <p className="text-[10px] text-muted-foreground">Volatility engine</p>
             </div>
           </button>
           <button
             onClick={() => navigate('/scanner')}
-            className="flex flex-col items-center gap-2 p-4 rounded-xl bg-accent border border-accent-foreground/10 hover:bg-accent/80 transition-colors text-center"
+            className="flex items-center gap-3 p-4 rounded-xl bg-accent border border-accent-foreground/10 hover:bg-accent/80 transition-colors text-left"
           >
             <div className="bg-primary/20 p-2.5 rounded-lg">
               <Scan className="w-5 h-5 text-primary" />
             </div>
             <div>
               <p className="font-semibold text-xs text-foreground">Health Scan</p>
+              <p className="text-[10px] text-muted-foreground">Pest, soil, disease</p>
+            </div>
+          </button>
+          <button
+            onClick={() => navigate('/smart-irrigation')}
+            className="flex items-center gap-3 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 transition-colors text-left"
+          >
+            <div className="bg-blue-500/20 p-2.5 rounded-lg">
+              <Droplets className="w-5 h-5 text-blue-500" />
+            </div>
+            <div>
+              <p className="font-semibold text-xs text-foreground">Irrigation</p>
+              <p className="text-[10px] text-muted-foreground">Rain & water advisor</p>
             </div>
           </button>
         </div>
