@@ -8,7 +8,7 @@ import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/lib/supabase';
-import { Sprout, Crown, Leaf, CloudLightning } from 'lucide-react';
+import { Sprout, Crown, Leaf, CloudLightning, Scan } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 
@@ -67,29 +67,38 @@ const Index = () => {
 
       <div className="max-w-screen-sm mx-auto px-4 py-6 space-y-6">
         {/* Quick Access: Crop Monitoring & Climate Risk */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <button
             onClick={() => navigate('/crop-monitoring')}
-            className="flex items-center gap-3 p-4 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-colors text-left"
+            className="flex flex-col items-center gap-2 p-4 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-colors text-center"
           >
             <div className="bg-primary/20 p-2.5 rounded-lg">
               <Leaf className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <p className="font-semibold text-sm text-foreground">{t('cropMonitor')}</p>
-              <p className="text-xs text-muted-foreground">{t('aiHealthScan')}</p>
+              <p className="font-semibold text-xs text-foreground">{t('cropMonitor')}</p>
             </div>
           </button>
           <button
             onClick={() => navigate('/climate-risk')}
-            className="flex items-center gap-3 p-4 rounded-xl bg-destructive/10 border border-destructive/20 hover:bg-destructive/20 transition-colors text-left"
+            className="flex flex-col items-center gap-2 p-4 rounded-xl bg-destructive/10 border border-destructive/20 hover:bg-destructive/20 transition-colors text-center"
           >
             <div className="bg-destructive/20 p-2.5 rounded-lg">
               <CloudLightning className="w-5 h-5 text-destructive" />
             </div>
             <div>
-              <p className="font-semibold text-sm text-foreground">{t('climateRisk')}</p>
-              <p className="text-xs text-muted-foreground">{t('volatilityEngine')}</p>
+              <p className="font-semibold text-xs text-foreground">{t('climateRisk')}</p>
+            </div>
+          </button>
+          <button
+            onClick={() => navigate('/scanner')}
+            className="flex flex-col items-center gap-2 p-4 rounded-xl bg-accent border border-accent-foreground/10 hover:bg-accent/80 transition-colors text-center"
+          >
+            <div className="bg-primary/20 p-2.5 rounded-lg">
+              <Scan className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <p className="font-semibold text-xs text-foreground">Health Scan</p>
             </div>
           </button>
         </div>
