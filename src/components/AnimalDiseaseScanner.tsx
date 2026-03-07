@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Stethoscope, Camera, Loader2, Download, Crown, Upload } from 'lucide-react';
+import ScanningOverlay from './ScanningOverlay';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
@@ -77,7 +78,9 @@ const AnimalDiseaseScanner = () => {
   };
 
   return (
-    <Card>
+    <>
+      <ScanningOverlay active={loading} label="DISEASE SCAN" />
+      <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <span className="flex items-center gap-2">
@@ -180,6 +183,7 @@ const AnimalDiseaseScanner = () => {
         )}
       </CardContent>
     </Card>
+    </>
   );
 };
 
