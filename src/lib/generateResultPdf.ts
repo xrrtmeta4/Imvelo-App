@@ -2,7 +2,7 @@ import { jsPDF } from 'jspdf';
 
 interface ResultData {
   title: string;
-  type: 'pest' | 'animal-disease' | 'produce';
+  type: 'pest' | 'animal-disease' | 'produce' | 'soil';
   data: Record<string, any>;
 }
 
