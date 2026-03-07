@@ -1,4 +1,4 @@
- import PremiumGate from '@/components/PremiumGate';
+ 
  import { useState } from 'react';
  import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
  import { Button } from '@/components/ui/button';
@@ -360,10 +360,4 @@
    );
  };
  
-const CropMonitoring = () => (
-  <PremiumGate feature="Crop Monitoring" requiredPlan="enterprise">
-    <CropMonitoringContent />
-  </PremiumGate>
-);
-
- export default CropMonitoring;
+export default CropMonitoringContent;

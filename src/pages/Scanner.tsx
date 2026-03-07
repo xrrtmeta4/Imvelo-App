@@ -1,13 +1,14 @@
 import PestScanner from '@/components/PestScanner';
 import AnimalDiseaseScanner from '@/components/AnimalDiseaseScanner';
 import ProduceEstimator from '@/components/ProduceEstimator';
+import SoilScanner from '@/components/SoilScanner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
-import { Bug, Stethoscope, Wheat, Trash2 } from 'lucide-react';
+import { Bug, Stethoscope, Wheat, Mountain, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Scanner = () => {
@@ -55,14 +56,18 @@ const Scanner = () => {
 
       <div className="max-w-screen-sm mx-auto px-4 py-6 space-y-6">
         <Tabs defaultValue="pest" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="pest" className="flex items-center gap-1">
               <Bug className="w-4 h-4" />
               <span className="hidden sm:inline">Pests</span>
             </TabsTrigger>
             <TabsTrigger value="animal" className="flex items-center gap-1">
               <Stethoscope className="w-4 h-4" />
-              <span className="hidden sm:inline">Animal Diseases</span>
+              <span className="hidden sm:inline">Animal</span>
+            </TabsTrigger>
+            <TabsTrigger value="soil" className="flex items-center gap-1">
+              <Mountain className="w-4 h-4" />
+              <span className="hidden sm:inline">Soil</span>
             </TabsTrigger>
             <TabsTrigger value="produce" className="flex items-center gap-1">
               <Wheat className="w-4 h-4" />
@@ -76,6 +81,10 @@ const Scanner = () => {
           
           <TabsContent value="animal" className="mt-4">
             <AnimalDiseaseScanner />
+          </TabsContent>
+
+          <TabsContent value="soil" className="mt-4">
+            <SoilScanner />
           </TabsContent>
           
           <TabsContent value="produce" className="mt-4">

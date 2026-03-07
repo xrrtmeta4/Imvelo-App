@@ -1,4 +1,4 @@
- import PremiumGate from '@/components/PremiumGate';
+ 
  import { useState, useEffect, useCallback } from 'react';
  import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
  import { Button } from '@/components/ui/button';
@@ -301,10 +301,4 @@
    );
  };
  
-const ClimateRisk = () => (
-  <PremiumGate feature="Advanced Climate Resilience Tools" requiredPlan="pro">
-    <ClimateRiskContent />
-  </PremiumGate>
-);
-
- export default ClimateRisk;
+export default ClimateRiskContent;
