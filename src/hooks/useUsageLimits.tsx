@@ -185,9 +185,8 @@ export const useUsageLimits = () => {
       case 'ledger':
         return true; // Available to all plans with entry limits
       case 'cropMonitor':
-        return currentPlan === 'enterprise';
       case 'climateRisk':
-        return currentPlan === 'pro' || currentPlan === 'enterprise';
+        return true; // Available to all plans
       case 'forecast':
       case 'farmingTips':
         return currentPlan === 'pro' || currentPlan === 'enterprise';
