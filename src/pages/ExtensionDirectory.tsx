@@ -2,11 +2,31 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Phone, Mail, MapPin, Search, Users, Building2, Loader2, RefreshCw } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ArrowLeft, Phone, Mail, MapPin, Search, Users, Building2, Loader2, Globe } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "@/hooks/useLocation";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
+const AFRICAN_COUNTRIES = [
+  { name: "Algeria", code: "DZ" }, { name: "Angola", code: "AO" }, { name: "Benin", code: "BJ" },
+  { name: "Botswana", code: "BW" }, { name: "Burkina Faso", code: "BF" }, { name: "Burundi", code: "BI" },
+  { name: "Cameroon", code: "CM" }, { name: "Central African Republic", code: "CF" }, { name: "Chad", code: "TD" },
+  { name: "Congo", code: "CG" }, { name: "DR Congo", code: "CD" }, { name: "Côte d'Ivoire", code: "CI" },
+  { name: "Egypt", code: "EG" }, { name: "Eswatini", code: "SZ" }, { name: "Ethiopia", code: "ET" },
+  { name: "Gabon", code: "GA" }, { name: "Gambia", code: "GM" }, { name: "Ghana", code: "GH" },
+  { name: "Guinea", code: "GN" }, { name: "Kenya", code: "KE" }, { name: "Lesotho", code: "LS" },
+  { name: "Liberia", code: "LR" }, { name: "Libya", code: "LY" }, { name: "Madagascar", code: "MG" },
+  { name: "Malawi", code: "MW" }, { name: "Mali", code: "ML" }, { name: "Mauritania", code: "MR" },
+  { name: "Mauritius", code: "MU" }, { name: "Morocco", code: "MA" }, { name: "Mozambique", code: "MZ" },
+  { name: "Namibia", code: "NA" }, { name: "Niger", code: "NE" }, { name: "Nigeria", code: "NG" },
+  { name: "Rwanda", code: "RW" }, { name: "Senegal", code: "SN" }, { name: "Sierra Leone", code: "SL" },
+  { name: "Somalia", code: "SO" }, { name: "South Africa", code: "ZA" }, { name: "South Sudan", code: "SS" },
+  { name: "Sudan", code: "SD" }, { name: "Tanzania", code: "TZ" }, { name: "Togo", code: "TG" },
+  { name: "Tunisia", code: "TN" }, { name: "Uganda", code: "UG" }, { name: "Zambia", code: "ZM" },
+  { name: "Zimbabwe", code: "ZW" },
+];
 
 interface ExtensionOfficer {
   id: string;
@@ -88,24 +108,35 @@ const ExtensionDirectory = () => {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex-1">
-            <h1 className="text-xl font-bold">Extension Officers Directory</h1>
+            <h1 className="text-xl font-bold">Extension Directory</h1>
             <p className="text-sm opacity-90">
               {countryName ? `${countryName} Agricultural Support` : "Loading..."}
             </p>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => location && fetchContacts(location.country_name, location.country_code)}
-            className="text-primary-foreground hover:bg-primary/80"
-            disabled={loadingContacts}
-          >
-            <RefreshCw className={`w-4 h-4 ${loadingContacts ? 'animate-spin' : ''}`} />
-          </Button>
         </div>
       </div>
 
       <div className="p-4 space-y-4">
+        {/* Country Selector */}
+        <div className="flex items-center gap-2">
+          <Globe className="w-4 h-4 text-muted-foreground" />
+          <Select
+            value={countryName}
+            onValueChange={(val) => {
+              const country = AFRICAN_COUNTRIES.find(c => c.name === val);
+              if (country) fetchContacts(country.name, country.code);
+            }}
+          >
+            <SelectTrigger className="flex-1">
+              <SelectValue placeholder="Select a country" />
+            </SelectTrigger>
+            <SelectContent>
+              {AFRICAN_COUNTRIES.map((c) => (
+                <SelectItem key={c.code} value={c.name}>{c.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         {loadingContacts ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
