@@ -162,16 +162,21 @@ const ExtensionDirectory = () => {
           <Select
             value={countryName}
             onValueChange={(val) => {
-              const country = AFRICAN_COUNTRIES.find(c => c.name === val);
+              const country = COUNTRIES.find(c => c.name === val);
               if (country) fetchContacts(country.name, country.code);
             }}
           >
             <SelectTrigger className="flex-1">
               <SelectValue placeholder="Select a country" />
             </SelectTrigger>
-            <SelectContent>
-              {AFRICAN_COUNTRIES.map((c) => (
-                <SelectItem key={c.code} value={c.name}>{c.name}</SelectItem>
+            <SelectContent className="max-h-60">
+              {CONTINENT_GROUPS.map((continent) => (
+                <div key={continent}>
+                  <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{continent}</div>
+                  {COUNTRIES.filter(c => c.region === continent).map((c) => (
+                    <SelectItem key={c.code} value={c.name}>{c.name}</SelectItem>
+                  ))}
+                </div>
               ))}
             </SelectContent>
           </Select>
