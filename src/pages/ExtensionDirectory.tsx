@@ -108,24 +108,35 @@ const ExtensionDirectory = () => {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex-1">
-            <h1 className="text-xl font-bold">Extension Officers Directory</h1>
+            <h1 className="text-xl font-bold">Extension Directory</h1>
             <p className="text-sm opacity-90">
               {countryName ? `${countryName} Agricultural Support` : "Loading..."}
             </p>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => location && fetchContacts(location.country_name, location.country_code)}
-            className="text-primary-foreground hover:bg-primary/80"
-            disabled={loadingContacts}
-          >
-            <RefreshCw className={`w-4 h-4 ${loadingContacts ? 'animate-spin' : ''}`} />
-          </Button>
         </div>
       </div>
 
       <div className="p-4 space-y-4">
+        {/* Country Selector */}
+        <div className="flex items-center gap-2">
+          <Globe className="w-4 h-4 text-muted-foreground" />
+          <Select
+            value={countryName}
+            onValueChange={(val) => {
+              const country = AFRICAN_COUNTRIES.find(c => c.name === val);
+              if (country) fetchContacts(country.name, country.code);
+            }}
+          >
+            <SelectTrigger className="flex-1">
+              <SelectValue placeholder="Select a country" />
+            </SelectTrigger>
+            <SelectContent>
+              {AFRICAN_COUNTRIES.map((c) => (
+                <SelectItem key={c.code} value={c.name}>{c.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         {loadingContacts ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
