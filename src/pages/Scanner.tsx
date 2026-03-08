@@ -8,11 +8,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/hooks/useLanguage';
 import { Bug, Stethoscope, Wheat, Mountain, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Scanner = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [reports, setReports] = useState<any[]>([]);
 
   useEffect(() => {
@@ -40,18 +42,18 @@ const Scanner = () => {
       .eq('user_id', user?.id);
 
     if (error) {
-      toast.error('Failed to delete report');
+      toast.error(t('failedDeleteReport'));
       return;
     }
 
     setReports(reports.filter(r => r.id !== reportId));
-    toast.success('Report deleted');
+    toast.success(t('reportDeleted'));
   };
 
   return (
     <div className="min-h-screen bg-background pb-20">
       <header className="bg-primary text-primary-foreground py-4 px-4">
-        <h1 className="text-xl font-bold">Identify Pests & Diseases</h1>
+        <h1 className="text-xl font-bold">{t('identifyPestsDiseases')}</h1>
       </header>
 
       <div className="max-w-screen-sm mx-auto px-4 py-6 space-y-6">
@@ -59,19 +61,19 @@ const Scanner = () => {
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="pest" className="flex items-center gap-1">
               <Bug className="w-4 h-4" />
-              <span className="hidden sm:inline">Pests</span>
+              <span className="hidden sm:inline">{t('pests')}</span>
             </TabsTrigger>
             <TabsTrigger value="animal" className="flex items-center gap-1">
               <Stethoscope className="w-4 h-4" />
-              <span className="hidden sm:inline">Animal</span>
+              <span className="hidden sm:inline">{t('animal')}</span>
             </TabsTrigger>
             <TabsTrigger value="soil" className="flex items-center gap-1">
               <Mountain className="w-4 h-4" />
-              <span className="hidden sm:inline">Soil</span>
+              <span className="hidden sm:inline">{t('soil')}</span>
             </TabsTrigger>
             <TabsTrigger value="produce" className="flex items-center gap-1">
               <Wheat className="w-4 h-4" />
-              <span className="hidden sm:inline">Yield</span>
+              <span className="hidden sm:inline">{t('yield')}</span>
             </TabsTrigger>
           </TabsList>
           
@@ -95,7 +97,7 @@ const Scanner = () => {
         {reports.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>Detection History</CardTitle>
+              <CardTitle>{t('detectionHistory')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {reports.map((report) => (
@@ -103,7 +105,7 @@ const Scanner = () => {
                   <div>
                     <p className="font-medium text-sm">{report.pest_name}</p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {new Date(report.created_at).toLocaleDateString('en-US')}
+                      {new Date(report.created_at).toLocaleDateString()}
                     </p>
                   </div>
                   <Button

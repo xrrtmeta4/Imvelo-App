@@ -86,7 +86,6 @@ const Profile = () => {
       toast.error('Failed to update profile');
     } else {
       toast.success('Profile updated successfully!');
-      // Sync UI language when profile language changes
       if (formData.preferred_language) {
         setLang(formData.preferred_language);
       }
@@ -99,13 +98,11 @@ const Profile = () => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       toast.error('Please select an image file');
       return;
     }
 
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast.error('Image must be less than 5MB');
       return;
@@ -114,34 +111,26 @@ const Profile = () => {
     setUploading(true);
 
     try {
-      // Create unique filename
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}-${Date.now()}.${fileExt}`;
       const filePath = `${user.id}/${fileName}`;
 
-      // Upload to Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(filePath, file, { upsert: true });
 
-      if (uploadError) {
-        throw uploadError;
-      }
+      if (uploadError) throw uploadError;
 
-      // Get public URL
       const { data: urlData } = supabase.storage
         .from('avatars')
         .getPublicUrl(filePath);
 
-      // Update profile with new avatar URL
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ avatar_url: urlData.publicUrl })
         .eq('id', user.id);
 
-      if (updateError) {
-        throw updateError;
-      }
+      if (updateError) throw updateError;
 
       toast.success('Avatar updated successfully!');
       fetchProfile();
@@ -165,7 +154,6 @@ const Profile = () => {
       </header>
 
       <div className="max-w-screen-sm mx-auto px-4 py-6 space-y-6">
-        {/* Avatar Section */}
         <Card>
           <CardContent className="p-6">
             <div className="flex flex-col items-center space-y-4">
@@ -204,16 +192,16 @@ const Profile = () => {
                 {isPremium ? (
                   <Badge className="mt-2 bg-gradient-to-r from-amber-500 to-yellow-400 text-white border-0">
                     <Crown className="w-3 h-3 mr-1" />
-                    Premium Member
+                    {t('premiumMember')}
                   </Badge>
                 ) : (
                   <Badge variant="secondary" className="mt-2">
-                    Free Plan
+                    {t('freePlan')}
                   </Badge>
                 )}
                 {isPremium && premiumExpiry && (
                   <p className="text-xs text-muted-foreground mt-1">
-                    Expires: {new Date(premiumExpiry).toLocaleDateString()}
+                    {t('expires')}: {new Date(premiumExpiry).toLocaleDateString()}
                   </p>
                 )}
                 <Button
@@ -223,17 +211,16 @@ const Profile = () => {
                   onClick={() => navigate('/upgrade')}
                 >
                   <Zap className="w-4 h-4" />
-                  {isPremium ? 'Manage Plan' : 'Upgrade Plan'}
+                  {isPremium ? t('managePlan') : t('upgradePlan')}
                 </Button>
               </div>
               {uploading && (
-                <p className="text-sm text-muted-foreground">Uploading...</p>
+                <p className="text-sm text-muted-foreground">{t('uploading')}</p>
               )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Push Notifications */}
         <PushNotificationManager />
 
         <Card>
@@ -293,7 +280,7 @@ const Profile = () => {
                   disabled={loading}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select language" />
+                    <SelectValue placeholder={t('language')} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="en">English</SelectItem>
@@ -321,7 +308,7 @@ const Profile = () => {
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  The AI assistant will respond in your preferred language
+                  {t('langHint')}
                 </p>
               </div>
 

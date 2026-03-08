@@ -1,26 +1,28 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; 
 import { BookOpen, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const BestPractices = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const practices = [
     {
-      title: "Seasonal Planting Guide",
-      description: "Learn the best time to plant your crops",
+      title: t('seasonalPlantingGuide'),
+      description: t('learnBestTime'),
       path: "/planting-guide",
       icon: TrendingUp
     },
     {
-      title: "Soil Management",
-      description: "Keep your soil healthy for better harvests",
+      title: t('soilManagement'),
+      description: t('keepSoilHealthy'),
       path: "/soil-management",
       icon: TrendingUp
     },
     {
-      title: "Water Conservation",
-      description: "Tips for efficient water management",
+      title: t('waterConservation'),
+      description: t('tipsWaterManagement'),
       path: "/water-conservation",
       icon: TrendingUp
     }
@@ -31,7 +33,7 @@ const BestPractices = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <BookOpen className="w-5 h-5 text-primary" />
-          Best Practices
+          {t('bestPractices')}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">

@@ -4,13 +4,15 @@ import { Cloud, CloudRain, Sun, Loader2, MapPin, Droplets, Wind, Thermometer } f
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation } from '@/hooks/useLocation';
+import { useLanguage } from '@/hooks/useLanguage';
 import { format, addDays } from 'date-fns';
 
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const CACHE_DURATION = 5 * 60 * 1000;
 
 const WeatherCard = () => {
   const { user } = useAuth();
   const { getLocation } = useLocation();
+  const { t } = useLanguage();
   const [weather, setWeather] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [locationName, setLocationName] = useState<string>('');
@@ -27,14 +29,13 @@ const WeatherCard = () => {
   };
 
   const getDayLabel = (index: number) => {
-    if (index === 0) return 'Today';
-    if (index === 1) return 'Tomorrow';
+    if (index === 0) return t('today');
+    if (index === 1) return t('tomorrow');
     return format(addDays(new Date(), index), 'EEE');
   };
 
   const fetchWeather = useCallback(async () => {
     try {
-      // Check localStorage cache first
       const cached = localStorage.getItem('imvelo_weather_card_cache');
       if (cached) {
         try {
@@ -45,12 +46,11 @@ const WeatherCard = () => {
             setLoading(false);
             return;
           }
-        } catch { /* ignore invalid cache */ }
+        } catch { }
       }
 
       const locationData = await getLocation({ preferGps: true });
 
-      // Set location display name
       if (locationData.city && locationData.country_name) {
         setLocationName(`${locationData.city}, ${locationData.country_name}`);
       } else if (locationData.source === 'gps') {
@@ -65,7 +65,6 @@ const WeatherCard = () => {
       
       setWeather(data);
 
-      // Cache the result
       const locName = locationData.city && locationData.country_name 
         ? `${locationData.city}, ${locationData.country_name}` 
         : '📍 GPS Location';
@@ -97,12 +96,11 @@ const WeatherCard = () => {
 
   return (
     <Card className="border-border overflow-hidden">
-      {/* Current Weather Header */}
       <CardHeader className="bg-gradient-to-br from-primary/10 to-primary/5 pb-4">
         <CardTitle className="flex items-center justify-between text-foreground">
           <div className="flex items-center gap-2">
             <Cloud className="w-5 h-5" />
-            Weather Forecast
+            {t('weatherForecast')}
           </div>
           {getWeatherIcon(weather.current.weather_description, 'w-10 h-10')}
         </CardTitle>
@@ -115,13 +113,12 @@ const WeatherCard = () => {
       </CardHeader>
 
       <CardContent className="pt-4 space-y-4">
-        {/* Current conditions */}
         <div className="flex items-center justify-between">
           <div>
             <p className="text-4xl font-bold text-foreground">{weather.current.temperature}°C</p>
             <p className="text-sm text-muted-foreground mt-1">{weather.current.weather_description}</p>
             {weather.current.feels_like && (
-              <p className="text-xs text-muted-foreground">Feels like {weather.current.feels_like}°</p>
+              <p className="text-xs text-muted-foreground">{t('feelsLike')} {weather.current.feels_like}°</p>
             )}
           </div>
           <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs text-muted-foreground">
@@ -146,10 +143,9 @@ const WeatherCard = () => {
           </div>
         </div>
 
-        {/* 7-Day Forecast */}
         {weather.forecast && weather.forecast.length > 0 && (
           <div className="border-t border-border pt-4">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">7-Day Forecast</p>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">{t('sevenDayForecast')}</p>
             <div className="space-y-2">
               {weather.forecast.map((day: any, index: number) => (
                 <div

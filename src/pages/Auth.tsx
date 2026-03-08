@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { Sprout, Loader2, ArrowLeft } from 'lucide-react';
 import { z } from 'zod';
 import { Separator } from '@/components/ui/separator';
+import { useLanguage } from '@/hooks/useLanguage';
 
 const signupSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -22,6 +23,7 @@ const signupSchema = z.object({
 
 const Auth = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [mode, setMode] = useState<'login' | 'signup' | 'forgot' | 'reset'>('login');
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -164,7 +166,6 @@ const Auth = () => {
     }
   };
 
-  // Check for reset mode from URL
   useState(() => {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('mode') === 'reset') {
@@ -174,19 +175,19 @@ const Auth = () => {
 
   const getTitle = () => {
     switch (mode) {
-      case 'login': return 'Sign In';
-      case 'signup': return 'Create Account';
-      case 'forgot': return 'Reset Password';
-      case 'reset': return 'Set New Password';
+      case 'login': return t('signIn');
+      case 'signup': return t('signUp');
+      case 'forgot': return t('resetPassword');
+      case 'reset': return t('setNewPassword');
     }
   };
 
   const getDescription = () => {
     switch (mode) {
-      case 'login': return 'Sign in with your account';
-      case 'signup': return 'Register for Imvelo';
-      case 'forgot': return 'Enter your email to receive a reset link';
-      case 'reset': return 'Enter your new password';
+      case 'login': return t('signInWith');
+      case 'signup': return t('registerFor');
+      case 'forgot': return t('enterEmailReset');
+      case 'reset': return t('enterNewPassword');
     }
   };
 
@@ -211,7 +212,7 @@ const Auth = () => {
               className="mb-4"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Login
+              {t('backToLogin')}
             </Button>
           )}
 
@@ -219,7 +220,7 @@ const Auth = () => {
             {mode === 'signup' && (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="full_name">Full Name</Label>
+                  <Label htmlFor="full_name">{t('fullName')}</Label>
                   <Input
                     id="full_name"
                     type="text"
@@ -230,7 +231,7 @@ const Auth = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number *</Label>
+                  <Label htmlFor="phone">{t('phone')} *</Label>
                   <Input
                     id="phone"
                     type="tel"
@@ -240,10 +241,10 @@ const Auth = () => {
                     required
                     disabled={loading}
                   />
-                   <p className="text-xs text-muted-foreground">For SMS weather alerts and farming tips</p>
+                   <p className="text-xs text-muted-foreground">{t('phoneHint')}</p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="country">Country *</Label>
+                  <Label htmlFor="country">{t('country')} *</Label>
                   <Input
                     id="country"
                     type="text"
@@ -255,7 +256,7 @@ const Auth = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="role">Role</Label>
+                  <Label htmlFor="role">{t('role')}</Label>
                   <Select
                     value={formData.role}
                     onValueChange={(value: any) => setFormData({ ...formData, role: value })}
@@ -265,9 +266,9 @@ const Auth = () => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="farmer">Farmer</SelectItem>
-                      <SelectItem value="trader">Trader</SelectItem>
-                      <SelectItem value="extension_officer">Extension Officer</SelectItem>
+                      <SelectItem value="farmer">{t('farmer')}</SelectItem>
+                      <SelectItem value="trader">{t('trader')}</SelectItem>
+                      <SelectItem value="extension_officer">{t('extensionOfficer')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -276,7 +277,7 @@ const Auth = () => {
 
             {mode !== 'reset' && (
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('email')}</Label>
                 <Input
                   id="email"
                   type="email"
@@ -290,7 +291,7 @@ const Auth = () => {
 
             {(mode === 'login' || mode === 'signup' || mode === 'reset') && (
               <div className="space-y-2">
-                <Label htmlFor="password">{mode === 'reset' ? 'New Password' : 'Password'}</Label>
+                <Label htmlFor="password">{mode === 'reset' ? t('newPassword') : t('password')}</Label>
                 <Input
                   id="password"
                   type="password"
@@ -305,7 +306,7 @@ const Auth = () => {
 
             {mode === 'reset' && (
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Label htmlFor="confirmPassword">{t('confirmPassword')}</Label>
                 <Input
                   id="confirmPassword"
                   type="password"
@@ -322,7 +323,7 @@ const Auth = () => {
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Please wait...
+                  {t('pleaseWait')}
                 </>
               ) : (
                 <>{getTitle()}</>
@@ -335,7 +336,7 @@ const Auth = () => {
               <div className="relative my-4">
                 <Separator />
                 <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-2 text-xs text-muted-foreground">
-                  or
+                  {t('or')}
                 </span>
               </div>
 
@@ -352,7 +353,7 @@ const Auth = () => {
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                 </svg>
-                Continue with Google
+                {t('continueWithGoogle')}
               </Button>
             </>
           )}
@@ -360,11 +361,11 @@ const Auth = () => {
           {mode === 'login' && (
             <div className="mt-4 text-center space-y-2">
               <Button variant="link" onClick={() => setMode('forgot')} disabled={loading} className="text-sm">
-                Forgot Password?
+                {t('forgotPassword')}
               </Button>
               <div>
                 <Button variant="link" onClick={() => setMode('signup')} disabled={loading}>
-                  Don't have an account? Sign Up
+                  {t('dontHaveAccount')}
                 </Button>
               </div>
             </div>
@@ -373,7 +374,7 @@ const Auth = () => {
           {mode === 'signup' && (
             <div className="mt-4 text-center">
               <Button variant="link" onClick={() => setMode('login')} disabled={loading}>
-                Already have an account? Sign In
+                {t('alreadyHaveAccount')}
               </Button>
             </div>
           )}
@@ -381,10 +382,10 @@ const Auth = () => {
       </Card>
 
       <div className="mt-6 flex flex-wrap justify-center gap-4 text-sm">
-        <Link to="/about" className="text-primary-foreground/80 hover:text-primary-foreground underline">About Us</Link>
-        <Link to="/contact" className="text-primary-foreground/80 hover:text-primary-foreground underline">Contact</Link>
-        <Link to="/privacy-policy" className="text-primary-foreground/80 hover:text-primary-foreground underline">Privacy Policy</Link>
-        <Link to="/terms-of-service" className="text-primary-foreground/80 hover:text-primary-foreground underline">Terms of Service</Link>
+        <Link to="/about" className="text-primary-foreground/80 hover:text-primary-foreground underline">{t('aboutUs')}</Link>
+        <Link to="/contact" className="text-primary-foreground/80 hover:text-primary-foreground underline">{t('contact')}</Link>
+        <Link to="/privacy-policy" className="text-primary-foreground/80 hover:text-primary-foreground underline">{t('privacyPolicy')}</Link>
+        <Link to="/terms-of-service" className="text-primary-foreground/80 hover:text-primary-foreground underline">{t('termsOfService')}</Link>
       </div>
     </div>
   );
