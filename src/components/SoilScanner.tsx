@@ -20,10 +20,7 @@ const SoilScanner = () => {
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !e.target.files[0] || !user) return;
 
-    if (!canUseDetection()) {
-      toast.error('Weekly scan limit reached. Upgrade for more!');
-      return;
-    }
+    // Soil analysis is free for all users
 
     const file = e.target.files[0];
     setLoading(true);
