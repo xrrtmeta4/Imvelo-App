@@ -50,7 +50,7 @@ const Upgrade = () => {
             <Card key={tier} className={`relative overflow-hidden ${planColors[tier]}`}>
               {tier === 'pro' && (
                 <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-bl-lg">
-                  POPULAR
+                  {t('popular')}
                 </div>
               )}
               <CardHeader className="pb-3">
@@ -62,12 +62,12 @@ const Upgrade = () => {
                     <CardTitle className="text-lg">{plan.name}</CardTitle>
                     {tier === 'enterprise' ? (
                       <>
-                        <span className="text-2xl font-bold text-foreground">Contact Us</span>
+                        <span className="text-2xl font-bold text-foreground">{t('contactUs')}</span>
                       </>
                     ) : (
                       <div className="flex items-baseline gap-1">
                         <span className="text-2xl font-bold text-foreground">${plan.price.toFixed(2)}</span>
-                        <span className="text-sm text-muted-foreground">/month</span>
+                        <span className="text-sm text-muted-foreground">{t('perMonth')}</span>
                       </div>
                     )}
                   </div>
@@ -90,7 +90,7 @@ const Upgrade = () => {
                 ) : isUpgrade && tier === 'enterprise' ? (
                   <Button className="w-full gap-2" onClick={() => window.open('mailto:support@imveloapp.com?subject=Enterprise Plan Inquiry', '_blank')}>
                     <Building2 className="w-4 h-4" />
-                    Contact Sales
+                    {t('contactSales')}
                   </Button>
                 ) : isUpgrade ? (
                   <Button className="w-full gap-2" onClick={() => openUpgrade(tier)}>
@@ -99,7 +99,7 @@ const Upgrade = () => {
                   </Button>
                 ) : (
                   <Button disabled variant="ghost" className="w-full text-muted-foreground">
-                    Included in your plan
+                    {t('includedInPlan')}
                   </Button>
                 )}
               </CardContent>
@@ -108,7 +108,7 @@ const Upgrade = () => {
         })}
 
         <p className="text-center text-xs text-muted-foreground pt-4">
-          Cancel anytime. Enterprise plans are custom — contact our team.
+          {t('cancelAnytime')}
         </p>
       </div>
     </div>

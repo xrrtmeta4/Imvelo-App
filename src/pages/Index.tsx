@@ -29,7 +29,7 @@ const Index = () => {
         .eq('id', user.id)
         .single();
       if (data?.full_name) {
-        setUserName(data.full_name.split(' ')[0]); // Get first name
+        setUserName(data.full_name.split(' ')[0]);
       }
     };
     fetchUserName();
@@ -45,7 +45,6 @@ const Index = () => {
             <div className="bg-primary-foreground/10 p-3 rounded-full">
               <Sprout className="w-10 h-10" />
             </div>
-            
           </div>
           <h1 className="text-3xl font-bold mb-2">
             {userName ? `Hi, ${userName}!` : 'Imvelo'}
@@ -66,7 +65,6 @@ const Index = () => {
       </header>
 
       <div className="max-w-screen-sm mx-auto px-4 py-6 space-y-6">
-        {/* Quick Access: Crop Monitoring & Climate Risk */}
         <div className="grid grid-cols-2 gap-3">
           <button
             onClick={() => navigate('/crop-monitoring')}
@@ -77,7 +75,7 @@ const Index = () => {
             </div>
             <div>
               <p className="font-semibold text-xs text-foreground">{t('cropMonitor')}</p>
-              <p className="text-[10px] text-muted-foreground">AI health scan</p>
+              <p className="text-[10px] text-muted-foreground">{t('aiHealthScan')}</p>
             </div>
           </button>
           <button
@@ -89,7 +87,7 @@ const Index = () => {
             </div>
             <div>
               <p className="font-semibold text-xs text-foreground">{t('climateRisk')}</p>
-              <p className="text-[10px] text-muted-foreground">Volatility engine</p>
+              <p className="text-[10px] text-muted-foreground">{t('volatilityEngine')}</p>
             </div>
           </button>
           <button
@@ -100,8 +98,8 @@ const Index = () => {
               <Scan className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <p className="font-semibold text-xs text-foreground">Health Scan</p>
-              <p className="text-[10px] text-muted-foreground">Pest, soil, disease</p>
+              <p className="font-semibold text-xs text-foreground">{t('healthScan')}</p>
+              <p className="text-[10px] text-muted-foreground">{t('pestSoilDisease')}</p>
             </div>
           </button>
           <button
@@ -112,8 +110,8 @@ const Index = () => {
               <Droplets className="w-5 h-5 text-blue-500" />
             </div>
             <div>
-              <p className="font-semibold text-xs text-foreground">Irrigation</p>
-              <p className="text-[10px] text-muted-foreground">Rain & water advisor</p>
+              <p className="font-semibold text-xs text-foreground">{t('irrigation')}</p>
+              <p className="text-[10px] text-muted-foreground">{t('rainWaterAdvisor')}</p>
             </div>
           </button>
         </div>
