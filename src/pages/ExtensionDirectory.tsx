@@ -9,24 +9,63 @@ import { useLocation } from "@/hooks/useLocation";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-const AFRICAN_COUNTRIES = [
-  { name: "Algeria", code: "DZ" }, { name: "Angola", code: "AO" }, { name: "Benin", code: "BJ" },
-  { name: "Botswana", code: "BW" }, { name: "Burkina Faso", code: "BF" }, { name: "Burundi", code: "BI" },
-  { name: "Cameroon", code: "CM" }, { name: "Central African Republic", code: "CF" }, { name: "Chad", code: "TD" },
-  { name: "Congo", code: "CG" }, { name: "DR Congo", code: "CD" }, { name: "Côte d'Ivoire", code: "CI" },
-  { name: "Egypt", code: "EG" }, { name: "Eswatini", code: "SZ" }, { name: "Ethiopia", code: "ET" },
-  { name: "Gabon", code: "GA" }, { name: "Gambia", code: "GM" }, { name: "Ghana", code: "GH" },
-  { name: "Guinea", code: "GN" }, { name: "Kenya", code: "KE" }, { name: "Lesotho", code: "LS" },
-  { name: "Liberia", code: "LR" }, { name: "Libya", code: "LY" }, { name: "Madagascar", code: "MG" },
-  { name: "Malawi", code: "MW" }, { name: "Mali", code: "ML" }, { name: "Mauritania", code: "MR" },
-  { name: "Mauritius", code: "MU" }, { name: "Morocco", code: "MA" }, { name: "Mozambique", code: "MZ" },
-  { name: "Namibia", code: "NA" }, { name: "Niger", code: "NE" }, { name: "Nigeria", code: "NG" },
-  { name: "Rwanda", code: "RW" }, { name: "Senegal", code: "SN" }, { name: "Sierra Leone", code: "SL" },
-  { name: "Somalia", code: "SO" }, { name: "South Africa", code: "ZA" }, { name: "South Sudan", code: "SS" },
-  { name: "Sudan", code: "SD" }, { name: "Tanzania", code: "TZ" }, { name: "Togo", code: "TG" },
-  { name: "Tunisia", code: "TN" }, { name: "Uganda", code: "UG" }, { name: "Zambia", code: "ZM" },
-  { name: "Zimbabwe", code: "ZW" },
+const COUNTRIES = [
+  // Africa
+  { name: "Algeria", code: "DZ", region: "Africa" }, { name: "Angola", code: "AO", region: "Africa" },
+  { name: "Benin", code: "BJ", region: "Africa" }, { name: "Botswana", code: "BW", region: "Africa" },
+  { name: "Burkina Faso", code: "BF", region: "Africa" }, { name: "Burundi", code: "BI", region: "Africa" },
+  { name: "Cameroon", code: "CM", region: "Africa" }, { name: "Central African Republic", code: "CF", region: "Africa" },
+  { name: "Chad", code: "TD", region: "Africa" }, { name: "Congo", code: "CG", region: "Africa" },
+  { name: "Côte d'Ivoire", code: "CI", region: "Africa" }, { name: "DR Congo", code: "CD", region: "Africa" },
+  { name: "Egypt", code: "EG", region: "Africa" }, { name: "Eswatini", code: "SZ", region: "Africa" },
+  { name: "Ethiopia", code: "ET", region: "Africa" }, { name: "Gabon", code: "GA", region: "Africa" },
+  { name: "Gambia", code: "GM", region: "Africa" }, { name: "Ghana", code: "GH", region: "Africa" },
+  { name: "Guinea", code: "GN", region: "Africa" }, { name: "Kenya", code: "KE", region: "Africa" },
+  { name: "Lesotho", code: "LS", region: "Africa" }, { name: "Liberia", code: "LR", region: "Africa" },
+  { name: "Libya", code: "LY", region: "Africa" }, { name: "Madagascar", code: "MG", region: "Africa" },
+  { name: "Malawi", code: "MW", region: "Africa" }, { name: "Mali", code: "ML", region: "Africa" },
+  { name: "Mauritania", code: "MR", region: "Africa" }, { name: "Mauritius", code: "MU", region: "Africa" },
+  { name: "Morocco", code: "MA", region: "Africa" }, { name: "Mozambique", code: "MZ", region: "Africa" },
+  { name: "Namibia", code: "NA", region: "Africa" }, { name: "Niger", code: "NE", region: "Africa" },
+  { name: "Nigeria", code: "NG", region: "Africa" }, { name: "Rwanda", code: "RW", region: "Africa" },
+  { name: "Senegal", code: "SN", region: "Africa" }, { name: "Sierra Leone", code: "SL", region: "Africa" },
+  { name: "Somalia", code: "SO", region: "Africa" }, { name: "South Africa", code: "ZA", region: "Africa" },
+  { name: "South Sudan", code: "SS", region: "Africa" }, { name: "Sudan", code: "SD", region: "Africa" },
+  { name: "Tanzania", code: "TZ", region: "Africa" }, { name: "Togo", code: "TG", region: "Africa" },
+  { name: "Tunisia", code: "TN", region: "Africa" }, { name: "Uganda", code: "UG", region: "Africa" },
+  { name: "Zambia", code: "ZM", region: "Africa" }, { name: "Zimbabwe", code: "ZW", region: "Africa" },
+  // Asia
+  { name: "Afghanistan", code: "AF", region: "Asia" }, { name: "Bangladesh", code: "BD", region: "Asia" },
+  { name: "Cambodia", code: "KH", region: "Asia" }, { name: "China", code: "CN", region: "Asia" },
+  { name: "India", code: "IN", region: "Asia" }, { name: "Indonesia", code: "ID", region: "Asia" },
+  { name: "Iran", code: "IR", region: "Asia" }, { name: "Iraq", code: "IQ", region: "Asia" },
+  { name: "Israel", code: "IL", region: "Asia" }, { name: "Japan", code: "JP", region: "Asia" },
+  { name: "Malaysia", code: "MY", region: "Asia" }, { name: "Myanmar", code: "MM", region: "Asia" },
+  { name: "Nepal", code: "NP", region: "Asia" }, { name: "Pakistan", code: "PK", region: "Asia" },
+  { name: "Philippines", code: "PH", region: "Asia" }, { name: "South Korea", code: "KR", region: "Asia" },
+  { name: "Sri Lanka", code: "LK", region: "Asia" }, { name: "Thailand", code: "TH", region: "Asia" },
+  { name: "Turkey", code: "TR", region: "Asia" }, { name: "Vietnam", code: "VN", region: "Asia" },
+  // Europe
+  { name: "France", code: "FR", region: "Europe" }, { name: "Germany", code: "DE", region: "Europe" },
+  { name: "Italy", code: "IT", region: "Europe" }, { name: "Netherlands", code: "NL", region: "Europe" },
+  { name: "Poland", code: "PL", region: "Europe" }, { name: "Romania", code: "RO", region: "Europe" },
+  { name: "Spain", code: "ES", region: "Europe" }, { name: "Ukraine", code: "UA", region: "Europe" },
+  { name: "United Kingdom", code: "GB", region: "Europe" },
+  // Americas
+  { name: "Argentina", code: "AR", region: "Americas" }, { name: "Bolivia", code: "BO", region: "Americas" },
+  { name: "Brazil", code: "BR", region: "Americas" }, { name: "Canada", code: "CA", region: "Americas" },
+  { name: "Chile", code: "CL", region: "Americas" }, { name: "Colombia", code: "CO", region: "Americas" },
+  { name: "Cuba", code: "CU", region: "Americas" }, { name: "Ecuador", code: "EC", region: "Americas" },
+  { name: "Guatemala", code: "GT", region: "Americas" }, { name: "Haiti", code: "HT", region: "Americas" },
+  { name: "Mexico", code: "MX", region: "Americas" }, { name: "Paraguay", code: "PY", region: "Americas" },
+  { name: "Peru", code: "PE", region: "Americas" }, { name: "United States", code: "US", region: "Americas" },
+  { name: "Uruguay", code: "UY", region: "Americas" }, { name: "Venezuela", code: "VE", region: "Americas" },
+  // Oceania
+  { name: "Australia", code: "AU", region: "Oceania" }, { name: "Fiji", code: "FJ", region: "Oceania" },
+  { name: "New Zealand", code: "NZ", region: "Oceania" }, { name: "Papua New Guinea", code: "PG", region: "Oceania" },
 ];
+
+const CONTINENT_GROUPS = ["Africa", "Asia", "Europe", "Americas", "Oceania"];
 
 interface ExtensionOfficer {
   id: string;
