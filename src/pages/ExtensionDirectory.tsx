@@ -2,11 +2,31 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Phone, Mail, MapPin, Search, Users, Building2, Loader2, RefreshCw } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ArrowLeft, Phone, Mail, MapPin, Search, Users, Building2, Loader2, Globe } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "@/hooks/useLocation";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
+const AFRICAN_COUNTRIES = [
+  { name: "Algeria", code: "DZ" }, { name: "Angola", code: "AO" }, { name: "Benin", code: "BJ" },
+  { name: "Botswana", code: "BW" }, { name: "Burkina Faso", code: "BF" }, { name: "Burundi", code: "BI" },
+  { name: "Cameroon", code: "CM" }, { name: "Central African Republic", code: "CF" }, { name: "Chad", code: "TD" },
+  { name: "Congo", code: "CG" }, { name: "DR Congo", code: "CD" }, { name: "Côte d'Ivoire", code: "CI" },
+  { name: "Egypt", code: "EG" }, { name: "Eswatini", code: "SZ" }, { name: "Ethiopia", code: "ET" },
+  { name: "Gabon", code: "GA" }, { name: "Gambia", code: "GM" }, { name: "Ghana", code: "GH" },
+  { name: "Guinea", code: "GN" }, { name: "Kenya", code: "KE" }, { name: "Lesotho", code: "LS" },
+  { name: "Liberia", code: "LR" }, { name: "Libya", code: "LY" }, { name: "Madagascar", code: "MG" },
+  { name: "Malawi", code: "MW" }, { name: "Mali", code: "ML" }, { name: "Mauritania", code: "MR" },
+  { name: "Mauritius", code: "MU" }, { name: "Morocco", code: "MA" }, { name: "Mozambique", code: "MZ" },
+  { name: "Namibia", code: "NA" }, { name: "Niger", code: "NE" }, { name: "Nigeria", code: "NG" },
+  { name: "Rwanda", code: "RW" }, { name: "Senegal", code: "SN" }, { name: "Sierra Leone", code: "SL" },
+  { name: "Somalia", code: "SO" }, { name: "South Africa", code: "ZA" }, { name: "South Sudan", code: "SS" },
+  { name: "Sudan", code: "SD" }, { name: "Tanzania", code: "TZ" }, { name: "Togo", code: "TG" },
+  { name: "Tunisia", code: "TN" }, { name: "Uganda", code: "UG" }, { name: "Zambia", code: "ZM" },
+  { name: "Zimbabwe", code: "ZW" },
+];
 
 interface ExtensionOfficer {
   id: string;
