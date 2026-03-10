@@ -47,3 +47,6 @@ verify_jwt = false
 
 [functions.climate-risk-analysis]
 verify_jwt = false
+
+[functions.create-checkout]
+verify_jwt = false

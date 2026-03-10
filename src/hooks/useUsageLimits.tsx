@@ -1,8 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
+import { toast } from 'sonner';
 
 export type PlanTier = 'free' | 'starter' | 'pro' | 'enterprise';
+
+export const PRODUCT_IDS: Record<PlanTier, string> = {
+  free: '',
+  starter: '',
+  pro: 'pdt_0NYZaqcOARihEXXOPIdmC',
+  enterprise: 'pdt_0NYZb3ccdGubedVQypzZn',
+};
 
 export const PLANS = {
   free: {
@@ -13,7 +21,6 @@ export const PLANS = {
     maxLedgerEntries: 10,
     maxSprayEntries: 5,
     features: ['1 pest/disease scan per week', '3 AI chat messages per day', 'Basic weather info', 'Best practices library', 'Extension directory', 'Spray calendar (5 entries)', 'Digital ledger (10 entries)'],
-    checkoutUrl: '',
   },
   starter: {
     name: 'Starter',
@@ -23,7 +30,6 @@ export const PLANS = {
     maxLedgerEntries: 10,
     maxSprayEntries: 5,
     features: ['1 pest/disease scan per week', '3 AI chat messages per day', 'Basic weather info', 'Best practices library', 'Extension directory', 'Spray calendar (5 entries)', 'Digital ledger (10 entries)'],
-    checkoutUrl: '',
   },
   pro: {
     name: 'Pro',
@@ -33,7 +39,6 @@ export const PLANS = {
     maxLedgerEntries: Infinity,
     maxSprayEntries: Infinity,
     features: ['10 scans per week', '20 AI chats per day', '7-day weather forecast', 'Farming tips', 'Unlimited spray scheduling', 'Unlimited digital ledger', 'Produce estimation'],
-    checkoutUrl: 'https://checkout.dodopayments.com/buy/pdt_0NYZaqcOARihEXXOPIdmC?quantity=1&redirect_url=https://imveloappsz.vercel.app',
   },
   enterprise: {
     name: 'Enterprise',
@@ -43,7 +48,6 @@ export const PLANS = {
     maxLedgerEntries: Infinity,
     maxSprayEntries: Infinity,
     features: ['Unlimited scans', 'Unlimited AI chat', '7-day weather forecast', 'Farming tips', 'Unlimited spray scheduling', 'Unlimited digital ledger', 'Produce estimation', 'Crop monitoring (phenotype)', 'Advanced climate resilience tools', 'Priority support'],
-    checkoutUrl: '',
   },
 };
 
@@ -197,10 +201,31 @@ export const useUsageLimits = () => {
 
   const getFormattedPrice = () => `$${planConfig.price.toFixed(2)}`;
 
-  const openUpgrade = (planOrEvent?: PlanTier | React.MouseEvent) => {
+  const openUpgrade = async (planOrEvent?: PlanTier | React.MouseEvent) => {
     const targetPlan = (typeof planOrEvent === 'string' ? planOrEvent : undefined) || getNextPlan();
-    const url = PLANS[targetPlan].checkoutUrl;
-    if (url) window.open(url, '_blank');
+    const productId = PRODUCT_IDS[targetPlan];
+    if (!productId) return;
+
+    try {
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: {
+          product_id: productId,
+          customer_email: user?.email,
+          customer_name: user?.user_metadata?.full_name,
+          redirect_url: window.location.origin + '/upgrade?success=true',
+        },
+      });
+
+      if (error) throw error;
+      if (data?.checkout_url) {
+        window.location.href = data.checkout_url;
+      } else {
+        throw new Error('No checkout URL returned');
+      }
+    } catch (err) {
+      console.error('Checkout error:', err);
+      toast.error('Failed to start checkout. Please try again.');
+    }
   };
 
   const getNextPlan = (): PlanTier => {
