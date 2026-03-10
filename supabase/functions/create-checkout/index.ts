@@ -46,7 +46,7 @@ serve(async (req) => {
     if (redirect_url) body.return_url = redirect_url;
 
     // Use live mode API
-    const response = await fetch('https://api.dodopayments.com/checkouts', {
+    const response = await fetch('https://live.dodopayments.com/checkouts', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
