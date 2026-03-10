@@ -22,18 +22,19 @@ serve(async (req) => {
       throw new Error('product_id is required');
     }
 
-    // All payment methods supported by Dodo Payments
+    // All payment methods supported by Dodo Payments (using exact API enum values)
     const allPaymentMethods = [
       'credit', 'debit',
-      'apple_pay', 'google_pay', 'amazon_pay',
+      'apple_pay', 'google_pay', 'amazon_pay', 'samsung_pay',
       'upi_collect', 'upi_intent',
-      'cashapp', 'venmo', 'paypal',
-      'klarna', 'affirm', 'afterpay_clearpay', 'alma', 'atome',
-      'ali_pay', 'ali_pay_hk', 'wechat_pay', 'dana', 'gcash', 'grabpay', 'kakaopay', 'touch_n_go',
-      'ach', 'multibanco', 'eps', 'bancontact', 'blik', 'giropay', 'ideal', 'p24', 'sofort', 'fpx',
-      'boleto', 'oxxo', 'pix', 'promptpay', 'swish',
-      'momo', 'online_banking_czech_republic', 'online_banking_finland', 'online_banking_poland',
-      'online_banking_slovakia', 'online_banking_thailand',
+      'cashapp', 'venmo', 'paypal', 'paze',
+      'klarna', 'affirm', 'afterpay_clearpay', 'alma', 'atome', 'billie', 'zip',
+      'ali_pay', 'ali_pay_hk', 'we_chat_pay', 'dana', 'gcash', 'kakao_pay', 'touch_n_go', 'momo', 'go_pay', 'naver_pay',
+      'ach', 'multibanco', 'eps', 'bancontact_card', 'blik', 'giropay', 'ideal', 'przelewy24', 'sofort', 'sepa',
+      'online_banking_fpx', 'online_banking_thailand', 'online_banking_czech_republic', 'online_banking_finland',
+      'online_banking_poland', 'online_banking_slovakia',
+      'boleto', 'oxxo', 'pix', 'prompt_pay', 'swish', 'trustly', 'vipps', 'mb_way',
+      'revolut_pay', 'open_banking_uk',
     ];
 
     const body: Record<string, unknown> = {
@@ -46,7 +47,7 @@ serve(async (req) => {
     if (redirect_url) body.return_url = redirect_url;
 
     // Use live mode API
-    const response = await fetch('https://api.dodopayments.com/checkouts', {
+    const response = await fetch('https://live.dodopayments.com/checkouts', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
