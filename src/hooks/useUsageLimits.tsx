@@ -201,10 +201,31 @@ export const useUsageLimits = () => {
 
   const getFormattedPrice = () => `$${planConfig.price.toFixed(2)}`;
 
-  const openUpgrade = (planOrEvent?: PlanTier | React.MouseEvent) => {
+  const openUpgrade = async (planOrEvent?: PlanTier | React.MouseEvent) => {
     const targetPlan = (typeof planOrEvent === 'string' ? planOrEvent : undefined) || getNextPlan();
-    const url = PLANS[targetPlan].checkoutUrl;
-    if (url) window.open(url, '_blank');
+    const productId = PRODUCT_IDS[targetPlan];
+    if (!productId) return;
+
+    try {
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: {
+          product_id: productId,
+          customer_email: user?.email,
+          customer_name: user?.user_metadata?.full_name,
+          redirect_url: window.location.origin + '/upgrade?success=true',
+        },
+      });
+
+      if (error) throw error;
+      if (data?.checkout_url) {
+        window.location.href = data.checkout_url;
+      } else {
+        throw new Error('No checkout URL returned');
+      }
+    } catch (err) {
+      console.error('Checkout error:', err);
+      toast.error('Failed to start checkout. Please try again.');
+    }
   };
 
   const getNextPlan = (): PlanTier => {
