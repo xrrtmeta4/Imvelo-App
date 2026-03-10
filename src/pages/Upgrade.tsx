@@ -1,10 +1,11 @@
-import { Check, Crown, Zap, Building2, ArrowLeft } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Check, Crown, Zap, Building2, ArrowLeft, Loader2, PartyPopper } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { useUsageLimits, PLANS, PlanTier } from '@/hooks/useUsageLimits';
 import { useLanguage } from '@/hooks/useLanguage';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const planIcons: Record<PlanTier, React.ReactNode> = {
   free: null,
@@ -24,6 +25,24 @@ const Upgrade = () => {
   const { currentPlan, openUpgrade, trialDaysLeft } = useUsageLimits();
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [loadingTier, setLoadingTier] = useState<PlanTier | null>(null);
+
+  useEffect(() => {
+    if (searchParams.get('success') === 'true') {
+      toast.success('🎉 Payment successful! Your plan is being activated.');
+    }
+  }, [searchParams]);
+
+  const handleUpgrade = async (tier: PlanTier) => {
+    setLoadingTier(tier);
+    try {
+      await openUpgrade(tier);
+    } finally {
+      // Reset after a delay in case redirect doesn't happen
+      setTimeout(() => setLoadingTier(null), 5000);
+    }
+  };
 
   const tiers: PlanTier[] = ['pro', 'enterprise'];
 
@@ -41,10 +60,20 @@ const Upgrade = () => {
       </header>
 
       <div className="max-w-screen-sm mx-auto px-4 py-6 space-y-4">
+        {searchParams.get('success') === 'true' && (
+          <Card className="border-primary bg-primary/5">
+            <CardContent className="flex items-center gap-3 py-4">
+              <PartyPopper className="w-6 h-6 text-primary" />
+              <p className="text-sm font-medium">{t('paymentSuccess') || 'Payment successful! Your premium access is being activated.'}</p>
+            </CardContent>
+          </Card>
+        )}
+
         {tiers.map((tier) => {
           const plan = PLANS[tier];
           const isCurrent = currentPlan === tier;
           const isUpgrade = ['free', 'starter', 'pro', 'enterprise'].indexOf(tier) > ['free', 'starter', 'pro', 'enterprise'].indexOf(currentPlan);
+          const isLoading = loadingTier === tier;
 
           return (
             <Card key={tier} className={`relative overflow-hidden ${planColors[tier]}`}>
@@ -61,9 +90,7 @@ const Upgrade = () => {
                   <div>
                     <CardTitle className="text-lg">{plan.name}</CardTitle>
                     {tier === 'enterprise' ? (
-                      <>
-                        <span className="text-2xl font-bold text-foreground">{t('contactUs')}</span>
-                      </>
+                      <span className="text-2xl font-bold text-foreground">{t('contactUs')}</span>
                     ) : (
                       <div className="flex items-baseline gap-1">
                         <span className="text-2xl font-bold text-foreground">${plan.price.toFixed(2)}</span>
@@ -93,9 +120,13 @@ const Upgrade = () => {
                     {t('contactSales')}
                   </Button>
                 ) : isUpgrade ? (
-                  <Button className="w-full gap-2" onClick={() => openUpgrade(tier)}>
-                    <Crown className="w-4 h-4" />
-                    {t('upgradeTo')} {plan.name}
+                  <Button className="w-full gap-2" disabled={isLoading} onClick={() => handleUpgrade(tier)}>
+                    {isLoading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Crown className="w-4 h-4" />
+                    )}
+                    {isLoading ? t('processing') || 'Processing...' : `${t('upgradeTo')} ${plan.name}`}
                   </Button>
                 ) : (
                   <Button disabled variant="ghost" className="w-full text-muted-foreground">
