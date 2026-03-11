@@ -1,8 +1,13 @@
-const PaymentLogo = ({ name, svg }: { name: string; svg: React.ReactNode }) => (
-  <div className="flex flex-col items-center gap-1 bg-background rounded-lg px-2 py-2.5 border border-border/50">
+import { useUsageLimits } from '@/hooks/useUsageLimits';
+
+const PaymentLogo = ({ name, svg, onClick }: { name: string; svg: React.ReactNode; onClick?: () => void }) => (
+  <button
+    onClick={onClick}
+    className="flex flex-col items-center gap-1 bg-background rounded-lg px-2 py-2.5 border border-border/50 hover:border-primary hover:shadow-md transition-all cursor-pointer active:scale-95"
+  >
     <div className="h-6 flex items-center justify-center">{svg}</div>
     <span className="text-[10px] text-muted-foreground leading-tight">{name}</span>
-  </div>
+  </button>
 );
 
 const VisaSvg = () => (
@@ -47,23 +52,31 @@ const PayPalSvg = () => (
   </svg>
 );
 
-const PaymentLogos = () => (
-  <div className="bg-muted/50 rounded-xl p-4 space-y-3">
-    <p className="text-sm font-semibold text-foreground text-center">Accepted Payment Methods</p>
-    <div className="grid grid-cols-4 gap-2">
-      <PaymentLogo name="Visa" svg={<VisaSvg />} />
-      <PaymentLogo name="Mastercard" svg={<MastercardSvg />} />
-      <PaymentLogo name="Apple Pay" svg={<ApplePaySvg />} />
-      <PaymentLogo name="Google Pay" svg={<GooglePaySvg />} />
-      <PaymentLogo name="PayPal" svg={<PayPalSvg />} />
-      <PaymentLogo name="Klarna" svg={<span className="text-xs font-bold text-pink-500">Klarna</span>} />
-      <PaymentLogo name="Affirm" svg={<span className="text-xs font-bold text-foreground">affirm</span>} />
-      <PaymentLogo name="UPI" svg={<span className="text-[10px] font-bold text-green-600">UPI</span>} />
+const PaymentLogos = () => {
+  const { openUpgrade } = useUsageLimits();
+
+  const handleClick = () => {
+    openUpgrade('pro');
+  };
+
+  return (
+    <div className="bg-muted/50 rounded-xl p-4 space-y-3">
+      <p className="text-sm font-semibold text-foreground text-center">Pay with your preferred method</p>
+      <div className="grid grid-cols-4 gap-2">
+        <PaymentLogo name="Visa" svg={<VisaSvg />} onClick={handleClick} />
+        <PaymentLogo name="Mastercard" svg={<MastercardSvg />} onClick={handleClick} />
+        <PaymentLogo name="Apple Pay" svg={<ApplePaySvg />} onClick={handleClick} />
+        <PaymentLogo name="Google Pay" svg={<GooglePaySvg />} onClick={handleClick} />
+        <PaymentLogo name="PayPal" svg={<PayPalSvg />} onClick={handleClick} />
+        <PaymentLogo name="Klarna" svg={<span className="text-xs font-bold" style={{ color: '#FFB3C7' }}>Klarna</span>} onClick={handleClick} />
+        <PaymentLogo name="Affirm" svg={<span className="text-xs font-bold text-foreground">affirm</span>} onClick={handleClick} />
+        <PaymentLogo name="UPI" svg={<span className="text-[10px] font-bold" style={{ color: '#097939' }}>UPI</span>} onClick={handleClick} />
+      </div>
+      <p className="text-[10px] text-muted-foreground text-center">
+        Tap any method to upgrade · 40+ payment options supported
+      </p>
     </div>
-    <p className="text-[10px] text-muted-foreground text-center">
-      + Afterpay, AliPay, WeChat Pay, Samsung Pay, Venmo, CashApp, Pix, SEPA, iDEAL, GCash & 20+ more
-    </p>
-  </div>
-);
+  );
+};
 
 export default PaymentLogos;
