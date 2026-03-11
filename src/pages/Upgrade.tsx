@@ -6,6 +6,7 @@ import { useUsageLimits, PLANS, PlanTier } from '@/hooks/useUsageLimits';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import PaymentLogos from '@/components/PaymentLogos';
 
 const planIcons: Record<PlanTier, React.ReactNode> = {
   free: null,
