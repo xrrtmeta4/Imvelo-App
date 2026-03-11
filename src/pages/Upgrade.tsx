@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Check, Crown, Zap, Building2, ArrowLeft, Loader2, PartyPopper, CreditCard, Smartphone, Wallet, Globe, Banknote } from 'lucide-react';
+import { Check, Crown, Zap, Building2, ArrowLeft, Loader2, PartyPopper } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUsageLimits, PLANS, PlanTier } from '@/hooks/useUsageLimits';
