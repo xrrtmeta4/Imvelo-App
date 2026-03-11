@@ -138,6 +138,50 @@ const Upgrade = () => {
           );
         })}
 
+        {/* Payment Methods Section */}
+        <div className="bg-muted/50 rounded-xl p-4 space-y-3">
+          <p className="text-sm font-semibold text-foreground text-center">Accepted Payment Methods</p>
+          
+          <div className="grid grid-cols-2 gap-2">
+            <div className="flex items-center gap-2 bg-background rounded-lg px-3 py-2">
+              <CreditCard className="w-4 h-4 text-primary shrink-0" />
+              <span className="text-xs text-muted-foreground">Credit & Debit Cards</span>
+            </div>
+            <div className="flex items-center gap-2 bg-background rounded-lg px-3 py-2">
+              <Smartphone className="w-4 h-4 text-primary shrink-0" />
+              <span className="text-xs text-muted-foreground">Apple Pay</span>
+            </div>
+            <div className="flex items-center gap-2 bg-background rounded-lg px-3 py-2">
+              <Smartphone className="w-4 h-4 text-primary shrink-0" />
+              <span className="text-xs text-muted-foreground">Google Pay</span>
+            </div>
+            <div className="flex items-center gap-2 bg-background rounded-lg px-3 py-2">
+              <Wallet className="w-4 h-4 text-primary shrink-0" />
+              <span className="text-xs text-muted-foreground">PayPal</span>
+            </div>
+            <div className="flex items-center gap-2 bg-background rounded-lg px-3 py-2">
+              <Banknote className="w-4 h-4 text-primary shrink-0" />
+              <span className="text-xs text-muted-foreground">UPI</span>
+            </div>
+            <div className="flex items-center gap-2 bg-background rounded-lg px-3 py-2">
+              <Globe className="w-4 h-4 text-primary shrink-0" />
+              <span className="text-xs text-muted-foreground">Pix</span>
+            </div>
+            <div className="flex items-center gap-2 bg-background rounded-lg px-3 py-2">
+              <Wallet className="w-4 h-4 text-primary shrink-0" />
+              <span className="text-xs text-muted-foreground">Venmo / CashApp</span>
+            </div>
+            <div className="flex items-center gap-2 bg-background rounded-lg px-3 py-2">
+              <Banknote className="w-4 h-4 text-primary shrink-0" />
+              <span className="text-xs text-muted-foreground">Bank Transfer</span>
+            </div>
+          </div>
+          
+          <p className="text-[10px] text-muted-foreground text-center">
+            + Klarna, Affirm, Afterpay, AliPay, WeChat Pay, Samsung Pay, GCash, SEPA, iDEAL & 20+ more
+          </p>
+        </div>
+
         <p className="text-center text-xs text-muted-foreground pt-4">
           {t('cancelAnytime')}
         </p>
