@@ -5,13 +5,25 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { User, LogOut, Camera, Crown, Languages, Zap } from 'lucide-react';
+import { User, LogOut, Camera, Crown, Languages, Zap, AlertTriangle, ArrowDown } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import PushNotificationManager from '@/components/PushNotificationManager';
+import { PLANS, PlanTier, PRODUCT_IDS } from '@/hooks/useUsageLimits';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 const Profile = () => {
   const { user } = useAuth();
@@ -20,8 +32,8 @@ const Profile = () => {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
-  const [isPremium, setIsPremium] = useState(false);
-  const [premiumExpiry, setPremiumExpiry] = useState<string | null>(null);
+  const [subscription, setSubscription] = useState<any>(null);
+  const [cancelLoading, setCancelLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     full_name: '',
@@ -33,7 +45,7 @@ const Profile = () => {
   useEffect(() => {
     if (user) {
       fetchProfile();
-      checkPremiumStatus();
+      fetchSubscription();
     }
   }, [user]);
 
@@ -56,20 +68,55 @@ const Profile = () => {
     setLoading(false);
   };
 
-  const checkPremiumStatus = async () => {
+  const fetchSubscription = async () => {
     if (!user) return;
-    
     const { data } = await supabase
       .from('premium_subscriptions')
       .select('*')
       .eq('user_id', user.id)
       .eq('status', 'active')
-      .gte('expires_at', new Date().toISOString())
       .maybeSingle();
+    setSubscription(data);
+  };
 
-    if (data) {
-      setIsPremium(true);
-      setPremiumExpiry(data.expires_at);
+  const currentPlan: PlanTier = subscription?.plan || 'free';
+  const isPremium = currentPlan !== 'free';
+
+  const handleCancelSubscription = async () => {
+    if (!user || !subscription) return;
+    setCancelLoading(true);
+    try {
+      const { error } = await supabase
+        .from('premium_subscriptions')
+        .update({ status: 'cancelled' })
+        .eq('id', subscription.id);
+
+      if (error) throw error;
+      toast.success('Subscription cancelled. You can still use your plan until it expires.');
+      setSubscription(null);
+    } catch (err) {
+      toast.error('Failed to cancel subscription.');
+    } finally {
+      setCancelLoading(false);
+    }
+  };
+
+  const handleDowngrade = async (targetPlan: PlanTier) => {
+    if (!user || !subscription) return;
+    setCancelLoading(true);
+    try {
+      const { error } = await supabase
+        .from('premium_subscriptions')
+        .update({ plan: targetPlan })
+        .eq('id', subscription.id);
+
+      if (error) throw error;
+      toast.success(`Downgraded to ${PLANS[targetPlan].name} plan.`);
+      fetchSubscription();
+    } catch (err) {
+      toast.error('Failed to downgrade.');
+    } finally {
+      setCancelLoading(false);
     }
   };
 
@@ -147,6 +194,15 @@ const Profile = () => {
     navigate('/auth');
   };
 
+  const planBadge = () => {
+    if (currentPlan === 'enterprise') return { label: 'Enterprise', className: 'bg-gradient-to-r from-amber-500 to-yellow-400 text-white border-0' };
+    if (currentPlan === 'pro') return { label: 'Pro', className: 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground border-0' };
+    if (currentPlan === 'starter') return { label: 'Starter', className: '' };
+    return { label: t('freePlan'), className: '' };
+  };
+
+  const badge = planBadge();
+
   return (
     <div className="min-h-screen bg-background pb-20">
       <header className="bg-primary text-primary-foreground py-4 px-4">
@@ -189,19 +245,13 @@ const Profile = () => {
               <div className="text-center">
                 <h2 className="font-semibold text-lg">{profile?.full_name || 'User'}</h2>
                 <p className="text-sm text-muted-foreground capitalize">{profile?.role}</p>
-                {isPremium ? (
-                  <Badge className="mt-2 bg-gradient-to-r from-amber-500 to-yellow-400 text-white border-0">
-                    <Crown className="w-3 h-3 mr-1" />
-                    {t('premiumMember')}
-                  </Badge>
-                ) : (
-                  <Badge variant="secondary" className="mt-2">
-                    {t('freePlan')}
-                  </Badge>
-                )}
-                {isPremium && premiumExpiry && (
+                <Badge className={`mt-2 ${badge.className}`}>
+                  {isPremium && <Crown className="w-3 h-3 mr-1" />}
+                  {badge.label}
+                </Badge>
+                {subscription?.expires_at && (
                   <p className="text-xs text-muted-foreground mt-1">
-                    {t('expires')}: {new Date(premiumExpiry).toLocaleDateString()}
+                    {t('expires')}: {new Date(subscription.expires_at).toLocaleDateString()}
                   </p>
                 )}
                 <Button
@@ -220,6 +270,88 @@ const Profile = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Subscription Management */}
+        {isPremium && subscription && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Crown className="w-5 h-5" />
+                Subscription Management
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-muted-foreground">Current Plan</span>
+                <span className="font-semibold">{PLANS[currentPlan].name}</span>
+              </div>
+              {subscription.expires_at && (
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Renews</span>
+                  <span>{new Date(subscription.expires_at).toLocaleDateString()}</span>
+                </div>
+              )}
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-muted-foreground">Price</span>
+                <span className="font-semibold">${PLANS[currentPlan].price.toFixed(2)}/mo</span>
+              </div>
+
+              <div className="pt-3 space-y-2 border-t border-border">
+                {currentPlan === 'enterprise' && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="w-full gap-2">
+                        <ArrowDown className="w-4 h-4" />
+                        Downgrade to Pro
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Downgrade to Pro?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          You'll lose access to unlimited scans, unlimited AI chat, and priority support. Your plan will change to Pro ($6.00/mo).
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Keep Enterprise</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleDowngrade('pro')}>
+                          Downgrade
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" size="sm" className="w-full text-destructive hover:text-destructive gap-2">
+                      <AlertTriangle className="w-4 h-4" />
+                      Cancel Subscription
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Cancel your subscription?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Your access will revert to the Free plan. You'll lose access to premium features like extended scans, AI chat limits, and advanced tools.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Keep Subscription</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleCancelSubscription}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        disabled={cancelLoading}
+                      >
+                        {cancelLoading ? 'Cancelling...' : 'Yes, Cancel'}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <PushNotificationManager />
 
