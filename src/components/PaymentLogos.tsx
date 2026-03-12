@@ -1,4 +1,10 @@
-import { useUsageLimits } from '@/hooks/useUsageLimits';
+import { useState } from 'react';
+import { useUsageLimits, PlanTier, PLANS } from '@/hooks/useUsageLimits';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Crown } from 'lucide-react';
 
 const PaymentLogo = ({ name, svg, onClick }: { name: string; svg: React.ReactNode; onClick?: () => void }) => (
   <button
@@ -52,30 +58,83 @@ const PayPalSvg = () => (
   </svg>
 );
 
-const PaymentLogos = () => {
-  const { openUpgrade } = useUsageLimits();
+const planOptions: { value: PlanTier; label: string; price: string }[] = [
+  { value: 'pro', label: 'Pro', price: '$6.00/mo' },
+  { value: 'enterprise', label: 'Enterprise', price: 'Contact Sales' },
+];
 
-  const handleClick = () => {
-    openUpgrade('pro');
+const PaymentLogos = () => {
+  const { openUpgrade, currentPlan } = useUsageLimits();
+  const [showPlanDialog, setShowPlanDialog] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<PlanTier>('pro');
+
+  const handleClick = () => setShowPlanDialog(true);
+
+  const handleConfirm = () => {
+    setShowPlanDialog(false);
+    openUpgrade(selectedPlan);
   };
 
+  const availablePlans = planOptions.filter(p => {
+    const order: PlanTier[] = ['free', 'starter', 'pro', 'enterprise'];
+    return order.indexOf(p.value) > order.indexOf(currentPlan);
+  });
+
   return (
-    <div className="bg-muted/50 rounded-xl p-4 space-y-3">
-      <p className="text-sm font-semibold text-foreground text-center">Pay with your preferred method</p>
-      <div className="grid grid-cols-4 gap-2">
-        <PaymentLogo name="Visa" svg={<VisaSvg />} onClick={handleClick} />
-        <PaymentLogo name="Mastercard" svg={<MastercardSvg />} onClick={handleClick} />
-        <PaymentLogo name="Apple Pay" svg={<ApplePaySvg />} onClick={handleClick} />
-        <PaymentLogo name="Google Pay" svg={<GooglePaySvg />} onClick={handleClick} />
-        <PaymentLogo name="PayPal" svg={<PayPalSvg />} onClick={handleClick} />
-        <PaymentLogo name="Klarna" svg={<span className="text-xs font-bold" style={{ color: '#FFB3C7' }}>Klarna</span>} onClick={handleClick} />
-        <PaymentLogo name="Affirm" svg={<span className="text-xs font-bold text-foreground">affirm</span>} onClick={handleClick} />
-        <PaymentLogo name="UPI" svg={<span className="text-[10px] font-bold" style={{ color: '#097939' }}>UPI</span>} onClick={handleClick} />
+    <>
+      <div className="bg-muted/50 rounded-xl p-4 space-y-3">
+        <p className="text-sm font-semibold text-foreground text-center">Pay with your preferred method</p>
+        <div className="grid grid-cols-4 gap-2">
+          <PaymentLogo name="Visa" svg={<VisaSvg />} onClick={handleClick} />
+          <PaymentLogo name="Mastercard" svg={<MastercardSvg />} onClick={handleClick} />
+          <PaymentLogo name="Apple Pay" svg={<ApplePaySvg />} onClick={handleClick} />
+          <PaymentLogo name="Google Pay" svg={<GooglePaySvg />} onClick={handleClick} />
+          <PaymentLogo name="PayPal" svg={<PayPalSvg />} onClick={handleClick} />
+          <PaymentLogo name="Klarna" svg={<span className="text-xs font-bold" style={{ color: '#FFB3C7' }}>Klarna</span>} onClick={handleClick} />
+          <PaymentLogo name="Affirm" svg={<span className="text-xs font-bold text-foreground">affirm</span>} onClick={handleClick} />
+          <PaymentLogo name="UPI" svg={<span className="text-[10px] font-bold" style={{ color: '#097939' }}>UPI</span>} onClick={handleClick} />
+        </div>
+        <p className="text-[10px] text-muted-foreground text-center">
+          Tap any method to upgrade · 40+ payment options supported
+        </p>
       </div>
-      <p className="text-[10px] text-muted-foreground text-center">
-        Tap any method to upgrade · 40+ payment options supported
-      </p>
-    </div>
+
+      <Dialog open={showPlanDialog} onOpenChange={setShowPlanDialog}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Crown className="w-5 h-5 text-primary" />
+              Choose a Plan
+            </DialogTitle>
+          </DialogHeader>
+          {availablePlans.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-4">You're already on the highest plan!</p>
+          ) : (
+            <div className="space-y-4">
+              <RadioGroup value={selectedPlan} onValueChange={(v) => setSelectedPlan(v as PlanTier)}>
+                {availablePlans.map((plan) => (
+                  <Label
+                    key={plan.value}
+                    htmlFor={plan.value}
+                    className="flex items-center gap-3 p-3 rounded-lg border border-border hover:border-primary cursor-pointer transition-colors has-[&[data-state=checked]]:border-primary has-[&[data-state=checked]]:bg-primary/5"
+                  >
+                    <RadioGroupItem value={plan.value} id={plan.value} />
+                    <div className="flex-1">
+                      <p className="font-semibold text-foreground">{plan.label}</p>
+                      <p className="text-xs text-muted-foreground">{plan.price}</p>
+                    </div>
+                  </Label>
+                ))}
+              </RadioGroup>
+              <Button onClick={handleConfirm} className="w-full gap-2">
+                <Crown className="w-4 h-4" />
+                Continue to Payment
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
