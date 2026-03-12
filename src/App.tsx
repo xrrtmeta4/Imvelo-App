@@ -27,6 +27,14 @@ import CropMonitoring from "./pages/CropMonitoring";
 import ClimateRisk from "./pages/ClimateRisk";
 import Upgrade from "./pages/Upgrade";
 import SmartIrrigation from "./pages/SmartIrrigation";
+import LivestockManager from "./pages/LivestockManager";
+import CropRotation from "./pages/CropRotation";
+import FertilizerCalculator from "./pages/FertilizerCalculator";
+import HarvestTracker from "./pages/HarvestTracker";
+import MarketPriceAlerts from "./pages/MarketPriceAlerts";
+import FarmInventory from "./pages/FarmInventory";
+import CarbonScore from "./pages/CarbonScore";
+import PostHarvestGuide from "./pages/PostHarvestGuide";
 import MobileNav from "./components/MobileNav";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import SubscriptionPopup from "./components/SubscriptionPopup";
@@ -68,142 +76,30 @@ const App = () => (
           <LanguageProvider>
           <Routes>
             <Route path="/auth" element={<Auth />} />
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <Index />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/scanner"
-              element={
-                <ProtectedRoute>
-                  <Scanner />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/farm-activities"
-              element={
-                <ProtectedRoute>
-                  <FarmActivities />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/ledger"
-              element={
-                <ProtectedRoute>
-                  <DigitalLedger />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/weather"
-              element={
-                <ProtectedRoute>
-                  <Weather />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/officer-dashboard"
-              element={
-                <ProtectedRoute>
-                  <OfficerDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/officer-dashboard"
-              element={
-                <ProtectedRoute>
-                  <OfficerDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/planting-guide"
-              element={
-                <ProtectedRoute>
-                  <PlantingGuide />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/soil-management"
-              element={
-                <ProtectedRoute>
-                  <SoilManagement />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/water-conservation"
-              element={
-                <ProtectedRoute>
-                  <WaterConservation />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/extension-directory"
-              element={
-                <ProtectedRoute>
-                  <ExtensionDirectory />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/pesticide-calendar"
-              element={
-                <ProtectedRoute>
-                  <PesticideCalendar />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/crop-monitoring"
-              element={
-                <ProtectedRoute>
-                  <CropMonitoring />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/climate-risk"
-              element={
-                <ProtectedRoute>
-                  <ClimateRisk />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/upgrade"
-              element={
-                <ProtectedRoute>
-                  <Upgrade />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/smart-irrigation"
-              element={
-                <ProtectedRoute>
-                  <SmartIrrigation />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            <Route path="/scanner" element={<ProtectedRoute><Scanner /></ProtectedRoute>} />
+            <Route path="/farm-activities" element={<ProtectedRoute><FarmActivities /></ProtectedRoute>} />
+            <Route path="/ledger" element={<ProtectedRoute><DigitalLedger /></ProtectedRoute>} />
+            <Route path="/weather" element={<ProtectedRoute><Weather /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/officer-dashboard" element={<ProtectedRoute><OfficerDashboard /></ProtectedRoute>} />
+            <Route path="/planting-guide" element={<ProtectedRoute><PlantingGuide /></ProtectedRoute>} />
+            <Route path="/soil-management" element={<ProtectedRoute><SoilManagement /></ProtectedRoute>} />
+            <Route path="/water-conservation" element={<ProtectedRoute><WaterConservation /></ProtectedRoute>} />
+            <Route path="/extension-directory" element={<ProtectedRoute><ExtensionDirectory /></ProtectedRoute>} />
+            <Route path="/pesticide-calendar" element={<ProtectedRoute><PesticideCalendar /></ProtectedRoute>} />
+            <Route path="/crop-monitoring" element={<ProtectedRoute><CropMonitoring /></ProtectedRoute>} />
+            <Route path="/climate-risk" element={<ProtectedRoute><ClimateRisk /></ProtectedRoute>} />
+            <Route path="/upgrade" element={<ProtectedRoute><Upgrade /></ProtectedRoute>} />
+            <Route path="/smart-irrigation" element={<ProtectedRoute><SmartIrrigation /></ProtectedRoute>} />
+            <Route path="/livestock" element={<ProtectedRoute><LivestockManager /></ProtectedRoute>} />
+            <Route path="/crop-rotation" element={<ProtectedRoute><CropRotation /></ProtectedRoute>} />
+            <Route path="/fertilizer" element={<ProtectedRoute><FertilizerCalculator /></ProtectedRoute>} />
+            <Route path="/harvest-tracker" element={<ProtectedRoute><HarvestTracker /></ProtectedRoute>} />
+            <Route path="/price-alerts" element={<ProtectedRoute><MarketPriceAlerts /></ProtectedRoute>} />
+            <Route path="/inventory" element={<ProtectedRoute><FarmInventory /></ProtectedRoute>} />
+            <Route path="/carbon-score" element={<ProtectedRoute><CarbonScore /></ProtectedRoute>} />
+            <Route path="/post-harvest" element={<ProtectedRoute><PostHarvestGuide /></ProtectedRoute>} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/contact" element={<Contact />} />
