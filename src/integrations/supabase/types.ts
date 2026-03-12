@@ -77,6 +77,51 @@ export type Database = {
         }
         Relationships: []
       }
+      crop_rotations: {
+        Row: {
+          created_at: string
+          current_crop: string | null
+          current_season: string | null
+          id: string
+          notes: string | null
+          plot_name: string
+          plot_size: number | null
+          plot_unit: string | null
+          rotation_plan: Json | null
+          soil_type: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_crop?: string | null
+          current_season?: string | null
+          id?: string
+          notes?: string | null
+          plot_name: string
+          plot_size?: number | null
+          plot_unit?: string | null
+          rotation_plan?: Json | null
+          soil_type?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_crop?: string | null
+          current_season?: string | null
+          id?: string
+          notes?: string | null
+          plot_name?: string
+          plot_size?: number | null
+          plot_unit?: string | null
+          rotation_plan?: Json | null
+          soil_type?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       farm_activities: {
         Row: {
           activity_date: string
@@ -116,6 +161,105 @@ export type Database = {
           updated_at?: string
           user_id?: string
           weather_conditions?: string | null
+        }
+        Relationships: []
+      }
+      farm_inventory: {
+        Row: {
+          category: string
+          cost_per_unit: number | null
+          created_at: string
+          expiry_date: string | null
+          id: string
+          item_name: string
+          low_stock_threshold: number | null
+          notes: string | null
+          purchase_date: string | null
+          quantity: number
+          supplier: string | null
+          unit: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          cost_per_unit?: number | null
+          created_at?: string
+          expiry_date?: string | null
+          id?: string
+          item_name: string
+          low_stock_threshold?: number | null
+          notes?: string | null
+          purchase_date?: string | null
+          quantity?: number
+          supplier?: string | null
+          unit?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          cost_per_unit?: number | null
+          created_at?: string
+          expiry_date?: string | null
+          id?: string
+          item_name?: string
+          low_stock_threshold?: number | null
+          notes?: string | null
+          purchase_date?: string | null
+          quantity?: number
+          supplier?: string | null
+          unit?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      harvests: {
+        Row: {
+          created_at: string
+          crop_name: string
+          harvest_date: string
+          id: string
+          notes: string | null
+          plot_name: string | null
+          quality_grade: string | null
+          quantity: number
+          revenue: number | null
+          season: string | null
+          unit: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          crop_name: string
+          harvest_date?: string
+          id?: string
+          notes?: string | null
+          plot_name?: string | null
+          quality_grade?: string | null
+          quantity: number
+          revenue?: number | null
+          season?: string | null
+          unit?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          crop_name?: string
+          harvest_date?: string
+          id?: string
+          notes?: string | null
+          plot_name?: string | null
+          quality_grade?: string | null
+          quantity?: number
+          revenue?: number | null
+          season?: string | null
+          unit?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -161,6 +305,63 @@ export type Database = {
           reference_number?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      livestock: {
+        Row: {
+          animal_type: string
+          birth_date: string | null
+          breed: string | null
+          breeding_status: string | null
+          created_at: string
+          feed_schedule: string | null
+          gender: string | null
+          health_status: string | null
+          id: string
+          name: string | null
+          notes: string | null
+          tag_id: string | null
+          updated_at: string
+          user_id: string
+          vaccination_history: Json | null
+          weight_kg: number | null
+        }
+        Insert: {
+          animal_type: string
+          birth_date?: string | null
+          breed?: string | null
+          breeding_status?: string | null
+          created_at?: string
+          feed_schedule?: string | null
+          gender?: string | null
+          health_status?: string | null
+          id?: string
+          name?: string | null
+          notes?: string | null
+          tag_id?: string | null
+          updated_at?: string
+          user_id: string
+          vaccination_history?: Json | null
+          weight_kg?: number | null
+        }
+        Update: {
+          animal_type?: string
+          birth_date?: string | null
+          breed?: string | null
+          breeding_status?: string | null
+          created_at?: string
+          feed_schedule?: string | null
+          gender?: string | null
+          health_status?: string | null
+          id?: string
+          name?: string | null
+          notes?: string | null
+          tag_id?: string | null
+          updated_at?: string
+          user_id?: string
+          vaccination_history?: Json | null
+          weight_kg?: number | null
         }
         Relationships: []
       }
@@ -360,6 +561,45 @@ export type Database = {
           payment_reference?: string | null
           plan?: string
           status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      price_alerts: {
+        Row: {
+          commodity: string
+          created_at: string
+          current_price: number | null
+          direction: string
+          id: string
+          is_active: boolean | null
+          target_price: number
+          triggered_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          commodity: string
+          created_at?: string
+          current_price?: number | null
+          direction?: string
+          id?: string
+          is_active?: boolean | null
+          target_price: number
+          triggered_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          commodity?: string
+          created_at?: string
+          current_price?: number | null
+          direction?: string
+          id?: string
+          is_active?: boolean | null
+          target_price?: number
+          triggered_at?: string | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
