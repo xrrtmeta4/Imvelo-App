@@ -6,6 +6,12 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Crown } from 'lucide-react';
 
+interface PaymentMethod {
+  name: string;
+  svg: React.ReactNode;
+  methods: string[]; // Dodo API payment method enum values
+}
+
 const PaymentLogo = ({ name, svg, onClick }: { name: string; svg: React.ReactNode; onClick?: () => void }) => (
   <button
     onClick={onClick}
@@ -58,6 +64,17 @@ const PayPalSvg = () => (
   </svg>
 );
 
+const PAYMENT_OPTIONS: PaymentMethod[] = [
+  { name: 'Visa', svg: <VisaSvg />, methods: ['credit', 'debit'] },
+  { name: 'Mastercard', svg: <MastercardSvg />, methods: ['credit', 'debit'] },
+  { name: 'Apple Pay', svg: <ApplePaySvg />, methods: ['apple_pay'] },
+  { name: 'Google Pay', svg: <GooglePaySvg />, methods: ['google_pay'] },
+  { name: 'PayPal', svg: <PayPalSvg />, methods: ['paypal'] },
+  { name: 'Klarna', svg: <span className="text-xs font-bold" style={{ color: '#FFB3C7' }}>Klarna</span>, methods: ['klarna'] },
+  { name: 'Affirm', svg: <span className="text-xs font-bold text-foreground">affirm</span>, methods: ['affirm'] },
+  { name: 'UPI', svg: <span className="text-[10px] font-bold" style={{ color: '#097939' }}>UPI</span>, methods: ['upi_collect', 'upi_intent'] },
+];
+
 const planOptions: { value: PlanTier; label: string; price: string }[] = [
   { value: 'pro', label: 'Pro', price: '$6.00/mo' },
   { value: 'enterprise', label: 'Enterprise', price: 'Contact Sales' },
@@ -67,12 +84,16 @@ const PaymentLogos = () => {
   const { openUpgrade, currentPlan } = useUsageLimits();
   const [showPlanDialog, setShowPlanDialog] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<PlanTier>('pro');
+  const [selectedMethods, setSelectedMethods] = useState<string[]>([]);
 
-  const handleClick = () => setShowPlanDialog(true);
+  const handleClick = (methods: string[]) => {
+    setSelectedMethods(methods);
+    setShowPlanDialog(true);
+  };
 
   const handleConfirm = () => {
     setShowPlanDialog(false);
-    openUpgrade(selectedPlan);
+    openUpgrade(selectedPlan, selectedMethods);
   };
 
   const availablePlans = planOptions.filter(p => {
@@ -85,17 +106,12 @@ const PaymentLogos = () => {
       <div className="bg-muted/50 rounded-xl p-4 space-y-3">
         <p className="text-sm font-semibold text-foreground text-center">Pay with your preferred method</p>
         <div className="grid grid-cols-4 gap-2">
-          <PaymentLogo name="Visa" svg={<VisaSvg />} onClick={handleClick} />
-          <PaymentLogo name="Mastercard" svg={<MastercardSvg />} onClick={handleClick} />
-          <PaymentLogo name="Apple Pay" svg={<ApplePaySvg />} onClick={handleClick} />
-          <PaymentLogo name="Google Pay" svg={<GooglePaySvg />} onClick={handleClick} />
-          <PaymentLogo name="PayPal" svg={<PayPalSvg />} onClick={handleClick} />
-          <PaymentLogo name="Klarna" svg={<span className="text-xs font-bold" style={{ color: '#FFB3C7' }}>Klarna</span>} onClick={handleClick} />
-          <PaymentLogo name="Affirm" svg={<span className="text-xs font-bold text-foreground">affirm</span>} onClick={handleClick} />
-          <PaymentLogo name="UPI" svg={<span className="text-[10px] font-bold" style={{ color: '#097939' }}>UPI</span>} onClick={handleClick} />
+          {PAYMENT_OPTIONS.map((pm) => (
+            <PaymentLogo key={pm.name} name={pm.name} svg={pm.svg} onClick={() => handleClick(pm.methods)} />
+          ))}
         </div>
         <p className="text-[10px] text-muted-foreground text-center">
-          Tap any method to upgrade · 40+ payment options supported
+          Tap a method to pay directly with it · 40+ options supported
         </p>
       </div>
 
@@ -128,7 +144,7 @@ const PaymentLogos = () => {
               </RadioGroup>
               <Button onClick={handleConfirm} className="w-full gap-2">
                 <Crown className="w-4 h-4" />
-                Continue to Payment
+                Pay with {PAYMENT_OPTIONS.find(p => p.methods[0] === selectedMethods[0])?.name || 'selected method'}
               </Button>
             </div>
           )}

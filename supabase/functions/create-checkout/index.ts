@@ -16,7 +16,7 @@ serve(async (req) => {
       throw new Error('DODO_PAYMENTS_API_KEY not configured');
     }
 
-    const { product_id, customer_email, customer_name, redirect_url } = await req.json();
+    const { product_id, customer_email, customer_name, redirect_url, payment_methods } = await req.json();
 
     if (!product_id) {
       throw new Error('product_id is required');
@@ -37,9 +37,14 @@ serve(async (req) => {
       'revolut_pay', 'open_banking_uk',
     ];
 
+    // Use specific methods if provided, otherwise all
+    const methods = (Array.isArray(payment_methods) && payment_methods.length > 0) 
+      ? payment_methods 
+      : allPaymentMethods;
+
     const body: Record<string, unknown> = {
       product_cart: [{ product_id, quantity: 1 }],
-      allowed_payment_method_types: allPaymentMethods,
+      allowed_payment_method_types: methods,
     };
 
     if (customer_email) body.customer = { email: customer_email, name: customer_name || undefined };
