@@ -201,20 +201,23 @@ export const useUsageLimits = () => {
 
   const getFormattedPrice = () => `$${planConfig.price.toFixed(2)}`;
 
-  const openUpgrade = async (planOrEvent?: PlanTier | React.MouseEvent) => {
+  const openUpgrade = async (planOrEvent?: PlanTier | React.MouseEvent, paymentMethods?: string[]) => {
     const targetPlan = (typeof planOrEvent === 'string' ? planOrEvent : undefined) || getNextPlan();
     const productId = PRODUCT_IDS[targetPlan];
     if (!productId) return;
 
     try {
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: {
-          product_id: productId,
-          customer_email: user?.email,
-          customer_name: user?.user_metadata?.full_name,
-          redirect_url: window.location.origin + '/upgrade?success=true',
-        },
-      });
+      const body: Record<string, unknown> = {
+        product_id: productId,
+        customer_email: user?.email,
+        customer_name: user?.user_metadata?.full_name,
+        redirect_url: window.location.origin + '/upgrade?success=true',
+      };
+      if (paymentMethods && paymentMethods.length > 0) {
+        body.payment_methods = paymentMethods;
+      }
+
+      const { data, error } = await supabase.functions.invoke('create-checkout', { body });
 
       if (error) throw error;
       if (data?.checkout_url) {
