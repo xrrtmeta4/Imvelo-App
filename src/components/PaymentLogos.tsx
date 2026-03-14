@@ -76,8 +76,7 @@ const PAYMENT_OPTIONS: PaymentMethod[] = [
 ];
 
 const planOptions: { value: PlanTier; label: string; price: string }[] = [
-  { value: 'pro', label: 'Pro', price: '$6.00/mo' },
-  { value: 'enterprise', label: 'Enterprise', price: 'Contact Sales' },
+  { value: 'premium', label: 'Premium', price: '$6.00/mo' },
 ];
 
 const PaymentLogos = () => {
