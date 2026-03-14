@@ -16,7 +16,7 @@ const PremiumGate = ({ feature, requiredPlan, children }: PremiumGateProps) => {
 
   if (loadingPremium) return null;
 
-  const planOrder: PlanTier[] = ['free', 'starter', 'pro', 'enterprise'];
+  const planOrder: PlanTier[] = ['free', 'starter', 'premium'];
   const currentIndex = planOrder.indexOf(currentPlan);
   const requiredIndex = planOrder.indexOf(requiredPlan);
 
