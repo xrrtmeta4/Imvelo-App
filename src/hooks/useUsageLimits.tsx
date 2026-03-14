@@ -3,13 +3,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
-export type PlanTier = 'free' | 'starter' | 'pro' | 'enterprise';
+export type PlanTier = 'free' | 'starter' | 'premium';
 
 export const PRODUCT_IDS: Record<PlanTier, string> = {
   free: '',
   starter: '',
-  pro: 'pdt_0NYZaqcOARihEXXOPIdmC',
-  enterprise: 'pdt_0NYZb3ccdGubedVQypzZn',
+  premium: 'pdt_0NYZaqcOARihEXXOPIdmC',
 };
 
 export const PLANS = {
