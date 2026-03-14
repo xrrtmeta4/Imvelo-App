@@ -76,14 +76,13 @@ const PAYMENT_OPTIONS: PaymentMethod[] = [
 ];
 
 const planOptions: { value: PlanTier; label: string; price: string }[] = [
-  { value: 'pro', label: 'Pro', price: '$6.00/mo' },
-  { value: 'enterprise', label: 'Enterprise', price: 'Contact Sales' },
+  { value: 'premium', label: 'Premium', price: '$6.00/mo' },
 ];
 
 const PaymentLogos = () => {
   const { openUpgrade, currentPlan } = useUsageLimits();
   const [showPlanDialog, setShowPlanDialog] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<PlanTier>('pro');
+  const [selectedPlan, setSelectedPlan] = useState<PlanTier>('premium');
   const [selectedMethods, setSelectedMethods] = useState<string[]>([]);
 
   const handleClick = (methods: string[]) => {
@@ -97,7 +96,7 @@ const PaymentLogos = () => {
   };
 
   const availablePlans = planOptions.filter(p => {
-    const order: PlanTier[] = ['free', 'starter', 'pro', 'enterprise'];
+    const order: PlanTier[] = ['free', 'starter', 'premium'];
     return order.indexOf(p.value) > order.indexOf(currentPlan);
   });
 

@@ -10,7 +10,7 @@ const popupMessages = [
   { icon: Shield, title: "Protect Your Farm", description: "Higher plans give you instant AI-powered diagnostics anytime. Early detection saves crops!" },
   { icon: Zap, title: "More AI Assistance", description: "Ask the AI assistant more questions about farming, weather, and best practices!" },
   { icon: BarChart3, title: "Track Your Finances", description: "Pro members can access the Digital Ledger to track expenses, income, and export financial reports!" },
-  { icon: FileText, title: "Advanced Analytics", description: "Enterprise members get crop monitoring, climate risk analysis, and unlimited access to everything!" }
+  { icon: FileText, title: "Advanced Analytics", description: "Premium members get crop monitoring, climate risk analysis, and unlimited access to everything!" }
 ];
 
 interface SubscriptionPopupProps {
@@ -24,7 +24,7 @@ const SubscriptionPopup = ({ enabled = true }: SubscriptionPopupProps) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!enabled || loadingPremium || currentPlan === 'enterprise') return;
+    if (!enabled || loadingPremium || currentPlan === 'premium') return;
     const timer = setTimeout(() => {
       setCurrentMessage(Math.floor(Math.random() * popupMessages.length));
       setOpen(true);
@@ -33,7 +33,7 @@ const SubscriptionPopup = ({ enabled = true }: SubscriptionPopupProps) => {
   }, [enabled, currentPlan, loadingPremium]);
 
   useEffect(() => {
-    if (!enabled || loadingPremium || currentPlan === 'enterprise') return;
+    if (!enabled || loadingPremium || currentPlan === 'premium') return;
     const interval = setInterval(() => {
       setCurrentMessage(Math.floor(Math.random() * popupMessages.length));
       setOpen(true);
@@ -41,7 +41,7 @@ const SubscriptionPopup = ({ enabled = true }: SubscriptionPopupProps) => {
     return () => clearInterval(interval);
   }, [enabled, currentPlan, loadingPremium]);
 
-  if (currentPlan === 'enterprise' || loadingPremium) return null;
+  if (currentPlan === 'premium' || loadingPremium) return null;
 
   const message = popupMessages[currentMessage];
   const IconComponent = message.icon;

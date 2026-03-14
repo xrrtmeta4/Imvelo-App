@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
-const PLAN_ORDER: PlanTier[] = ['free', 'starter', 'pro', 'enterprise'];
+const PLAN_ORDER: PlanTier[] = ['free', 'starter', 'premium'];
 
 const Index = () => {
   const { isPremium, currentPlan } = useUsageLimits();
@@ -43,14 +43,14 @@ const Index = () => {
     { icon: CloudLightning, label: t('climateRisk'), sub: t('volatilityEngine'), path: '/climate-risk', color: 'bg-destructive/10 border-destructive/20 hover:bg-destructive/20', iconBg: 'bg-destructive/20', iconColor: 'text-destructive', requiredPlan: 'free' },
     { icon: Scan, label: t('healthScan'), sub: t('pestSoilDisease'), path: '/scanner', color: 'bg-accent border-accent-foreground/10 hover:bg-accent/80', iconBg: 'bg-primary/20', iconColor: 'text-primary', requiredPlan: 'free' },
     { icon: Droplets, label: t('irrigation'), sub: t('rainWaterAdvisor'), path: '/smart-irrigation', color: 'bg-blue-500/10 border-blue-500/20 hover:bg-blue-500/20', iconBg: 'bg-blue-500/20', iconColor: 'text-blue-500', requiredPlan: 'free' },
-    { icon: Beef, label: 'Livestock', sub: 'Track & manage', path: '/livestock', color: 'bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20', iconBg: 'bg-amber-500/20', iconColor: 'text-amber-600', requiredPlan: 'pro' },
-    { icon: RotateCcw, label: 'Crop Rotation', sub: 'Plan rotations', path: '/crop-rotation', color: 'bg-green-500/10 border-green-500/20 hover:bg-green-500/20', iconBg: 'bg-green-500/20', iconColor: 'text-green-600', requiredPlan: 'pro' },
-    { icon: FlaskConical, label: 'Fertilizer', sub: 'NPK calculator', path: '/fertilizer', color: 'bg-purple-500/10 border-purple-500/20 hover:bg-purple-500/20', iconBg: 'bg-purple-500/20', iconColor: 'text-purple-600', requiredPlan: 'pro' },
-    { icon: Wheat, label: 'Harvests', sub: 'Track yields', path: '/harvest-tracker', color: 'bg-yellow-500/10 border-yellow-500/20 hover:bg-yellow-500/20', iconBg: 'bg-yellow-500/20', iconColor: 'text-yellow-600', requiredPlan: 'pro' },
-    { icon: Bell, label: 'Price Alerts', sub: 'Market targets', path: '/price-alerts', color: 'bg-indigo-500/10 border-indigo-500/20 hover:bg-indigo-500/20', iconBg: 'bg-indigo-500/20', iconColor: 'text-indigo-600', requiredPlan: 'pro' },
-    { icon: Package, label: 'Inventory', sub: 'Track supplies', path: '/inventory', color: 'bg-teal-500/10 border-teal-500/20 hover:bg-teal-500/20', iconBg: 'bg-teal-500/20', iconColor: 'text-teal-600', requiredPlan: 'pro' },
-    { icon: TreePine, label: 'Carbon Score', sub: 'Sustainability', path: '/carbon-score', color: 'bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500/20', iconBg: 'bg-emerald-500/20', iconColor: 'text-emerald-600', requiredPlan: 'enterprise' },
-    { icon: ShieldCheck, label: 'Post-Harvest', sub: 'Reduce losses', path: '/post-harvest', color: 'bg-red-500/10 border-red-500/20 hover:bg-red-500/20', iconBg: 'bg-red-500/20', iconColor: 'text-red-600', requiredPlan: 'enterprise' },
+    { icon: Beef, label: 'Livestock', sub: 'Track & manage', path: '/livestock', color: 'bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20', iconBg: 'bg-amber-500/20', iconColor: 'text-amber-600', requiredPlan: 'premium' },
+    { icon: RotateCcw, label: 'Crop Rotation', sub: 'Plan rotations', path: '/crop-rotation', color: 'bg-green-500/10 border-green-500/20 hover:bg-green-500/20', iconBg: 'bg-green-500/20', iconColor: 'text-green-600', requiredPlan: 'premium' },
+    { icon: FlaskConical, label: 'Fertilizer', sub: 'NPK calculator', path: '/fertilizer', color: 'bg-purple-500/10 border-purple-500/20 hover:bg-purple-500/20', iconBg: 'bg-purple-500/20', iconColor: 'text-purple-600', requiredPlan: 'premium' },
+    { icon: Wheat, label: 'Harvests', sub: 'Track yields', path: '/harvest-tracker', color: 'bg-yellow-500/10 border-yellow-500/20 hover:bg-yellow-500/20', iconBg: 'bg-yellow-500/20', iconColor: 'text-yellow-600', requiredPlan: 'premium' },
+    { icon: Bell, label: 'Price Alerts', sub: 'Market targets', path: '/price-alerts', color: 'bg-indigo-500/10 border-indigo-500/20 hover:bg-indigo-500/20', iconBg: 'bg-indigo-500/20', iconColor: 'text-indigo-600', requiredPlan: 'premium' },
+    { icon: Package, label: 'Inventory', sub: 'Track supplies', path: '/inventory', color: 'bg-teal-500/10 border-teal-500/20 hover:bg-teal-500/20', iconBg: 'bg-teal-500/20', iconColor: 'text-teal-600', requiredPlan: 'premium' },
+    { icon: TreePine, label: 'Carbon Score', sub: 'Sustainability', path: '/carbon-score', color: 'bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500/20', iconBg: 'bg-emerald-500/20', iconColor: 'text-emerald-600', requiredPlan: 'premium' },
+    { icon: ShieldCheck, label: 'Post-Harvest', sub: 'Reduce losses', path: '/post-harvest', color: 'bg-red-500/10 border-red-500/20 hover:bg-red-500/20', iconBg: 'bg-red-500/20', iconColor: 'text-red-600', requiredPlan: 'premium' },
   ];
 
   const currentIndex = PLAN_ORDER.indexOf(currentPlan);
@@ -117,7 +117,7 @@ const Index = () => {
                   <div className="absolute top-2 right-2 flex items-center gap-1">
                     <Lock className="w-3 h-3 text-muted-foreground" />
                     <span className="text-[9px] font-medium text-muted-foreground uppercase">
-                      {btn.requiredPlan === 'enterprise' ? 'Ent' : 'Pro'}
+                      Premium
                     </span>
                   </div>
                 )}

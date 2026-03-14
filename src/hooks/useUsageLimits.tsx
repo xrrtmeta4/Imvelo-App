@@ -3,13 +3,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
-export type PlanTier = 'free' | 'starter' | 'pro' | 'enterprise';
+export type PlanTier = 'free' | 'starter' | 'premium';
 
 export const PRODUCT_IDS: Record<PlanTier, string> = {
   free: '',
   starter: '',
-  pro: 'pdt_0NYZaqcOARihEXXOPIdmC',
-  enterprise: 'pdt_0NYZb3ccdGubedVQypzZn',
+  premium: 'pdt_0NYZaqcOARihEXXOPIdmC',
 };
 
 export const PLANS = {
@@ -31,23 +30,14 @@ export const PLANS = {
     maxSprayEntries: 5,
     features: ['1 pest/disease scan per week', '3 AI chat messages per day', 'Basic weather info', 'Best practices library', 'Extension directory', 'Spray calendar (5 entries)', 'Digital ledger (10 entries)'],
   },
-  pro: {
-    name: 'Pro',
+  premium: {
+    name: 'Premium',
     price: 6,
-    weeklyDetections: 10,
-    dailyChats: 20,
-    maxLedgerEntries: Infinity,
-    maxSprayEntries: Infinity,
-    features: ['10 scans per week', '20 AI chats per day', '7-day weather forecast', 'Farming tips', 'Unlimited spray scheduling', 'Unlimited digital ledger', 'Produce estimation'],
-  },
-  enterprise: {
-    name: 'Enterprise',
-    price: 0,
     weeklyDetections: Infinity,
     dailyChats: Infinity,
     maxLedgerEntries: Infinity,
     maxSprayEntries: Infinity,
-    features: ['Unlimited scans', 'Unlimited AI chat', '7-day weather forecast', 'Farming tips', 'Unlimited spray scheduling', 'Unlimited digital ledger', 'Produce estimation', 'Crop monitoring (phenotype)', 'Advanced climate resilience tools', 'Priority support'],
+    features: ['Unlimited scans', 'Unlimited AI chat', '7-day weather forecast', 'Farming tips', 'Unlimited spray scheduling', 'Unlimited digital ledger', 'Produce estimation', 'Crop monitoring (phenotype)', 'Advanced climate resilience tools', 'Livestock manager', 'Crop rotation planner', 'Fertilizer calculator', 'Harvest tracker', 'Market price alerts', 'Farm inventory', 'Carbon score', 'Post-harvest guide', 'Priority support'],
   },
 };
 
@@ -102,8 +92,9 @@ export const useUsageLimits = () => {
 
       if (data && data.status === 'active') {
         if (!data.expires_at || new Date(data.expires_at) > new Date()) {
-          const plan = (data as any).plan as PlanTier || 'starter';
-          setCurrentPlan(plan);
+          let plan: string = (data as any).plan || 'starter';
+          if (plan === 'pro' || plan === 'enterprise') plan = 'premium';
+          setCurrentPlan(plan as PlanTier);
           if (data.payment_reference === 'free_trial' && data.expires_at) {
             const daysLeft = Math.ceil((new Date(data.expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
             setTrialDaysLeft(Math.max(0, daysLeft));
@@ -193,7 +184,7 @@ export const useUsageLimits = () => {
         return true; // Available to all plans
       case 'forecast':
       case 'farmingTips':
-        return currentPlan === 'pro' || currentPlan === 'enterprise';
+        return currentPlan === 'premium';
       default:
         return false;
     }
@@ -234,9 +225,8 @@ export const useUsageLimits = () => {
   const getNextPlan = (): PlanTier => {
     switch (currentPlan) {
       case 'free': return 'starter';
-      case 'starter': return 'pro';
-      case 'pro': return 'enterprise';
-      default: return 'enterprise';
+      case 'starter': return 'premium';
+      default: return 'premium';
     }
   };
 

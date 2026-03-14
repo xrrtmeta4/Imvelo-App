@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Check, Crown, Zap, Building2, ArrowLeft, Loader2, PartyPopper } from 'lucide-react';
+import { Check, Crown, ArrowLeft, Loader2, PartyPopper } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUsageLimits, PLANS, PlanTier } from '@/hooks/useUsageLimits';
@@ -7,20 +7,6 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import PaymentLogos from '@/components/PaymentLogos';
-
-const planIcons: Record<PlanTier, React.ReactNode> = {
-  free: null,
-  starter: <Zap className="w-6 h-6" />,
-  pro: <Crown className="w-6 h-6" />,
-  enterprise: <Building2 className="w-6 h-6" />,
-};
-
-const planColors: Record<PlanTier, string> = {
-  free: 'border-border',
-  starter: 'border-primary/40',
-  pro: 'border-primary ring-2 ring-primary/20',
-  enterprise: 'border-amber-500 ring-2 ring-amber-500/20',
-};
 
 const Upgrade = () => {
   const { currentPlan, openUpgrade, trialDaysLeft } = useUsageLimits();
@@ -35,17 +21,19 @@ const Upgrade = () => {
     }
   }, [searchParams]);
 
-  const handleUpgrade = async (tier: PlanTier) => {
-    setLoadingTier(tier);
+  const handleUpgrade = async () => {
+    setLoadingTier('premium');
     try {
-      await openUpgrade(tier);
+      await openUpgrade('premium');
     } finally {
-      // Reset after a delay in case redirect doesn't happen
       setTimeout(() => setLoadingTier(null), 5000);
     }
   };
 
-  const tiers: PlanTier[] = ['pro', 'enterprise'];
+  const plan = PLANS['premium'];
+  const isCurrent = currentPlan === 'premium';
+  const isUpgrade = !isCurrent;
+  const isLoading = loadingTier === 'premium';
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -70,74 +58,50 @@ const Upgrade = () => {
           </Card>
         )}
 
-        {tiers.map((tier) => {
-          const plan = PLANS[tier];
-          const isCurrent = currentPlan === tier;
-          const isUpgrade = ['free', 'starter', 'pro', 'enterprise'].indexOf(tier) > ['free', 'starter', 'pro', 'enterprise'].indexOf(currentPlan);
-          const isLoading = loadingTier === tier;
-
-          return (
-            <Card key={tier} className={`relative overflow-hidden ${planColors[tier]}`}>
-              {tier === 'pro' && (
-                <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-bl-lg">
-                  {t('popular')}
+        <Card className="relative overflow-hidden border-primary ring-2 ring-primary/20">
+          <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-bl-lg">
+            {t('popular')}
+          </div>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                <Crown className="w-6 h-6" />
+              </div>
+              <div>
+                <CardTitle className="text-lg">{plan.name}</CardTitle>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl font-bold text-foreground">${plan.price.toFixed(2)}</span>
+                  <span className="text-sm text-muted-foreground">{t('perMonth')}</span>
                 </div>
-              )}
-              <CardHeader className="pb-3">
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg ${tier === 'enterprise' ? 'bg-amber-500/10 text-amber-600' : 'bg-primary/10 text-primary'}`}>
-                    {planIcons[tier]}
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg">{plan.name}</CardTitle>
-                    {tier === 'enterprise' ? (
-                      <span className="text-2xl font-bold text-foreground">{t('contactUs')}</span>
-                    ) : (
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-2xl font-bold text-foreground">${plan.price.toFixed(2)}</span>
-                        <span className="text-sm text-muted-foreground">{t('perMonth')}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <ul className="space-y-2">
-                  {plan.features.map((feature, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm">
-                      <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <ul className="space-y-2">
+              {plan.features.map((feature, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm">
+                  <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                  <span>{feature}</span>
+                </li>
+              ))}
+            </ul>
 
-                {isCurrent ? (
-                  <Button disabled className="w-full" variant="outline">
-                    {t('currentPlan')}
-                  </Button>
-                ) : isUpgrade && tier === 'enterprise' ? (
-                  <Button className="w-full gap-2" onClick={() => window.open('mailto:support@imveloapp.com?subject=Enterprise Plan Inquiry', '_blank')}>
-                    <Building2 className="w-4 h-4" />
-                    {t('contactSales')}
-                  </Button>
-                ) : isUpgrade ? (
-                  <Button className="w-full gap-2" disabled={isLoading} onClick={() => handleUpgrade(tier)}>
-                    {isLoading ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Crown className="w-4 h-4" />
-                    )}
-                    {isLoading ? t('processing') || 'Processing...' : `${t('upgradeTo')} ${plan.name}`}
-                  </Button>
+            {isCurrent ? (
+              <Button disabled className="w-full" variant="outline">
+                {t('currentPlan')}
+              </Button>
+            ) : isUpgrade ? (
+              <Button className="w-full gap-2" disabled={isLoading} onClick={handleUpgrade}>
+                {isLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                  <Button disabled variant="ghost" className="w-full text-muted-foreground">
-                    {t('includedInPlan')}
-                  </Button>
+                  <Crown className="w-4 h-4" />
                 )}
-              </CardContent>
-            </Card>
-          );
-        })}
+                {isLoading ? t('processing') || 'Processing...' : `${t('upgradeTo')} ${plan.name}`}
+              </Button>
+            ) : null}
+          </CardContent>
+        </Card>
 
         <PaymentLogos />
 

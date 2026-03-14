@@ -195,8 +195,7 @@ const Profile = () => {
   };
 
   const planBadge = () => {
-    if (currentPlan === 'enterprise') return { label: 'Enterprise', className: 'bg-gradient-to-r from-amber-500 to-yellow-400 text-white border-0' };
-    if (currentPlan === 'pro') return { label: 'Pro', className: 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground border-0' };
+    if (currentPlan === 'premium') return { label: 'Premium', className: 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground border-0' };
     if (currentPlan === 'starter') return { label: 'Starter', className: '' };
     return { label: t('freePlan'), className: '' };
   };
@@ -297,31 +296,6 @@ const Profile = () => {
               </div>
 
               <div className="pt-3 space-y-2 border-t border-border">
-                {currentPlan === 'enterprise' && (
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="outline" size="sm" className="w-full gap-2">
-                        <ArrowDown className="w-4 h-4" />
-                        Downgrade to Pro
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Downgrade to Pro?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          You'll lose access to unlimited scans, unlimited AI chat, and priority support. Your plan will change to Pro ($6.00/mo).
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Keep Enterprise</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleDowngrade('pro')}>
-                          Downgrade
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                )}
-
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant="ghost" size="sm" className="w-full text-destructive hover:text-destructive gap-2">
