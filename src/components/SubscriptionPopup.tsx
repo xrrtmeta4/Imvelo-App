@@ -24,7 +24,7 @@ const SubscriptionPopup = ({ enabled = true }: SubscriptionPopupProps) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!enabled || loadingPremium || currentPlan === 'enterprise') return;
+    if (!enabled || loadingPremium || currentPlan === 'premium') return;
     const timer = setTimeout(() => {
       setCurrentMessage(Math.floor(Math.random() * popupMessages.length));
       setOpen(true);
@@ -33,7 +33,7 @@ const SubscriptionPopup = ({ enabled = true }: SubscriptionPopupProps) => {
   }, [enabled, currentPlan, loadingPremium]);
 
   useEffect(() => {
-    if (!enabled || loadingPremium || currentPlan === 'enterprise') return;
+    if (!enabled || loadingPremium || currentPlan === 'premium') return;
     const interval = setInterval(() => {
       setCurrentMessage(Math.floor(Math.random() * popupMessages.length));
       setOpen(true);
