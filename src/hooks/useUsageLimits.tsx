@@ -185,7 +185,7 @@ export const useUsageLimits = () => {
         return true; // Available to all plans
       case 'forecast':
       case 'farmingTips':
-        return currentPlan === 'pro' || currentPlan === 'enterprise';
+        return currentPlan === 'premium';
       default:
         return false;
     }
