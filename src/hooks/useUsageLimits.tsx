@@ -95,7 +95,6 @@ export const useUsageLimits = () => {
           let plan: string = (data as any).plan || 'starter';
           if (plan === 'pro' || plan === 'enterprise') plan = 'premium';
           setCurrentPlan(plan as PlanTier);
-          setCurrentPlan(plan);
           if (data.payment_reference === 'free_trial' && data.expires_at) {
             const daysLeft = Math.ceil((new Date(data.expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
             setTrialDaysLeft(Math.max(0, daysLeft));
