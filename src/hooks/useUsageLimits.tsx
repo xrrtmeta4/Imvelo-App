@@ -30,23 +30,14 @@ export const PLANS = {
     maxSprayEntries: 5,
     features: ['1 pest/disease scan per week', '3 AI chat messages per day', 'Basic weather info', 'Best practices library', 'Extension directory', 'Spray calendar (5 entries)', 'Digital ledger (10 entries)'],
   },
-  pro: {
-    name: 'Pro',
+  premium: {
+    name: 'Premium',
     price: 6,
-    weeklyDetections: 10,
-    dailyChats: 20,
-    maxLedgerEntries: Infinity,
-    maxSprayEntries: Infinity,
-    features: ['10 scans per week', '20 AI chats per day', '7-day weather forecast', 'Farming tips', 'Unlimited spray scheduling', 'Unlimited digital ledger', 'Produce estimation'],
-  },
-  enterprise: {
-    name: 'Enterprise',
-    price: 0,
     weeklyDetections: Infinity,
     dailyChats: Infinity,
     maxLedgerEntries: Infinity,
     maxSprayEntries: Infinity,
-    features: ['Unlimited scans', 'Unlimited AI chat', '7-day weather forecast', 'Farming tips', 'Unlimited spray scheduling', 'Unlimited digital ledger', 'Produce estimation', 'Crop monitoring (phenotype)', 'Advanced climate resilience tools', 'Priority support'],
+    features: ['Unlimited scans', 'Unlimited AI chat', '7-day weather forecast', 'Farming tips', 'Unlimited spray scheduling', 'Unlimited digital ledger', 'Produce estimation', 'Crop monitoring (phenotype)', 'Advanced climate resilience tools', 'Livestock manager', 'Crop rotation planner', 'Fertilizer calculator', 'Harvest tracker', 'Market price alerts', 'Farm inventory', 'Carbon score', 'Post-harvest guide', 'Priority support'],
   },
 };
 
