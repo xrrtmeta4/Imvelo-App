@@ -96,7 +96,7 @@ const PaymentLogos = () => {
   };
 
   const availablePlans = planOptions.filter(p => {
-    const order: PlanTier[] = ['free', 'starter', 'pro', 'enterprise'];
+    const order: PlanTier[] = ['free', 'starter', 'premium'];
     return order.indexOf(p.value) > order.indexOf(currentPlan);
   });
 

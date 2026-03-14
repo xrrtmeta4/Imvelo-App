@@ -226,9 +226,8 @@ export const useUsageLimits = () => {
   const getNextPlan = (): PlanTier => {
     switch (currentPlan) {
       case 'free': return 'starter';
-      case 'starter': return 'pro';
-      case 'pro': return 'enterprise';
-      default: return 'enterprise';
+      case 'starter': return 'premium';
+      default: return 'premium';
     }
   };
 

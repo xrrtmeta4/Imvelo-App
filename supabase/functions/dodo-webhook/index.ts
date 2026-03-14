@@ -164,8 +164,7 @@ serve(async (req) => {
     // Map product IDs to plan tiers
     const PRODUCT_PLAN_MAP: Record<string, string> = {
       'pdt_0NVKhwZKeJCCaRbxoTNno': 'starter',
-      'pdt_0NYZaqcOARihEXXOPIdmC': 'pro',
-      'pdt_0NYZb3ccdGubedVQypzZn': 'enterprise',
+      'pdt_0NYZaqcOARihEXXOPIdmC': 'premium',
     };
 
     // Handle payment completed event

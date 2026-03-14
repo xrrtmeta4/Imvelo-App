@@ -41,7 +41,7 @@ const SubscriptionPopup = ({ enabled = true }: SubscriptionPopupProps) => {
     return () => clearInterval(interval);
   }, [enabled, currentPlan, loadingPremium]);
 
-  if (currentPlan === 'enterprise' || loadingPremium) return null;
+  if (currentPlan === 'premium' || loadingPremium) return null;
 
   const message = popupMessages[currentMessage];
   const IconComponent = message.icon;

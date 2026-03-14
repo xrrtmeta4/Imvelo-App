@@ -117,7 +117,7 @@ const Index = () => {
                   <div className="absolute top-2 right-2 flex items-center gap-1">
                     <Lock className="w-3 h-3 text-muted-foreground" />
                     <span className="text-[9px] font-medium text-muted-foreground uppercase">
-                      {btn.requiredPlan === 'enterprise' ? 'Ent' : 'Pro'}
+                      Premium
                     </span>
                   </div>
                 )}
