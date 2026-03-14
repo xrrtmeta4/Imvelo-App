@@ -202,9 +202,9 @@ const Weather = () => {
                   <p className="text-sm text-muted-foreground">
                     {t('upgradeForForecast')}
                   </p>
-                  <Button onClick={() => openUpgrade('pro')} className="gap-2">
+                  <Button onClick={() => openUpgrade('premium')} className="gap-2">
                     <Crown className="w-4 h-4" />
-                    {t('upgradeToPro')} - $29.99/mo
+                    Upgrade to Premium - $6.00/mo
                   </Button>
                 </CardContent>
               </Card>

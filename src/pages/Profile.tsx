@@ -195,8 +195,7 @@ const Profile = () => {
   };
 
   const planBadge = () => {
-    if (currentPlan === 'enterprise') return { label: 'Enterprise', className: 'bg-gradient-to-r from-amber-500 to-yellow-400 text-white border-0' };
-    if (currentPlan === 'pro') return { label: 'Pro', className: 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground border-0' };
+    if (currentPlan === 'premium') return { label: 'Premium', className: 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground border-0' };
     if (currentPlan === 'starter') return { label: 'Starter', className: '' };
     return { label: t('freePlan'), className: '' };
   };
