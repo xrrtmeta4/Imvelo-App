@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
-const PLAN_ORDER: PlanTier[] = ['free', 'starter', 'pro', 'enterprise'];
+const PLAN_ORDER: PlanTier[] = ['free', 'starter', 'premium'];
 
 const Index = () => {
   const { isPremium, currentPlan } = useUsageLimits();
