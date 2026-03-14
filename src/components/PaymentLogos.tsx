@@ -82,7 +82,7 @@ const planOptions: { value: PlanTier; label: string; price: string }[] = [
 const PaymentLogos = () => {
   const { openUpgrade, currentPlan } = useUsageLimits();
   const [showPlanDialog, setShowPlanDialog] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<PlanTier>('pro');
+  const [selectedPlan, setSelectedPlan] = useState<PlanTier>('premium');
   const [selectedMethods, setSelectedMethods] = useState<string[]>([]);
 
   const handleClick = (methods: string[]) => {
