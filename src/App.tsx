@@ -35,6 +35,7 @@ import MarketPriceAlerts from "./pages/MarketPriceAlerts";
 import FarmInventory from "./pages/FarmInventory";
 import CarbonScore from "./pages/CarbonScore";
 import PostHarvestGuide from "./pages/PostHarvestGuide";
+import AfricanMarkets from "./pages/AfricanMarkets";
 import MobileNav from "./components/MobileNav";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import SubscriptionPopup from "./components/SubscriptionPopup";
@@ -100,6 +101,7 @@ const App = () => (
             <Route path="/inventory" element={<ProtectedRoute><FarmInventory /></ProtectedRoute>} />
             <Route path="/carbon-score" element={<ProtectedRoute><CarbonScore /></ProtectedRoute>} />
             <Route path="/post-harvest" element={<ProtectedRoute><PostHarvestGuide /></ProtectedRoute>} />
+            <Route path="/african-markets" element={<ProtectedRoute><AfricanMarkets /></ProtectedRoute>} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/contact" element={<Contact />} />

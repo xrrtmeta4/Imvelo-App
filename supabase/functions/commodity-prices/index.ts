@@ -14,6 +14,12 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
+    let currency = 'USD';
+    try {
+      const body = await req.json();
+      if (body?.currency) currency = body.currency;
+    } catch { /* no body, use default */ }
+
     const today = new Date().toISOString().split('T')[0];
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -27,9 +33,9 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are a commodity market data provider. Return ONLY a valid JSON array of current international agricultural commodity prices as of ${today}. Each object must have: name (string), price (number), currency (always "USD"), change (number, percent change from yesterday, can be negative), unit (string like "/ton", "/lb", "/cwt", "/bu"). Include these commodities: Maize, Wheat, Soybeans, Rice, Sugar, Coffee, Cotton, Cattle, Palm Oil, Cocoa, Sunflower Oil, Barley. Use realistic current market prices. Return ONLY the JSON array, no markdown.`
+            content: `You are a commodity market data provider. Return ONLY a valid JSON array of current international agricultural commodity prices as of ${today}. Each object must have: name (string), price (number), currency (always "${currency}"), change (number, percent change from yesterday, can be negative), unit (string like "/ton", "/lb", "/cwt", "/bu"). Include these commodities: Maize, Wheat, Soybeans, Rice, Sugar, Coffee, Cotton, Cattle, Palm Oil, Cocoa, Sunflower Oil, Barley. Use realistic current market prices CONVERTED TO ${currency}. Return ONLY the JSON array, no markdown.`
           },
-          { role: "user", content: `Current agricultural commodity prices for ${today}` }
+          { role: "user", content: `Current agricultural commodity prices for ${today} in ${currency}` }
         ],
         temperature: 0.2,
       }),

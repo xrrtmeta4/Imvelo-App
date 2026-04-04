@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface CommodityPrice {
   name: string;
@@ -44,17 +45,19 @@ const formatPrice = (price: number) => {
 const MarketTicker = () => {
   const [prices, setPrices] = useState<CommodityPrice[]>(FALLBACK);
   const [lastUpdated, setLastUpdated] = useState<string>("");
+  const { selectedCurrency } = useCurrency();
 
   useEffect(() => {
     fetchPrices();
-    // Refresh every 10 minutes
     const interval = setInterval(fetchPrices, 10 * 60 * 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [selectedCurrency]);
 
   const fetchPrices = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('commodity-prices');
+      const { data, error } = await supabase.functions.invoke('commodity-prices', {
+        body: { currency: selectedCurrency.code },
+      });
       if (!error && data?.prices?.length) {
         setPrices(data.prices);
         setLastUpdated(data.updated_at);
@@ -70,7 +73,7 @@ const MarketTicker = () => {
         {[...prices, ...prices].map((commodity, i) => (
           <div key={`${commodity.name}-${i}`} className="flex items-center gap-1.5 text-sm">
             <span className="font-medium text-foreground">{commodity.name}</span>
-            <span className="text-foreground">${formatPrice(commodity.price)}</span>
+            <span className="text-foreground">{selectedCurrency.symbol}{formatPrice(commodity.price)}</span>
             <span className="text-xs text-muted-foreground">{commodity.unit}</span>
             {getChangeIcon(commodity.change)}
             <span className={`text-xs font-medium ${getChangeColor(commodity.change)}`}>
