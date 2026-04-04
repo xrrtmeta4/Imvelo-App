@@ -51,6 +51,7 @@ const Index = () => {
     { icon: Package, label: 'Inventory', sub: 'Track supplies', path: '/inventory', color: 'bg-teal-500/10 border-teal-500/20 hover:bg-teal-500/20', iconBg: 'bg-teal-500/20', iconColor: 'text-teal-600', requiredPlan: 'premium' },
     { icon: TreePine, label: 'Carbon Score', sub: 'Sustainability', path: '/carbon-score', color: 'bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500/20', iconBg: 'bg-emerald-500/20', iconColor: 'text-emerald-600', requiredPlan: 'premium' },
     { icon: ShieldCheck, label: 'Post-Harvest', sub: 'Reduce losses', path: '/post-harvest', color: 'bg-red-500/10 border-red-500/20 hover:bg-red-500/20', iconBg: 'bg-red-500/20', iconColor: 'text-red-600', requiredPlan: 'premium' },
+    { icon: Store, label: 'African Markets', sub: 'Demand & contacts', path: '/african-markets', color: 'bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500/20', iconBg: 'bg-emerald-500/20', iconColor: 'text-emerald-600', requiredPlan: 'free' },
   ];
 
   const currentIndex = PLAN_ORDER.indexOf(currentPlan);
