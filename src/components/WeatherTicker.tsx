@@ -45,6 +45,7 @@ const formatPrice = (price: number) => {
 const MarketTicker = () => {
   const [prices, setPrices] = useState<CommodityPrice[]>(FALLBACK);
   const [lastUpdated, setLastUpdated] = useState<string>("");
+  const { selectedCurrency } = useCurrency();
 
   useEffect(() => {
     fetchPrices();
