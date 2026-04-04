@@ -49,14 +49,15 @@ const MarketTicker = () => {
 
   useEffect(() => {
     fetchPrices();
-    // Refresh every 10 minutes
     const interval = setInterval(fetchPrices, 10 * 60 * 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [selectedCurrency]);
 
   const fetchPrices = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('commodity-prices');
+      const { data, error } = await supabase.functions.invoke('commodity-prices', {
+        body: { currency: selectedCurrency.code },
+      });
       if (!error && data?.prices?.length) {
         setPrices(data.prices);
         setLastUpdated(data.updated_at);
