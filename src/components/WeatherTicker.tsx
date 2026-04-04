@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface CommodityPrice {
   name: string;
