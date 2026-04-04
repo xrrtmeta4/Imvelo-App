@@ -72,7 +72,7 @@ const MarketTicker = () => {
         {[...prices, ...prices].map((commodity, i) => (
           <div key={`${commodity.name}-${i}`} className="flex items-center gap-1.5 text-sm">
             <span className="font-medium text-foreground">{commodity.name}</span>
-            <span className="text-foreground">${formatPrice(commodity.price)}</span>
+            <span className="text-foreground">{selectedCurrency.symbol}{formatPrice(commodity.price)}</span>
             <span className="text-xs text-muted-foreground">{commodity.unit}</span>
             {getChangeIcon(commodity.change)}
             <span className={`text-xs font-medium ${getChangeColor(commodity.change)}`}>
