@@ -27,9 +27,7 @@ const CarbonScore = () => {
     if (!form.farmSize) { toast.error('Please enter your farm size'); return; }
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('ai-assistant', {
-        body: {
-          message: `As a sustainability expert, analyze this farm's carbon footprint and provide a sustainability score:
+      const prompt = `As a sustainability expert, analyze this farm's carbon footprint and provide a sustainability score:
           - Farm Size: ${form.farmSize} hectares
           - Crops: ${form.cropTypes || 'Mixed'}
           - Irrigation: ${form.irrigationMethod || 'Not specified'}
@@ -46,8 +44,11 @@ const CarbonScore = () => {
           5. Potential carbon credit opportunities
           6. Comparison to regional averages
           
-          Be specific and actionable.`,
-          language: 'en'
+          Be specific and actionable.`;
+      const { data, error } = await supabase.functions.invoke('ai-assistant', {
+        body: {
+          messages: [{ role: 'user', content: prompt }],
+          preferredLanguage: 'en'
         }
       });
       if (error) throw error;
