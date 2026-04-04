@@ -101,6 +101,7 @@ const App = () => (
             <Route path="/inventory" element={<ProtectedRoute><FarmInventory /></ProtectedRoute>} />
             <Route path="/carbon-score" element={<ProtectedRoute><CarbonScore /></ProtectedRoute>} />
             <Route path="/post-harvest" element={<ProtectedRoute><PostHarvestGuide /></ProtectedRoute>} />
+            <Route path="/african-markets" element={<ProtectedRoute><AfricanMarkets /></ProtectedRoute>} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/contact" element={<Contact />} />
