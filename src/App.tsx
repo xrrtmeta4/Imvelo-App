@@ -35,6 +35,7 @@ import MarketPriceAlerts from "./pages/MarketPriceAlerts";
 import FarmInventory from "./pages/FarmInventory";
 import CarbonScore from "./pages/CarbonScore";
 import PostHarvestGuide from "./pages/PostHarvestGuide";
+import AfricanMarkets from "./pages/AfricanMarkets";
 import MobileNav from "./components/MobileNav";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import SubscriptionPopup from "./components/SubscriptionPopup";
