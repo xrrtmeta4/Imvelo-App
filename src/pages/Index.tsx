@@ -8,7 +8,7 @@ import { useUsageLimits, PlanTier } from '@/hooks/useUsageLimits';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/lib/supabase';
-import { Sprout, Crown, Leaf, CloudLightning, Scan, Droplets, Beef, RotateCcw, FlaskConical, Wheat, Bell, Package, TreePine, ShieldCheck, Lock, ChevronDown, ChevronUp, Cloud } from 'lucide-react';
+import { Sprout, Crown, Leaf, CloudLightning, Scan, Droplets, Beef, RotateCcw, FlaskConical, Wheat, Bell, Package, TreePine, ShieldCheck, Lock, ChevronDown, ChevronUp, Cloud, Store } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
