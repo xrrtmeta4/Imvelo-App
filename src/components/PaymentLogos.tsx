@@ -1,15 +1,20 @@
 import { useState } from 'react';
-import { useUsageLimits, PlanTier, PLANS } from '@/hooks/useUsageLimits';
+import { useUsageLimits, PlanTier } from '@/hooks/useUsageLimits';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Crown } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Crown, Loader2, Phone } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 interface PaymentMethod {
   name: string;
   svg: React.ReactNode;
-  methods: string[]; // Dodo API payment method enum values
+  methods: string[];
+  isMomo?: boolean;
 }
 
 const PaymentLogo = ({ name, svg, onClick }: { name: string; svg: React.ReactNode; onClick?: () => void }) => (
@@ -64,14 +69,21 @@ const PayPalSvg = () => (
   </svg>
 );
 
+const MoMoSvg = () => (
+  <div className="flex items-center gap-0.5">
+    <span className="text-[10px] font-bold" style={{ color: '#FFCC00' }}>MTN</span>
+    <Phone className="w-3 h-3 text-foreground" />
+  </div>
+);
+
 const PAYMENT_OPTIONS: PaymentMethod[] = [
   { name: 'Visa', svg: <VisaSvg />, methods: ['credit', 'debit'] },
   { name: 'Mastercard', svg: <MastercardSvg />, methods: ['credit', 'debit'] },
   { name: 'Apple Pay', svg: <ApplePaySvg />, methods: ['apple_pay'] },
   { name: 'Google Pay', svg: <GooglePaySvg />, methods: ['google_pay'] },
   { name: 'PayPal', svg: <PayPalSvg />, methods: ['paypal'] },
+  { name: 'MTN MoMo', svg: <MoMoSvg />, methods: ['momo'], isMomo: true },
   { name: 'Klarna', svg: <span className="text-xs font-bold" style={{ color: '#FFB3C7' }}>Klarna</span>, methods: ['klarna'] },
-  { name: 'Affirm', svg: <span className="text-xs font-bold text-foreground">affirm</span>, methods: ['affirm'] },
   { name: 'UPI', svg: <span className="text-[10px] font-bold" style={{ color: '#097939' }}>UPI</span>, methods: ['upi_collect', 'upi_intent'] },
 ];
 
@@ -81,18 +93,69 @@ const planOptions: { value: PlanTier; label: string; price: string }[] = [
 
 const PaymentLogos = () => {
   const { openUpgrade, currentPlan } = useUsageLimits();
+  const { user } = useAuth();
   const [showPlanDialog, setShowPlanDialog] = useState(false);
+  const [showMoMoDialog, setShowMoMoDialog] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<PlanTier>('premium');
   const [selectedMethods, setSelectedMethods] = useState<string[]>([]);
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [momoLoading, setMomoLoading] = useState(false);
 
-  const handleClick = (methods: string[]) => {
-    setSelectedMethods(methods);
-    setShowPlanDialog(true);
+  const handleClick = (pm: PaymentMethod) => {
+    if (pm.isMomo) {
+      setShowMoMoDialog(true);
+    } else {
+      setSelectedMethods(pm.methods);
+      setShowPlanDialog(true);
+    }
   };
 
   const handleConfirm = () => {
     setShowPlanDialog(false);
     openUpgrade(selectedPlan, selectedMethods);
+  };
+
+  const handleMoMoPay = async () => {
+    if (!phoneNumber || phoneNumber.length < 9) {
+      toast.error('Please enter a valid phone number');
+      return;
+    }
+    if (!user) {
+      toast.error('Please sign in first');
+      return;
+    }
+
+    setMomoLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('momo-payment', {
+        body: {
+          amount: '6',
+          currency: 'EUR',
+          phone_number: phoneNumber,
+          user_id: user.id,
+          plan: 'premium',
+          payer_message: 'Imvelo Premium Subscription',
+          payee_note: 'Premium plan payment',
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.status === 'SUCCESSFUL') {
+        toast.success('🎉 Payment successful! Premium activated.');
+        setShowMoMoDialog(false);
+        window.location.href = '/upgrade?success=true';
+      } else if (data?.status === 'FAILED') {
+        toast.error('Payment was declined. Please try again.');
+      } else {
+        toast.info('Payment is still processing. Check back shortly.');
+      }
+    } catch (err) {
+      console.error('MoMo error:', err);
+      toast.error('Payment failed. Please try again.');
+    } finally {
+      setMomoLoading(false);
+    }
   };
 
   const availablePlans = planOptions.filter(p => {
@@ -106,7 +169,7 @@ const PaymentLogos = () => {
         <p className="text-sm font-semibold text-foreground text-center">Pay with your preferred method</p>
         <div className="grid grid-cols-4 gap-2">
           {PAYMENT_OPTIONS.map((pm) => (
-            <PaymentLogo key={pm.name} name={pm.name} svg={pm.svg} onClick={() => handleClick(pm.methods)} />
+            <PaymentLogo key={pm.name} name={pm.name} svg={pm.svg} onClick={() => handleClick(pm)} />
           ))}
         </div>
         <p className="text-[10px] text-muted-foreground text-center">
@@ -114,6 +177,7 @@ const PaymentLogos = () => {
         </p>
       </div>
 
+      {/* Standard payment dialog */}
       <Dialog open={showPlanDialog} onOpenChange={setShowPlanDialog}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
@@ -131,7 +195,7 @@ const PaymentLogos = () => {
                   <Label
                     key={plan.value}
                     htmlFor={plan.value}
-                    className="flex items-center gap-3 p-3 rounded-lg border border-border hover:border-primary cursor-pointer transition-colors has-[&[data-state=checked]]:border-primary has-[&[data-state=checked]]:bg-primary/5"
+                    className="flex items-center gap-3 p-3 rounded-lg border border-border hover:border-primary cursor-pointer transition-colors"
                   >
                     <RadioGroupItem value={plan.value} id={plan.value} />
                     <div className="flex-1">
@@ -147,6 +211,40 @@ const PaymentLogos = () => {
               </Button>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* MTN MoMo dialog */}
+      <Dialog open={showMoMoDialog} onOpenChange={setShowMoMoDialog}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Phone className="w-5 h-5 text-primary" />
+              MTN Mobile Money
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="bg-muted/50 rounded-lg p-3 text-center">
+              <p className="text-lg font-bold text-foreground">Premium Plan — $6.00/mo</p>
+              <p className="text-xs text-muted-foreground">Unlimited access to all features</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="momo-phone">Phone Number (MSISDN)</Label>
+              <Input
+                id="momo-phone"
+                type="tel"
+                placeholder="e.g. 256771234567"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                disabled={momoLoading}
+              />
+              <p className="text-[10px] text-muted-foreground">Enter your MTN number with country code</p>
+            </div>
+            <Button onClick={handleMoMoPay} className="w-full gap-2" disabled={momoLoading || !phoneNumber}>
+              {momoLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Phone className="w-4 h-4" />}
+              {momoLoading ? 'Processing payment...' : 'Pay with MTN MoMo'}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </>
