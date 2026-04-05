@@ -1,4 +1,4 @@
-import { Home, Bug, Cloud, BookOpen, User, Droplets } from 'lucide-react';
+import { Home, Bug, Cloud, BookOpen, User, Droplets, GraduationCap } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -28,6 +28,15 @@ const MobileNav = () => {
             <span className="text-xs">{item.label}</span>
           </NavLink>
         ))}
+        <a
+          href="https://imveloagrischool.vercel.app"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex flex-col items-center justify-center flex-1 h-full text-muted-foreground hover:text-primary transition-colors"
+        >
+          <GraduationCap className="w-5 h-5 mb-1" />
+          <span className="text-xs">AgriSchool</span>
+        </a>
       </div>
     </nav>
   );
