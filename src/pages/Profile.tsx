@@ -428,6 +428,18 @@ const Profile = () => {
               </Button>
             </form>
 
+            <a
+              href="https://imveloagritech.vercel.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full mt-4 inline-flex"
+            >
+              <Button variant="outline" className="w-full gap-2">
+                <ExternalLink className="w-4 h-4" />
+                Learn More About Imvelo
+              </Button>
+            </a>
+
             <Button
               variant="destructive"
               className="w-full mt-4"
