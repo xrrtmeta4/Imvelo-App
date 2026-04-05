@@ -105,6 +105,33 @@ const Upgrade = () => {
 
         <PaymentLogos />
 
+        {/* Security Trust Section */}
+        <Card className="border-green-500/30 bg-green-500/5">
+          <CardContent className="py-5 space-y-4">
+            <div className="flex items-center gap-2 justify-center">
+              <ShieldCheck className="w-5 h-5 text-green-600" />
+              <h3 className="font-semibold text-sm text-foreground">Your Transactions Are Secure</h3>
+            </div>
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div className="flex flex-col items-center gap-1.5">
+                <Lock className="w-4 h-4 text-green-600" />
+                <span className="text-[10px] text-muted-foreground leading-tight">256-bit SSL Encryption</span>
+              </div>
+              <div className="flex flex-col items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-green-600" />
+                <span className="text-[10px] text-muted-foreground leading-tight">PCI DSS Compliant</span>
+              </div>
+              <div className="flex flex-col items-center gap-1.5">
+                <BadgeCheck className="w-4 h-4 text-green-600" />
+                <span className="text-[10px] text-muted-foreground leading-tight">Verified & Protected</span>
+              </div>
+            </div>
+            <p className="text-[11px] text-muted-foreground text-center leading-relaxed">
+              All payments are processed through secure, encrypted channels. Your financial data is never stored on our servers. We use industry-standard security protocols to protect every transaction.
+            </p>
+          </CardContent>
+        </Card>
+
         <p className="text-center text-xs text-muted-foreground pt-4">
           {t('cancelAnytime')}
         </p>
