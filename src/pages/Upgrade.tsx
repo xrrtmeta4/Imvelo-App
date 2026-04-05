@@ -106,23 +106,23 @@ const Upgrade = () => {
         <PaymentLogos />
 
         {/* Security Trust Section */}
-        <Card className="border-green-500/30 bg-green-500/5">
+        <Card className="border-primary/30 bg-primary/5">
           <CardContent className="py-5 space-y-4">
             <div className="flex items-center gap-2 justify-center">
-              <ShieldCheck className="w-5 h-5 text-green-600" />
+              <ShieldCheck className="w-5 h-5 text-primary" />
               <h3 className="font-semibold text-sm text-foreground">Your Transactions Are Secure</h3>
             </div>
             <div className="grid grid-cols-3 gap-3 text-center">
               <div className="flex flex-col items-center gap-1.5">
-                <Lock className="w-4 h-4 text-green-600" />
+                <Lock className="w-4 h-4 text-primary" />
                 <span className="text-[10px] text-muted-foreground leading-tight">256-bit SSL Encryption</span>
               </div>
               <div className="flex flex-col items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-green-600" />
+                <ShieldCheck className="w-4 h-4 text-primary" />
                 <span className="text-[10px] text-muted-foreground leading-tight">PCI DSS Compliant</span>
               </div>
               <div className="flex flex-col items-center gap-1.5">
-                <BadgeCheck className="w-4 h-4 text-green-600" />
+                <BadgeCheck className="w-4 h-4 text-primary" />
                 <span className="text-[10px] text-muted-foreground leading-tight">Verified & Protected</span>
               </div>
             </div>
