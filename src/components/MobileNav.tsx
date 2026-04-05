@@ -1,4 +1,4 @@
-import { Home, Bug, Cloud, BookOpen, User, Droplets } from 'lucide-react';
+import { Home, Bug, Cloud, BookOpen, User, Droplets, GraduationCap } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/hooks/useLanguage';
