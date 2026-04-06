@@ -2,15 +2,22 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { MessageCircle, Send, X, Crown } from 'lucide-react';
+import { MessageCircle, Send, X, Crown, ThumbsUp, ThumbsDown, Brain } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { useAuth } from '@/hooks/useAuth';
 
+interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  knowledgeGraphUsed?: boolean;
+  feedbackGiven?: boolean;
+}
+
 const AIChatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [preferredLanguage, setPreferredLanguage] = useState('en');
@@ -46,25 +53,75 @@ const AIChatbot = () => {
       return;
     }
 
-    const userMessage = { role: 'user' as const, content: input };
+    const userMessage: ChatMessage = { role: 'user', content: input };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setLoading(true);
 
     try {
+      const apiMessages = [...messages, userMessage].map(m => ({ role: m.role, content: m.content }));
       const { data, error } = await supabase.functions.invoke('ai-assistant', {
-        body: { messages: [...messages, userMessage], preferredLanguage }
+        body: { messages: apiMessages, preferredLanguage }
       });
 
       if (error) throw error;
 
-      setMessages(prev => [...prev, { role: 'assistant', content: data.response }]);
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: data.response,
+        knowledgeGraphUsed: data.knowledgeGraphUsed,
+        feedbackGiven: false
+      }]);
       incrementChat();
     } catch (error: any) {
       console.error('Error:', error);
       toast.error('Failed to send message');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleFeedback = async (msgIndex: number, isPositive: boolean) => {
+    if (!user) return;
+    
+    const msg = messages[msgIndex];
+    if (msg.feedbackGiven) return;
+
+    // Mark feedback given
+    setMessages(prev => prev.map((m, i) => 
+      i === msgIndex ? { ...m, feedbackGiven: true } : m
+    ));
+
+    // Find the user message that preceded this assistant message
+    const userMsg = messages[msgIndex - 1];
+    if (!userMsg) return;
+
+    try {
+      // Extract entities from the conversation for graph ingestion
+      const entities: { name: string; nodeType: string }[] = [];
+      const content = userMsg.content + ' ' + msg.content;
+      
+      // Simple entity extraction - the ingest function does fuzzy matching
+      const words = content.split(/[\s,.:;!?]+/).filter(w => w.length > 3);
+      
+      // Submit as manual feedback contribution
+      await supabase.functions.invoke('knowledge-graph-ingest', {
+        body: {
+          contributionType: 'manual_feedback',
+          entities: [{ name: userMsg.content.substring(0, 100), nodeType: 'crop' }],
+          context: { 
+            feedback: isPositive ? 'confirmed' : 'corrected',
+            userQuery: userMsg.content,
+            aiResponse: msg.content.substring(0, 500),
+            knowledgeGraphUsed: msg.knowledgeGraphUsed
+          },
+          userId: user.id
+        }
+      });
+
+      toast.success(isPositive ? 'Thanks for confirming!' : 'Thanks for the feedback!');
+    } catch (err) {
+      console.error('Feedback submission error:', err);
     }
   };
 
@@ -84,7 +141,10 @@ const AIChatbot = () => {
     <Card className="fixed bottom-20 right-4 w-80 z-40 shadow-xl">
       <CardHeader className="flex flex-row items-center justify-between pb-3">
         <div>
-          <CardTitle className="text-base">AI Assistant</CardTitle>
+          <CardTitle className="text-base flex items-center gap-1">
+            AI Assistant
+            <Brain className="w-3 h-3 text-primary" />
+          </CardTitle>
           {!isPremium && (
             <p className="text-xs text-muted-foreground">{remainingChats} daily messages left</p>
           )}
@@ -101,20 +161,49 @@ const AIChatbot = () => {
             </p>
           ) : (
             messages.map((msg, idx) => (
-              <div
-                key={idx}
-                className={`p-2 rounded-lg text-xs ${
-                  msg.role === 'user'
-                    ? 'bg-primary text-primary-foreground ml-8'
-                    : 'bg-accent mr-8'
-                }`}
-              >
-                {msg.role === 'assistant' ? (
-                  <div className="whitespace-pre-line">
-                    {msg.content.replace(/\*+/g, '').trim()}
+              <div key={idx}>
+                <div
+                  className={`p-2 rounded-lg text-xs ${
+                    msg.role === 'user'
+                      ? 'bg-primary text-primary-foreground ml-8'
+                      : 'bg-accent mr-8'
+                  }`}
+                >
+                  {msg.role === 'assistant' ? (
+                    <div>
+                      {msg.knowledgeGraphUsed && (
+                        <span className="inline-flex items-center gap-0.5 text-[10px] text-primary font-medium mb-1">
+                          <Brain className="w-2.5 h-2.5" /> Knowledge Graph
+                        </span>
+                      )}
+                      <div className="whitespace-pre-line">
+                        {msg.content.replace(/\*+/g, '').trim()}
+                      </div>
+                    </div>
+                  ) : (
+                    msg.content
+                  )}
+                </div>
+                {msg.role === 'assistant' && !msg.feedbackGiven && (
+                  <div className="flex gap-1 mt-1 ml-1">
+                    <button
+                      onClick={() => handleFeedback(idx, true)}
+                      className="text-muted-foreground hover:text-primary transition-colors p-0.5"
+                      title="Helpful"
+                    >
+                      <ThumbsUp className="w-3 h-3" />
+                    </button>
+                    <button
+                      onClick={() => handleFeedback(idx, false)}
+                      className="text-muted-foreground hover:text-destructive transition-colors p-0.5"
+                      title="Not helpful"
+                    >
+                      <ThumbsDown className="w-3 h-3" />
+                    </button>
                   </div>
-                ) : (
-                  msg.content
+                )}
+                {msg.role === 'assistant' && msg.feedbackGiven && (
+                  <p className="text-[10px] text-muted-foreground ml-1 mt-0.5">Thanks for the feedback!</p>
                 )}
               </div>
             ))
