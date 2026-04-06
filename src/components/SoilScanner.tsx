@@ -49,6 +49,28 @@ const SoilScanner = () => {
       setResult(data);
       incrementDetection();
       toast.success('Soil analysis complete!');
+
+      // Auto-submit to knowledge graph
+      try {
+        await supabase.functions.invoke('knowledge-graph-ingest', {
+          body: {
+            contributionType: 'scan_confirmation',
+            entities: [
+              { name: data.soilType, nodeType: 'soil_type' }
+            ],
+            context: { 
+              scanType: 'soil', 
+              phEstimate: data.phEstimate, 
+              texture: data.texture, 
+              drainage: data.drainage,
+              confidence: data.confidence 
+            },
+            userId: user.id
+          }
+        });
+      } catch (graphErr) {
+        console.error('Knowledge graph ingest failed (non-fatal):', graphErr);
+      }
     } catch (error: any) {
       console.error('Error:', error);
       toast.error('Analysis failed. Please try again.');

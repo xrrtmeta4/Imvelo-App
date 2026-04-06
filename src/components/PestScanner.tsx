@@ -61,6 +61,29 @@ const PestScanner = () => {
         confidence: identifyData.confidence,
       });
 
+      // Auto-submit to knowledge graph
+      try {
+        await supabase.functions.invoke('knowledge-graph-ingest', {
+          body: {
+            contributionType: 'scan_confirmation',
+            entities: [
+              { name: identifyData.pest_name, nodeType: 'pest' },
+              ...(identifyData.treatment ? [{ name: identifyData.treatment, nodeType: 'treatment' }] : [])
+            ],
+            relationships: identifyData.treatment ? [{
+              sourceName: identifyData.treatment,
+              targetName: identifyData.pest_name,
+              relationship: 'treats',
+              metadata: { confidence: identifyData.confidence, source: 'ai_scan' }
+            }] : [],
+            context: { scanType: 'pest', confidence: identifyData.confidence },
+            userId: user.id
+          }
+        });
+      } catch (graphErr) {
+        console.error('Knowledge graph ingest failed (non-fatal):', graphErr);
+      }
+
       toast.success('Pest identified successfully!');
     } catch (error: any) {
       console.error('Error:', error);
