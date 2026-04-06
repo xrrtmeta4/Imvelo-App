@@ -263,6 +263,141 @@ export type Database = {
         }
         Relationships: []
       }
+      knowledge_contributions: {
+        Row: {
+          context: Json | null
+          contribution_type: string
+          created_at: string
+          edge_relationship: string | null
+          id: string
+          source_node_id: string | null
+          target_node_id: string | null
+          user_id: string
+        }
+        Insert: {
+          context?: Json | null
+          contribution_type: string
+          created_at?: string
+          edge_relationship?: string | null
+          id?: string
+          source_node_id?: string | null
+          target_node_id?: string | null
+          user_id: string
+        }
+        Update: {
+          context?: Json | null
+          contribution_type?: string
+          created_at?: string
+          edge_relationship?: string | null
+          id?: string
+          source_node_id?: string | null
+          target_node_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_contributions_source_node_id_fkey"
+            columns: ["source_node_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_nodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "knowledge_contributions_target_node_id_fkey"
+            columns: ["target_node_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_nodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      knowledge_edges: {
+        Row: {
+          created_at: string
+          id: string
+          metadata: Json | null
+          relationship: Database["public"]["Enums"]["knowledge_relationship"]
+          reported_by_count: number
+          source_node_id: string
+          target_node_id: string
+          updated_at: string
+          weight: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          relationship: Database["public"]["Enums"]["knowledge_relationship"]
+          reported_by_count?: number
+          source_node_id: string
+          target_node_id: string
+          updated_at?: string
+          weight?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          relationship?: Database["public"]["Enums"]["knowledge_relationship"]
+          reported_by_count?: number
+          source_node_id?: string
+          target_node_id?: string
+          updated_at?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_edges_source_node_id_fkey"
+            columns: ["source_node_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_nodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "knowledge_edges_target_node_id_fkey"
+            columns: ["target_node_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_nodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      knowledge_nodes: {
+        Row: {
+          aliases: Json | null
+          confidence_score: number
+          created_at: string
+          id: string
+          interaction_count: number
+          name: string
+          node_type: Database["public"]["Enums"]["knowledge_node_type"]
+          properties: Json | null
+          updated_at: string
+        }
+        Insert: {
+          aliases?: Json | null
+          confidence_score?: number
+          created_at?: string
+          id?: string
+          interaction_count?: number
+          name: string
+          node_type: Database["public"]["Enums"]["knowledge_node_type"]
+          properties?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          aliases?: Json | null
+          confidence_score?: number
+          created_at?: string
+          id?: string
+          interaction_count?: number
+          name?: string
+          node_type?: Database["public"]["Enums"]["knowledge_node_type"]
+          properties?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ledger_entries: {
         Row: {
           amount: number
@@ -756,6 +891,23 @@ export type Database = {
     }
     Enums: {
       app_role: "farmer" | "trader" | "extension_officer"
+      knowledge_node_type:
+        | "crop"
+        | "pest"
+        | "disease"
+        | "treatment"
+        | "soil_type"
+        | "season"
+        | "region"
+      knowledge_relationship:
+        | "affects"
+        | "treats"
+        | "grows_in"
+        | "thrives_in"
+        | "companion_to"
+        | "incompatible_with"
+        | "seasonal_for"
+        | "found_in"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -884,6 +1036,25 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["farmer", "trader", "extension_officer"],
+      knowledge_node_type: [
+        "crop",
+        "pest",
+        "disease",
+        "treatment",
+        "soil_type",
+        "season",
+        "region",
+      ],
+      knowledge_relationship: [
+        "affects",
+        "treats",
+        "grows_in",
+        "thrives_in",
+        "companion_to",
+        "incompatible_with",
+        "seasonal_for",
+        "found_in",
+      ],
     },
   },
 } as const

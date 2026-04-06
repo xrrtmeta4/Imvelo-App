@@ -53,6 +53,29 @@ const AnimalDiseaseScanner = () => {
       setResult(identifyData);
       incrementDetection();
       toast.success('Disease identified successfully!');
+
+      // Auto-submit to knowledge graph
+      try {
+        await supabase.functions.invoke('knowledge-graph-ingest', {
+          body: {
+            contributionType: 'scan_confirmation',
+            entities: [
+              { name: identifyData.disease_name, nodeType: 'disease' },
+              ...(identifyData.treatment ? [{ name: identifyData.treatment, nodeType: 'treatment' }] : [])
+            ],
+            relationships: identifyData.treatment ? [{
+              sourceName: identifyData.treatment,
+              targetName: identifyData.disease_name,
+              relationship: 'treats',
+              metadata: { confidence: identifyData.confidence, animalType: identifyData.animal_type, source: 'ai_scan' }
+            }] : [],
+            context: { scanType: 'animal_disease', animalType: identifyData.animal_type, confidence: identifyData.confidence },
+            userId: user.id
+          }
+        });
+      } catch (graphErr) {
+        console.error('Knowledge graph ingest failed (non-fatal):', graphErr);
+      }
     } catch (error: any) {
       console.error('Error:', error);
       toast.error('Something went wrong. Please try again.');
