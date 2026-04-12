@@ -3,7 +3,7 @@
  import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
  import { Button } from '@/components/ui/button';
  import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
- import { CloudLightning, Loader2, AlertTriangle, TrendingUp, Thermometer, Droplets, Wind, Sun, Sprout, Calendar, Shield } from 'lucide-react';
+ import { CloudLightning, Loader2, AlertTriangle, TrendingUp, Thermometer, Droplets, Wind, Sun, Sprout, Calendar, Shield, Database, Bug } from 'lucide-react';
  import { supabase } from '@/lib/supabase';
  import { toast } from 'sonner';
  import { useAuth } from '@/hooks/useAuth';
@@ -135,12 +135,13 @@
            </CardContent>
          </Card>
  
-         <Tabs defaultValue="outlook" className="w-full">
-           <TabsList className="grid w-full grid-cols-3">
-             <TabsTrigger value="outlook">Outlook</TabsTrigger>
-             <TabsTrigger value="crops">Crops</TabsTrigger>
-             <TabsTrigger value="actions">Actions</TabsTrigger>
-           </TabsList>
+          <Tabs defaultValue="outlook" className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="outlook">Outlook</TabsTrigger>
+              <TabsTrigger value="crops">Crops</TabsTrigger>
+              <TabsTrigger value="actions">Actions</TabsTrigger>
+              <TabsTrigger value="research">Research</TabsTrigger>
+            </TabsList>
  
            <TabsContent value="outlook" className="mt-4 space-y-4">
              {/* Short Term */}
@@ -290,8 +291,98 @@
                  </CardContent>
                </Card>
              )}
-           </TabsContent>
-         </Tabs>
+            </TabsContent>
+
+            <TabsContent value="research" className="mt-4 space-y-4">
+              {/* Current Conditions */}
+              {analysis?.currentConditions && (
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Thermometer className="w-4 h-4" />
+                      Live Conditions
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div className="p-2 bg-muted rounded">
+                        <p className="text-muted-foreground text-xs">Temperature</p>
+                        <p className="font-bold">{analysis.currentConditions.temperature_2m}°C</p>
+                      </div>
+                      <div className="p-2 bg-muted rounded">
+                        <p className="text-muted-foreground text-xs">Humidity</p>
+                        <p className="font-bold">{analysis.currentConditions.relative_humidity_2m}%</p>
+                      </div>
+                      <div className="p-2 bg-muted rounded">
+                        <p className="text-muted-foreground text-xs">Wind Speed</p>
+                        <p className="font-bold">{analysis.currentConditions.wind_speed_10m} km/h</p>
+                      </div>
+                      <div className="p-2 bg-muted rounded">
+                        <p className="text-muted-foreground text-xs">Soil Moisture</p>
+                        <p className="font-bold">{analysis.currentConditions.soil_moisture_0_to_7cm ?? 'N/A'}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Research Insights */}
+              {analysis?.researchInsights && (
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Database className="w-4 h-4" />
+                      Research Insights
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {analysis.researchInsights.dataQuality && (
+                      <div>
+                        <p className="text-xs text-muted-foreground">Data Quality</p>
+                        <p className="text-sm">{analysis.researchInsights.dataQuality}</p>
+                      </div>
+                    )}
+                    {analysis.researchInsights.uncertaintyFactors?.length > 0 && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Uncertainty Factors</p>
+                        {analysis.researchInsights.uncertaintyFactors.map((f: string, i: number) => (
+                          <p key={i} className="text-sm">• {f}</p>
+                        ))}
+                      </div>
+                    )}
+                    {analysis.researchInsights.recommendedMonitoring?.length > 0 && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Recommended Monitoring</p>
+                        {analysis.researchInsights.recommendedMonitoring.map((m: string, i: number) => (
+                          <p key={i} className="text-sm text-primary">→ {m}</p>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Data Harvesting Status */}
+              <Card>
+                <CardContent className="pt-4">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Database className="w-4 h-4 text-green-500" />
+                    <span className="text-muted-foreground">
+                      {analysis?.dataHarvested
+                        ? 'Climate data harvested for future research'
+                        : 'Data collection pending'}
+                    </span>
+                  </div>
+                  {analysis?.knowledgeGraphUsed && (
+                    <div className="flex items-center gap-2 text-sm mt-2">
+                      <Bug className="w-4 h-4 text-primary" />
+                      <span className="text-muted-foreground">Knowledge Graph enriched analysis</span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
  
          <Button onClick={fetchClimateAnalysis} variant="outline" className="w-full" disabled={loading}>
            Refresh Analysis
