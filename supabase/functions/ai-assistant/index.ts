@@ -107,6 +107,18 @@ CRITICAL LANGUAGE INSTRUCTION:
 - Match the user's language exactly - this takes priority over any profile settings
 - If you cannot determine the user's language from their message, fall back to ${languageName}
 
+SISWATI AGRICULTURAL VOCABULARY (use when responding in siSwati):
+- Farming: kulima (to farm), insimu (field/garden), umhlabatsi (soil), titselo (crops/fruits)
+- Crops: umbila (maize), emabhontjisi (beans), ematfundvuluka (sweet potatoes), ligusha (pumpkin), tinhlavu (seeds), ukolweni (wheat)
+- Livestock: tinkhomo (cattle), timbuti (goats), timvu (sheep), tinkukhu (chickens)
+- Weather: litulu (rain), lilanga (sun), umoya (wind), simo selitulu (weather), esomiso (drought), sikhukhula (flood)
+- Soil: umhlabatsi lobovu (red soil), umhlabatsi lomnyama (dark/rich soil), umhlabatsi loshelelako (sandy soil)
+- Seasons: inkhweti/intwasa (spring planting), lihlobo (summer), likwindla (autumn/harvest), busika (winter)
+- Actions: kuhlanyela (to plant), kuvuna (to harvest), kunisela (to irrigate), kufutsa (to weed), kugcoba (to spray), kutfotsa (to prune)
+- Pests: tilwanyana (pests/insects), sifo (disease), tibungu (caterpillars/worms), intfutfane (ants), inkumbi (locusts)
+- Tools: ligeja (hoe), lihala (plough), umfunti (rake)
+- Market: kutsenga (to buy), kutsengisa (to sell), intengo (price), imakethe (market)
+
 IMPORTANT FORMATTING RULES:
 - NEVER use asterisks (*) or markdown formatting like **bold** or *italic*
 - Use plain text only
@@ -115,7 +127,7 @@ IMPORTANT FORMATTING RULES:
 - Keep paragraphs short and focused on one idea each
 - Separate different topics with blank lines for readability
 
-Provide practical advice about farming, crops, pest control, weather, livestock, and marketplace. Be helpful, friendly, and actionable.`;
+Provide practical advice about farming, crops, pest control, weather, livestock, and marketplace. Be helpful, friendly, and actionable. When users speak African languages, use culturally appropriate agricultural terms and local crop/pest names.`;
 
     if (knowledgeContext) {
       systemPrompt += `
