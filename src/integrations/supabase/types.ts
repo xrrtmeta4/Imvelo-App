@@ -44,6 +44,96 @@ export type Database = {
         }
         Relationships: []
       }
+      climate_observations: {
+        Row: {
+          created_at: string
+          crop_impact: string | null
+          humidity: number | null
+          id: string
+          latitude: number
+          longitude: number
+          notes: string | null
+          observation_source: string
+          observed_at: string
+          rainfall_mm: number | null
+          region: string | null
+          soil_moisture: number | null
+          temperature: number | null
+          user_id: string | null
+          weather_code: number | null
+          wind_speed_kmh: number | null
+        }
+        Insert: {
+          created_at?: string
+          crop_impact?: string | null
+          humidity?: number | null
+          id?: string
+          latitude: number
+          longitude: number
+          notes?: string | null
+          observation_source?: string
+          observed_at?: string
+          rainfall_mm?: number | null
+          region?: string | null
+          soil_moisture?: number | null
+          temperature?: number | null
+          user_id?: string | null
+          weather_code?: number | null
+          wind_speed_kmh?: number | null
+        }
+        Update: {
+          created_at?: string
+          crop_impact?: string | null
+          humidity?: number | null
+          id?: string
+          latitude?: number
+          longitude?: number
+          notes?: string | null
+          observation_source?: string
+          observed_at?: string
+          rainfall_mm?: number | null
+          region?: string | null
+          soil_moisture?: number | null
+          temperature?: number | null
+          user_id?: string | null
+          weather_code?: number | null
+          wind_speed_kmh?: number | null
+        }
+        Relationships: []
+      }
+      climate_research_exports: {
+        Row: {
+          created_at: string
+          date_range_end: string | null
+          date_range_start: string | null
+          export_format: string
+          id: string
+          record_count: number | null
+          region_filter: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date_range_end?: string | null
+          date_range_start?: string | null
+          export_format?: string
+          id?: string
+          record_count?: number | null
+          region_filter?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date_range_end?: string | null
+          date_range_start?: string | null
+          export_format?: string
+          id?: string
+          record_count?: number | null
+          region_filter?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       crop_reminders: {
         Row: {
           created_at: string
