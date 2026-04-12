@@ -26,7 +26,9 @@ serve(async (req) => {
       sv: 'Swedish', da: 'Danish', no: 'Norwegian', fi: 'Finnish',
       el: 'Greek', cs: 'Czech', hu: 'Hungarian', ro: 'Romanian',
       bg: 'Bulgarian', hr: 'Croatian', sk: 'Slovak', sl: 'Slovenian',
-      ss: 'siSwati'
+      ss: 'siSwati', zu: 'Zulu', xh: 'Xhosa', st: 'Sesotho',
+      tn: 'Setswana', sw: 'Swahili', am: 'Amharic', ha: 'Hausa',
+      yo: 'Yoruba', ig: 'Igbo', wo: 'Wolof', rw: 'Kinyarwanda'
     };
 
     const languageName = languageNames[preferredLanguage] || 'English';
