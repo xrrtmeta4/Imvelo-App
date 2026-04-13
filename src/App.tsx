@@ -36,11 +36,13 @@ import FarmInventory from "./pages/FarmInventory";
 import CarbonScore from "./pages/CarbonScore";
 import PostHarvestGuide from "./pages/PostHarvestGuide";
 import AfricanMarkets from "./pages/AfricanMarkets";
+import KnowledgeGraphExplorer from "./pages/KnowledgeGraphExplorer";
 import MobileNav from "./components/MobileNav";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import SubscriptionPopup from "./components/SubscriptionPopup";
 import SyncStatusBar from "./components/SyncStatusBar";
 import { SyncProvider } from "./hooks/useOfflineSync";
+import { useInteractionTracker } from "./hooks/useInteractionTracker";
 
 const queryClient = new QueryClient();
 
@@ -58,6 +60,8 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   if (!user) {
     return <Navigate to="/auth" replace />;
   }
+
+  useInteractionTracker();
 
   return (
     <>
@@ -106,6 +110,7 @@ const App = () => (
             <Route path="/carbon-score" element={<ProtectedRoute><CarbonScore /></ProtectedRoute>} />
             <Route path="/post-harvest" element={<ProtectedRoute><PostHarvestGuide /></ProtectedRoute>} />
             <Route path="/african-markets" element={<ProtectedRoute><AfricanMarkets /></ProtectedRoute>} />
+            <Route path="/knowledge-graph" element={<ProtectedRoute><KnowledgeGraphExplorer /></ProtectedRoute>} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/contact" element={<Contact />} />
