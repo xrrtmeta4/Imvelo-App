@@ -8,10 +8,12 @@ import { useUsageLimits, PlanTier } from '@/hooks/useUsageLimits';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/lib/supabase';
-import { Sprout, Crown, Leaf, CloudLightning, Scan, Droplets, Beef, RotateCcw, FlaskConical, Wheat, Bell, Package, TreePine, ShieldCheck, Lock, ChevronDown, ChevronUp, Cloud, Store } from 'lucide-react';
+import { Sprout, Crown, Leaf, CloudLightning, Scan, Droplets, Beef, RotateCcw, FlaskConical, Wheat, Bell, Package, TreePine, ShieldCheck, Lock, ChevronDown, ChevronUp, Cloud, Store, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { trackFeatureUsage } from '@/lib/interactionTracker';
 
 const PLAN_ORDER: PlanTier[] = ['free', 'starter', 'premium'];
 
@@ -52,6 +54,7 @@ const Index = () => {
     { icon: TreePine, label: 'Carbon Score', sub: 'Sustainability', path: '/carbon-score', color: 'bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500/20', iconBg: 'bg-emerald-500/20', iconColor: 'text-emerald-600', requiredPlan: 'premium' },
     { icon: ShieldCheck, label: 'Post-Harvest', sub: 'Reduce losses', path: '/post-harvest', color: 'bg-red-500/10 border-red-500/20 hover:bg-red-500/20', iconBg: 'bg-red-500/20', iconColor: 'text-red-600', requiredPlan: 'premium' },
     { icon: Store, label: 'African Markets', sub: 'Demand & contacts', path: '/african-markets', color: 'bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500/20', iconBg: 'bg-emerald-500/20', iconColor: 'text-emerald-600', requiredPlan: 'free' },
+    { icon: Brain, label: 'Knowledge Graph', sub: 'Explore data', path: '/knowledge-graph', color: 'bg-violet-500/10 border-violet-500/20 hover:bg-violet-500/20', iconBg: 'bg-violet-500/20', iconColor: 'text-violet-600', requiredPlan: 'free' },
   ];
 
   const currentIndex = PLAN_ORDER.indexOf(currentPlan);
@@ -61,6 +64,7 @@ const Index = () => {
   };
 
   const handleFeatureClick = (btn: typeof featureButtons[0]) => {
+    trackFeatureUsage(btn.label);
     if (isLocked(btn.requiredPlan)) {
       navigate('/upgrade');
     } else {
@@ -78,6 +82,7 @@ const Index = () => {
             <div className="bg-primary-foreground/10 p-3 rounded-full">
               <Sprout className="w-10 h-10" />
             </div>
+            <LanguageSwitcher />
           </div>
           <h1 className="text-3xl font-bold mb-2">
             {userName ? `Hi, ${userName}!` : 'Imvelo'}
