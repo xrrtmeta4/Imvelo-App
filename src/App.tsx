@@ -39,6 +39,8 @@ import AfricanMarkets from "./pages/AfricanMarkets";
 import MobileNav from "./components/MobileNav";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import SubscriptionPopup from "./components/SubscriptionPopup";
+import SyncStatusBar from "./components/SyncStatusBar";
+import { SyncProvider } from "./hooks/useOfflineSync";
 
 const queryClient = new QueryClient();
 
@@ -75,6 +77,8 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <LanguageProvider>
+          <SyncProvider>
+          <SyncStatusBar />
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
@@ -108,6 +112,7 @@ const App = () => (
             <Route path="/about" element={<About />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </SyncProvider>
           </LanguageProvider>
         </AuthProvider>
       </BrowserRouter>
