@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { entries, action } = await req.json();
+    const { entries, action, advisorPrompt, currency } = await req.json();
     console.log('Ledger analysis request:', action, 'Entries:', entries?.length);
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
@@ -19,7 +19,6 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY not configured');
     }
 
-    const { advisorPrompt, currency } = await req.json().catch(() => ({})) || {};
     let prompt = '';
     
     if (action === 'advisor') {
