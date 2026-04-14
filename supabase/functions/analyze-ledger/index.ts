@@ -19,9 +19,36 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY not configured');
     }
 
+    const { advisorPrompt, currency } = await req.json().catch(() => ({})) || {};
     let prompt = '';
     
-    if (action === 'analyze') {
+    if (action === 'advisor') {
+      prompt = `You are a world-class farm financial advisor with the combined expertise of 10 PhD-level financial advisors specializing in:
+1. Agricultural economics and farm finance
+2. Tax optimization and compliance for smallholder and commercial farmers
+3. Investment banking and capital allocation for agricultural ventures
+4. Risk management and insurance for farming operations
+5. Cash flow management and working capital optimization
+6. Microfinance and agricultural lending
+7. Commodity trading and hedging strategies
+8. Sustainable finance and ESG in agriculture
+9. International trade finance for agricultural exports
+10. Financial planning and wealth management for farmers
+
+FARMER'S FINANCIAL DATA (Currency: ${currency || 'USD'}):
+${JSON.stringify(entries, null, 2)}
+
+USER'S QUESTION: ${advisorPrompt}
+
+Provide expert-level financial advice that is:
+- Specific to the farmer's actual financial data shown above
+- Actionable with clear next steps
+- Quantified where possible (percentages, amounts, ratios)
+- Risk-aware with both opportunities and warnings
+- Practical for a farmer in Africa
+
+Keep response under 300 words. Use plain text, no markdown.`;
+    } else if (action === 'analyze') {
       // Analyze financial health
       prompt = `You are a farm financial advisor. Analyze these farm ledger entries and provide insights.
 

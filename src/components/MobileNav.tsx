@@ -13,6 +13,7 @@ const MobileNav = () => {
     { to: '/pesticide-calendar', icon: Droplets, label: t('spray') },
     { to: '/ledger', icon: BookOpen, label: t('ledger') },
     { to: '/profile', icon: User, label: t('profile') },
+    { to: '/agrischool', icon: GraduationCap, label: t('school') },
   ];
 
   return (
@@ -37,15 +38,6 @@ const MobileNav = () => {
             )}
           </NavLink>
         ))}
-        <a
-          href="https://imveloagrischool.vercel.app"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex flex-col items-center justify-center h-full text-muted-foreground hover:text-primary transition-colors"
-        >
-          <GraduationCap className="w-[18px] h-[18px] mb-0.5" />
-          <span className="text-[10px] leading-tight truncate">School</span>
-        </a>
       </div>
     </nav>
   );
