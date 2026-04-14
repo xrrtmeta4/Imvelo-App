@@ -9,7 +9,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Plus, Loader2, Trash2, Download, BookOpen, TrendingUp, TrendingDown, Target, AlertTriangle, Brain, Sparkles, Settings, Crown } from 'lucide-react';
+import { Plus, Loader2, Trash2, Download, BookOpen, TrendingUp, TrendingDown, Target, AlertTriangle, Brain, Sparkles, Settings, Crown, GraduationCap } from 'lucide-react';
+import FinancialAdvisor from '@/components/FinancialAdvisor';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useCurrency, currencies } from '@/hooks/useCurrency';
@@ -84,7 +85,7 @@ const DigitalLedgerContent = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [budgetDialogOpen, setBudgetDialogOpen] = useState(false);
   const [currencyDialogOpen, setCurrencyDialogOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'all' | 'income' | 'expense' | 'budgets' | 'ai'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'income' | 'expense' | 'budgets' | 'ai' | 'advisor'>('all');
   const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -816,20 +817,34 @@ const DigitalLedgerContent = () => {
         <Card>
           <CardHeader className="pb-2">
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
-              <TabsList className="grid w-full grid-cols-5">
-                <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="income">In</TabsTrigger>
-                <TabsTrigger value="expense">Out</TabsTrigger>
-                <TabsTrigger value="budgets">Budget</TabsTrigger>
-                <TabsTrigger value="ai" className="gap-1">
+              <TabsList className="grid w-full grid-cols-6">
+                <TabsTrigger value="all" className="text-xs px-1">All</TabsTrigger>
+                <TabsTrigger value="income" className="text-xs px-1">In</TabsTrigger>
+                <TabsTrigger value="expense" className="text-xs px-1">Out</TabsTrigger>
+                <TabsTrigger value="budgets" className="text-xs px-1">Budget</TabsTrigger>
+                <TabsTrigger value="ai" className="gap-0.5 text-xs px-1">
                   <Brain className="w-3 h-3" />
                   AI
+                </TabsTrigger>
+                <TabsTrigger value="advisor" className="gap-0.5 text-xs px-1">
+                  <GraduationCap className="w-3 h-3" />
+                  Advisor
                 </TabsTrigger>
               </TabsList>
             </Tabs>
           </CardHeader>
           <CardContent>
-            {activeTab === 'ai' ? (
+            {activeTab === 'advisor' ? (
+              <FinancialAdvisor 
+                entries={entries.map(e => ({
+                  entry_date: e.entry_date,
+                  entry_type: e.entry_type,
+                  category: e.category,
+                  amount: e.amount,
+                  description: e.description,
+                }))}
+              />
+            ) : activeTab === 'ai' ? (
               <div className="space-y-4">
                 <div className="grid grid-cols-3 gap-2">
                   <Button 
