@@ -37,7 +37,8 @@ import CarbonScore from "./pages/CarbonScore";
 import PostHarvestGuide from "./pages/PostHarvestGuide";
 import AfricanMarkets from "./pages/AfricanMarkets";
 import KnowledgeGraphExplorer from "./pages/KnowledgeGraphExplorer";
-import AgriSchool from "./pages/AgriSchool";
+import Settings from "./pages/Settings";
+import { SettingsProvider } from "./hooks/useSettings";
 import MobileNav from "./components/MobileNav";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import SubscriptionPopup from "./components/SubscriptionPopup";
@@ -82,6 +83,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <LanguageProvider>
+          <SettingsProvider>
           <SyncProvider>
           <SyncStatusBar />
           <Routes>
@@ -112,7 +114,7 @@ const App = () => (
             <Route path="/post-harvest" element={<ProtectedRoute><PostHarvestGuide /></ProtectedRoute>} />
             <Route path="/african-markets" element={<ProtectedRoute><AfricanMarkets /></ProtectedRoute>} />
             <Route path="/knowledge-graph" element={<ProtectedRoute><KnowledgeGraphExplorer /></ProtectedRoute>} />
-            <Route path="/agrischool" element={<ProtectedRoute><AgriSchool /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/contact" element={<Contact />} />
@@ -120,6 +122,7 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
           </SyncProvider>
+          </SettingsProvider>
           </LanguageProvider>
         </AuthProvider>
       </BrowserRouter>

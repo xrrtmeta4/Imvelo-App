@@ -1,4 +1,4 @@
-import { Home, Bug, Cloud, BookOpen, User, Droplets, GraduationCap, WifiOff } from 'lucide-react';
+import { Home, Bug, Cloud, BookOpen, User, Droplets, Settings, WifiOff } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useOfflineSync } from '@/hooks/useOfflineSync';
@@ -13,7 +13,7 @@ const MobileNav = () => {
     { to: '/pesticide-calendar', icon: Droplets, label: t('spray') },
     { to: '/ledger', icon: BookOpen, label: t('ledger') },
     { to: '/profile', icon: User, label: t('profile') },
-    { to: '/agrischool', icon: GraduationCap, label: t('school') },
+    { to: '/settings', icon: Settings, label: t('settings') },
   ];
 
   return (
