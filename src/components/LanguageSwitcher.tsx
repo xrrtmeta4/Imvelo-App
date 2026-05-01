@@ -16,6 +16,23 @@ const LANGUAGES = [
   { code: 'es', label: 'Español', flag: '🇪🇸' },
   { code: 'sw', label: 'Kiswahili', flag: '🇹🇿' },
   { code: 'ss', label: 'siSwati', flag: '🇸🇿' },
+  { code: 'zu', label: 'isiZulu', flag: '🇿🇦' },
+  { code: 'xh', label: 'isiXhosa', flag: '🇿🇦' },
+  { code: 'yo', label: 'Yorùbá', flag: '🇳🇬' },
+  { code: 'ha', label: 'Hausa', flag: '🇳🇬' },
+  { code: 'am', label: 'አማርኛ', flag: '🇪🇹' },
+  { code: 'ig', label: 'Igbo', flag: '🇳🇬' },
+  { code: 'sn', label: 'Shona', flag: '🇿🇼' },
+  { code: 'st', label: 'Sesotho', flag: '🇱🇸' },
+  { code: 'tn', label: 'Setswana', flag: '🇧🇼' },
+  { code: 'lg', label: 'Luganda', flag: '🇺🇬' },
+  { code: 'rw', label: 'Kinyarwanda', flag: '🇷🇼' },
+  { code: 'ti', label: 'ትግርኛ', flag: '🇪🇷' },
+  { code: 'wo', label: 'Wolof', flag: '🇸🇳' },
+  { code: 'ln', label: 'Lingala', flag: '🇨🇩' },
+  { code: 'so', label: 'Soomaali', flag: '🇸🇴' },
+  { code: 'nso', label: 'Sepedi', flag: '🇿🇦' },
+  { code: 'tw', label: 'Twi', flag: '🇬🇭' },
 ];
 
 const LanguageSwitcher = () => {

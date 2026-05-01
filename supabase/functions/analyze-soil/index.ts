@@ -12,9 +12,10 @@ serve(async (req) => {
 
   try {
     const { imageUrl } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const GEMINI_KEY = Deno.env.get('Gemini');
+    const LOVABLE_API_KEY = GEMINI_KEY;
 
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    if (!LOVABLE_API_KEY) throw new Error('Gemini API key is not configured');
 
     const systemPrompt = `You are an expert soil scientist. Analyze soil images to determine:
 1. Soil type (clay, sandy, loam, silt, etc.)
@@ -38,7 +39,7 @@ Respond in JSON:
   "confidence": number (1-100)
 }`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,

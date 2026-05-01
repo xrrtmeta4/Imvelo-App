@@ -12,9 +12,10 @@ serve(async (req) => {
 
   try {
     const { latitude, longitude, crops, soilType } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const GEMINI_KEY = Deno.env.get('Gemini');
+    const LOVABLE_API_KEY = GEMINI_KEY;
 
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    if (!LOVABLE_API_KEY) throw new Error('Gemini API key is not configured');
 
     // Fetch weather data from Open-Meteo (free, no API key needed)
     const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=precipitation_sum,precipitation_probability_max,et0_fao_evapotranspiration,temperature_2m_max,temperature_2m_min,relative_humidity_2m_mean,windspeed_10m_max&past_days=7&forecast_days=7&timezone=auto`;
@@ -84,7 +85,7 @@ ${JSON.stringify(weatherData.daily, null, 2)}
 
 Provide a complete irrigation plan with daily schedule, water deficit analysis, and crop-specific advice.`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
