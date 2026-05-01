@@ -12,10 +12,11 @@
  
    try {
      const { imageUrl, cropType, plantingDate, expectedGrowthStage } = await req.json();
-     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+     const GEMINI_KEY = Deno.env.get('Gemini');
+    const LOVABLE_API_KEY = GEMINI_KEY;
      
      if (!LOVABLE_API_KEY) {
-       throw new Error("LOVABLE_API_KEY is not configured");
+       throw new Error('Gemini API key is not configured');
      }
  
      console.log("Analyzing crop health for:", cropType, "planted:", plantingDate);
@@ -70,7 +71,7 @@
  
  Provide a comprehensive analysis detecting any sub-visible stress, nutrient deficiencies, water stress, or early disease onset. Flag any deviations from expected growth curves.`;
  
-     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+     const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
        method: "POST",
        headers: {
          Authorization: `Bearer ${LOVABLE_API_KEY}`,
