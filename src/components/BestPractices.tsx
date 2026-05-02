@@ -41,7 +41,7 @@ const BestPractices = () => {
       }
       setLoading(true);
       const { data, error } = await supabase.functions.invoke('dynamic-best-practices', {
-        body: { region: location?.country || 'Sub-Saharan Africa', language: lang },
+        body: { region: location?.country_name || 'Sub-Saharan Africa', language: lang },
       });
       if (error) throw error;
       if (data?.practices?.length) {
@@ -72,19 +72,32 @@ const BestPractices = () => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {practices.map((practice) => (
-          <div 
-            key={practice.path}
+        {loading && practices.length === 0 && (
+          <div className="flex items-center justify-center py-6 text-muted-foreground text-sm">
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" /> {t('loading')}
+          </div>
+        )}
+        {practices.map((practice, idx) => (
+          <div
+            key={`${practice.path}-${idx}`}
             onClick={() => navigate(practice.path)}
             className="flex items-start gap-3 p-3 rounded-lg bg-accent/50 hover:bg-accent transition-colors cursor-pointer"
           >
-            <practice.icon className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+            <TrendingUp className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
             <div>
               <p className="font-medium text-sm">{practice.title}</p>
               <p className="text-xs text-muted-foreground mt-1">{practice.description}</p>
             </div>
           </div>
         ))}
+        <button
+          onClick={() => fetchPractices(true)}
+          disabled={loading}
+          className="w-full text-xs text-muted-foreground hover:text-primary flex items-center justify-center gap-1 pt-2"
+        >
+          <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
+          {loading ? t('loading') : t('refresh')}
+        </button>
       </CardContent>
     </Card>
   );
