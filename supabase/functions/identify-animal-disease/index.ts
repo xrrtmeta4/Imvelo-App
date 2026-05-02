@@ -18,7 +18,7 @@ serve(async (req) => {
     const GEMINI_KEY = Deno.env.get('Gemini');
     const USE_LOVABLE = !!LOVABLE_API_KEY_LOV;
     const LOVABLE_API_KEY = LOVABLE_API_KEY_LOV || GEMINI_KEY;
-    const AI_URL = USE_LOVABLE ? 'https://ai.gateway.lovable.dev/v1/chat/completions' : AI_URL;
+    const AI_URL = USE_LOVABLE ? 'https://ai.gateway.lovable.dev/v1/chat/completions' : 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
     const AI_MODEL_PREFIX = USE_LOVABLE ? 'google/' : '';
     if (!LOVABLE_API_KEY) {
       throw new Error('Gemini API key is not configured');
