@@ -91,7 +91,7 @@ Provide 3-5 specific, actionable suggestions based on the spending patterns you 
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-3-flash-preview',
+        model: 'gemini-3-flash-preview',
         messages: [
           { role: 'user', content: prompt }
         ],

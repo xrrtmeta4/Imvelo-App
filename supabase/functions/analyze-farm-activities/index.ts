@@ -53,7 +53,7 @@ Be encouraging but practical. Focus on what they're doing well and how they can 
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-3-flash-preview',
+        model: 'gemini-3-flash-preview',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: `Here are my farm activities from the past period:\n\n${formattedActivities}\n\nPlease analyze these activities and provide insights and recommendations.` }

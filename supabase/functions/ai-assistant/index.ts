@@ -146,7 +146,7 @@ IMPORTANT: When the knowledge graph provides specific data about pests, treatmen
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'gemini-2.5-flash',
         messages: [
           { role: 'system', content: systemPrompt },
           ...messages
