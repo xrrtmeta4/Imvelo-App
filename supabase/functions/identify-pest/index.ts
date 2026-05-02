@@ -15,29 +15,34 @@ serve(async (req) => {
     const { imageUrl } = await req.json();
     console.log('Identifying pest from image:', imageUrl);
 
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     const GEMINI_KEY = Deno.env.get('Gemini');
-    const LOVABLE_API_KEY = GEMINI_KEY;
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY not configured');
-    }
+    const useLovable = !!LOVABLE_API_KEY;
+    const apiKey = LOVABLE_API_KEY || GEMINI_KEY;
+    if (!apiKey) throw new Error('No AI API key configured');
 
-    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
+    const aiUrl = useLovable
+      ? 'https://ai.gateway.lovable.dev/v1/chat/completions'
+      : 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
+    const aiModel = useLovable ? 'google/gemini-2.5-flash' : 'gemini-2.5-flash';
+
+    const response = await fetch(aiUrl, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gemini-2.5-flash',
+        model: aiModel,
         messages: [
           {
             role: 'system',
-            content: 'You are an agricultural expert specializing in pest identification for African crops. Analyze images and provide: pest name in English, treatment recommendation in English, and confidence level (0-100). Always respond in English. Respond in JSON format: {"pest_name": "...", "treatment": "...", "confidence": number}'
+            content: 'You are an agricultural expert specializing in pest identification for African crops. Analyze the image carefully and provide structured JSON only: {"pest_name": "...", "treatment": "...", "confidence": number (0-100), "evidence": ["3-5 short visual cues you observed in the image that justify the identification (e.g. leaf damage pattern, body color, shape of larvae)"], "alternatives": [{"name":"...","likelihood":number}], "severity": "low|moderate|high", "affected_crops": ["..."], "prevention": "short prevention tip"}. Be honest about confidence — lower it when image quality is poor or symptoms are ambiguous.'
           },
           {
             role: 'user',
             content: [
-              { type: 'text', text: 'Identify the pest or disease in this crop image and recommend treatment.' },
+              { type: 'text', text: 'Identify the pest or disease in this crop image, recommend treatment, and list visual evidence supporting your decision.' },
               { type: 'image_url', image_url: { url: imageUrl } }
             ]
           }
@@ -85,6 +90,11 @@ serve(async (req) => {
         confidence: 30
       };
     }
+
+    // Ensure disclaimer is always attached
+    result.disclaimer = "AI-assisted identification — not a substitute for professional agricultural advice. Always verify with a qualified extension officer before applying any chemical treatment.";
+    if (!result.evidence) result.evidence = [];
+    if (!result.alternatives) result.alternatives = [];
 
     return new Response(
       JSON.stringify(result),

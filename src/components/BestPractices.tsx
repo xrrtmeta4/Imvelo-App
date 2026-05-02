@@ -1,32 +1,67 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; 
-import { BookOpen, TrendingUp } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BookOpen, TrendingUp, RefreshCw, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { useLocation as useGeoLocation } from "@/hooks/useLocation";
+
+interface Practice {
+  title: string;
+  description: string;
+  path: string;
+  category?: string;
+}
+
+const CACHE_KEY = "imvelo_best_practices_v2";
+const CACHE_TTL_MS = 1000 * 60 * 60 * 6; // 6 hours
 
 const BestPractices = () => {
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const { location } = useGeoLocation();
+  const [practices, setPractices] = useState<Practice[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const practices = [
-    {
-      title: t('seasonalPlantingGuide'),
-      description: t('learnBestTime'),
-      path: "/planting-guide",
-      icon: TrendingUp
-    },
-    {
-      title: t('soilManagement'),
-      description: t('keepSoilHealthy'),
-      path: "/soil-management",
-      icon: TrendingUp
-    },
-    {
-      title: t('waterConservation'),
-      description: t('tipsWaterManagement'),
-      path: "/water-conservation",
-      icon: TrendingUp
-    }
+  const fallback: Practice[] = [
+    { title: t('seasonalPlantingGuide'), description: t('learnBestTime'), path: '/planting-guide' },
+    { title: t('soilManagement'), description: t('keepSoilHealthy'), path: '/soil-management' },
+    { title: t('waterConservation'), description: t('tipsWaterManagement'), path: '/water-conservation' },
   ];
+
+  const fetchPractices = async (force = false) => {
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (!force && cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed.lang === lang && Date.now() - parsed.ts < CACHE_TTL_MS) {
+          setPractices(parsed.practices);
+          return;
+        }
+      }
+      setLoading(true);
+      const { data, error } = await supabase.functions.invoke('dynamic-best-practices', {
+        body: { region: location?.country || 'Sub-Saharan Africa', language: lang },
+      });
+      if (error) throw error;
+      if (data?.practices?.length) {
+        setPractices(data.practices);
+        localStorage.setItem(CACHE_KEY, JSON.stringify({ practices: data.practices, ts: Date.now(), lang }));
+      } else {
+        setPractices(fallback);
+      }
+    } catch (e) {
+      console.warn('best practices failed', e);
+      setPractices(fallback);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPractices();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang]);
 
   return (
     <Card>

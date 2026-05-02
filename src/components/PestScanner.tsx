@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Bug, Camera, Loader2, Download, Crown, Upload } from 'lucide-react';
+import { Bug, Camera, Loader2, Download, Crown, Upload, AlertTriangle, Eye } from 'lucide-react';
 import ScanningOverlay from './ScanningOverlay';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
@@ -190,7 +190,42 @@ const PestScanner = () => {
             <p className="text-sm"><strong>Pest:</strong> {result.pest_name}</p>
             <p className="text-sm"><strong>Treatment:</strong> {result.treatment}</p>
             <p className="text-sm"><strong>Confidence:</strong> {result.confidence}%</p>
-            
+            {result.severity && (
+              <p className="text-sm"><strong>Severity:</strong> {result.severity}</p>
+            )}
+
+            {Array.isArray(result.evidence) && result.evidence.length > 0 && (
+              <div className="mt-2 p-3 rounded-md bg-background/60 border border-border">
+                <div className="flex items-center gap-2 mb-1">
+                  <Eye className="w-4 h-4 text-primary" />
+                  <p className="text-xs font-semibold text-primary">Why the AI reached this decision</p>
+                </div>
+                <ul className="text-xs list-disc list-inside space-y-0.5">
+                  {result.evidence.map((ev: string, i: number) => (
+                    <li key={i}>{ev}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {Array.isArray(result.alternatives) && result.alternatives.length > 0 && (
+              <div className="mt-2">
+                <p className="text-xs font-semibold text-muted-foreground">Possible alternatives:</p>
+                <ul className="text-xs list-disc list-inside text-muted-foreground">
+                  {result.alternatives.map((a: any, i: number) => (
+                    <li key={i}>{a.name}{a.likelihood ? ` — ${a.likelihood}%` : ''}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <div className="mt-3 p-2 rounded-md bg-yellow-500/10 border border-yellow-500/30 flex gap-2">
+              <AlertTriangle className="w-4 h-4 text-yellow-600 flex-shrink-0 mt-0.5" />
+              <p className="text-[11px] text-yellow-900 dark:text-yellow-200 leading-relaxed">
+                {result.disclaimer || 'AI-assisted identification — not a substitute for professional agricultural advice. Always verify with a qualified extension officer before applying any chemical treatment.'}
+              </p>
+            </div>
+
             <Button 
               onClick={handleDownloadPdf} 
               variant="outline" 
