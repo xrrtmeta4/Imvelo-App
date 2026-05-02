@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUsageLimits, PLANS, PlanTier } from '@/hooks/useUsageLimits';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useCurrency } from '@/hooks/useCurrency';
+import { formatLocalPrice } from '@/lib/fxRates';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import PaymentLogos from '@/components/PaymentLogos';
@@ -11,6 +13,7 @@ import PaymentLogos from '@/components/PaymentLogos';
 const Upgrade = () => {
   const { currentPlan, openUpgrade, trialDaysLeft } = useUsageLimits();
   const { t } = useLanguage();
+  const { selectedCurrency } = useCurrency();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [loadingTier, setLoadingTier] = useState<PlanTier | null>(null);
@@ -69,9 +72,14 @@ const Upgrade = () => {
               </div>
               <div>
                 <CardTitle className="text-lg">{plan.name}</CardTitle>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-2xl font-bold text-foreground">${plan.price.toFixed(2)}</span>
-                  <span className="text-sm text-muted-foreground">{t('perMonth')}</span>
+                <div className="flex flex-col">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-2xl font-bold text-foreground">{formatLocalPrice(plan.price, selectedCurrency)}</span>
+                    <span className="text-sm text-muted-foreground">{t('perMonth')}</span>
+                  </div>
+                  {selectedCurrency.code !== 'USD' && (
+                    <span className="text-[10px] text-muted-foreground">≈ ${plan.price.toFixed(2)} USD · billed in USD</span>
+                  )}
                 </div>
               </div>
             </div>
