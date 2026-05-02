@@ -12,8 +12,12 @@
  
    try {
      const { imageUrl, cropType, plantingDate, expectedGrowthStage } = await req.json();
-     const GEMINI_KEY = Deno.env.get('Gemini');
-    const LOVABLE_API_KEY = GEMINI_KEY;
+     const LOVABLE_API_KEY_LOV = Deno.env.get('LOVABLE_API_KEY');
+    const GEMINI_KEY = Deno.env.get('Gemini');
+    const USE_LOVABLE = !!LOVABLE_API_KEY_LOV;
+    const LOVABLE_API_KEY = LOVABLE_API_KEY_LOV || GEMINI_KEY;
+    const AI_URL = USE_LOVABLE ? 'https://ai.gateway.lovable.dev/v1/chat/completions' : 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
+    const AI_MODEL_PREFIX = USE_LOVABLE ? 'google/' : '';
      
      if (!LOVABLE_API_KEY) {
        throw new Error('Gemini API key is not configured');
@@ -71,14 +75,14 @@
  
  Provide a comprehensive analysis detecting any sub-visible stress, nutrient deficiencies, water stress, or early disease onset. Flag any deviations from expected growth curves.`;
  
-     const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
+     const response = await fetch(AI_URL, {
        method: "POST",
        headers: {
          Authorization: `Bearer ${LOVABLE_API_KEY}`,
          "Content-Type": "application/json",
        },
        body: JSON.stringify({
-         model: "gemini-2.5-pro",
+         model: `${AI_MODEL_PREFIX}gemini-2.5-pro`,
          messages: [
            { role: "system", content: systemPrompt },
            { 
