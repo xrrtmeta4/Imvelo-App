@@ -14,8 +14,12 @@ serve(async (req) => {
     const { entries, action, advisorPrompt, currency } = await req.json();
     console.log('Ledger analysis request:', action, 'Entries:', entries?.length);
 
+    const LOVABLE_API_KEY_LOV = Deno.env.get('LOVABLE_API_KEY');
     const GEMINI_KEY = Deno.env.get('Gemini');
-    const LOVABLE_API_KEY = GEMINI_KEY;
+    const USE_LOVABLE = !!LOVABLE_API_KEY_LOV;
+    const LOVABLE_API_KEY = LOVABLE_API_KEY_LOV || GEMINI_KEY;
+    const AI_URL = USE_LOVABLE ? 'https://ai.gateway.lovable.dev/v1/chat/completions' : AI_URL;
+    const AI_MODEL_PREFIX = USE_LOVABLE ? 'google/' : '';
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY not configured');
     }
@@ -84,14 +88,14 @@ ${JSON.stringify(entries, null, 2)}
 Provide 3-5 specific, actionable suggestions based on the spending patterns you see. Keep each suggestion to 1-2 sentences. Use plain text, no markdown formatting.`;
     }
 
-    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
+    const response = await fetch(AI_URL, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gemini-3-flash-preview',
+        model: `${AI_MODEL_PREFIX}gemini-3-flash-preview`,
         messages: [
           { role: 'user', content: prompt }
         ],

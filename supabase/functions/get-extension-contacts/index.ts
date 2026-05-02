@@ -20,14 +20,14 @@ serve(async (req) => {
       );
     }
 
-    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
+    const response = await fetch(AI_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${Deno.env.get("LOVABLE_API_KEY")}`,
       },
       body: JSON.stringify({
-        model: "gemini-2.5-flash",
+        model: `${AI_MODEL_PREFIX}gemini-2.5-flash`,
         messages: [
           {
             role: "system",

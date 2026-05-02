@@ -160,8 +160,12 @@ serve(async (req) => {
 
   try {
     const { latitude, longitude, crops } = await req.json();
+    const LOVABLE_API_KEY_LOV = Deno.env.get('LOVABLE_API_KEY');
     const GEMINI_KEY = Deno.env.get('Gemini');
-    const LOVABLE_API_KEY = GEMINI_KEY;
+    const USE_LOVABLE = !!LOVABLE_API_KEY_LOV;
+    const LOVABLE_API_KEY = LOVABLE_API_KEY_LOV || GEMINI_KEY;
+    const AI_URL = USE_LOVABLE ? 'https://ai.gateway.lovable.dev/v1/chat/completions' : AI_URL;
+    const AI_MODEL_PREFIX = USE_LOVABLE ? 'google/' : '';
     if (!LOVABLE_API_KEY) throw new Error('Gemini API key is not configured');
 
     const lat = latitude || -26.3054;
@@ -277,14 +281,14 @@ Historical monthly averages (10 years): ${JSON.stringify(historicalData)}
 
 Provide comprehensive climate risk analysis with scenario-based yield projections, adaptive recommendations, and research insights for long-term climate monitoring.`;
 
-    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
+    const response = await fetch(AI_URL, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gemini-2.5-flash",
+        model: `${AI_MODEL_PREFIX}gemini-2.5-flash`,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt }
