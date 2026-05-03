@@ -843,10 +843,14 @@ export type Database = {
           avatar_url: string | null
           country: string | null
           country_code: string | null
+          country_enc: string | null
           created_at: string
+          data_category: string
           full_name: string
+          full_name_enc: string | null
           id: string
           location: string | null
+          phone_enc: string | null
           phone_number: string | null
           preferred_language: string | null
           role: Database["public"]["Enums"]["app_role"]
@@ -856,10 +860,14 @@ export type Database = {
           avatar_url?: string | null
           country?: string | null
           country_code?: string | null
+          country_enc?: string | null
           created_at?: string
+          data_category?: string
           full_name: string
+          full_name_enc?: string | null
           id: string
           location?: string | null
+          phone_enc?: string | null
           phone_number?: string | null
           preferred_language?: string | null
           role?: Database["public"]["Enums"]["app_role"]
@@ -869,10 +877,14 @@ export type Database = {
           avatar_url?: string | null
           country?: string | null
           country_code?: string | null
+          country_enc?: string | null
           created_at?: string
+          data_category?: string
           full_name?: string
+          full_name_enc?: string | null
           id?: string
           location?: string | null
+          phone_enc?: string | null
           phone_number?: string | null
           preferred_language?: string | null
           role?: Database["public"]["Enums"]["app_role"]
@@ -998,6 +1010,14 @@ export type Database = {
       }
     }
     Functions: {
+      get_my_profile_pii: {
+        Args: never
+        Returns: {
+          country: string
+          full_name: string
+          phone_number: string
+        }[]
+      }
       increment_listing_messages: {
         Args: { listing_id: string }
         Returns: undefined
