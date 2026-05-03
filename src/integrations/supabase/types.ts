@@ -46,6 +46,9 @@ export type Database = {
       }
       climate_observations: {
         Row: {
+          admin_region: string | null
+          country: string | null
+          country_code: string | null
           created_at: string
           crop_impact: string | null
           humidity: number | null
@@ -64,6 +67,9 @@ export type Database = {
           wind_speed_kmh: number | null
         }
         Insert: {
+          admin_region?: string | null
+          country?: string | null
+          country_code?: string | null
           created_at?: string
           crop_impact?: string | null
           humidity?: number | null
@@ -82,6 +88,9 @@ export type Database = {
           wind_speed_kmh?: number | null
         }
         Update: {
+          admin_region?: string | null
+          country?: string | null
+          country_code?: string | null
           created_at?: string
           crop_impact?: string | null
           humidity?: number | null
@@ -832,6 +841,8 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          country: string | null
+          country_code: string | null
           created_at: string
           full_name: string
           id: string
@@ -843,6 +854,8 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          country?: string | null
+          country_code?: string | null
           created_at?: string
           full_name: string
           id: string
@@ -854,6 +867,8 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          country?: string | null
+          country_code?: string | null
           created_at?: string
           full_name?: string
           id?: string
@@ -966,7 +981,21 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      climate_observations_by_country: {
+        Row: {
+          admin_region: string | null
+          avg_humidity: number | null
+          avg_soil_moisture: number | null
+          avg_temperature: number | null
+          avg_wind_kmh: number | null
+          country: string | null
+          country_code: string | null
+          day: string | null
+          sample_count: number | null
+          total_rainfall_mm: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       increment_listing_messages: {
