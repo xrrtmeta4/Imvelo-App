@@ -922,6 +922,39 @@ export type Database = {
         }
         Relationships: []
       }
+      ussd_crop_reports: {
+        Row: {
+          created_at: string
+          crop_name: string
+          id: string
+          phone_number: string
+          session_id: string
+          status: string
+          symptoms: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          crop_name: string
+          id?: string
+          phone_number: string
+          session_id: string
+          status?: string
+          symptoms: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          crop_name?: string
+          id?: string
+          phone_number?: string
+          session_id?: string
+          status?: string
+          symptoms?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ussd_sessions: {
         Row: {
           context: Json | null
