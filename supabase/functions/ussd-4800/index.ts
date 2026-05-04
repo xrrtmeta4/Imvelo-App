@@ -1,5 +1,5 @@
-// USSD handler for Imvelo Tech Group service code *4800#
-// Compatible with Africa's Talking USSD gateway.
+// In-app USSD handler for Imvelo Tech Group — service code *4800#
+// Standalone: communicates ONLY with the Imvelo app (no Africa's Talking).
 // Stateless: state is derived by splitting the cumulative `text` on '*'.
 // Every screen is kept under 160 characters and uses CON / END semantics.
 
@@ -8,7 +8,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
 // Mock market prices (per kg) in Eswatini Lilangeni
@@ -33,10 +35,16 @@ function clamp(s: string): string {
 }
 
 function tplain(body: string, status = 200) {
-  return new Response(clamp(body), {
-    status,
-    headers: { ...corsHeaders, "Content-Type": "text/plain" },
-  });
+  const screen = clamp(body);
+  const isEnd = screen.startsWith("END");
+  // Return BOTH text/plain (USSD-style) and JSON (for the in-app simulator)
+  return new Response(
+    JSON.stringify({ screen, end: isEnd }),
+    {
+      status,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    },
+  );
 }
 
 async function logCropIssue(
@@ -88,26 +96,30 @@ serve(async (req) => {
     // Africa's Talking sends application/x-www-form-urlencoded
     let sessionId = "";
     let phoneNumber = "";
-    let serviceCode = "";
+    let serviceCode = "*4800#";
     let text = "";
 
     const contentType = req.headers.get("content-type") || "";
-    if (contentType.includes("application/json")) {
-      const body = await req.json();
-      sessionId = body.sessionId || "";
-      phoneNumber = body.phoneNumber || "";
-      serviceCode = body.serviceCode || "";
-      text = body.text || "";
-    } else {
-      const form = await req.formData();
-      sessionId = (form.get("sessionId") as string) || "";
-      phoneNumber = (form.get("phoneNumber") as string) || "";
-      serviceCode = (form.get("serviceCode") as string) || "";
-      text = (form.get("text") as string) || "";
+    try {
+      if (contentType.includes("application/json")) {
+        const body = await req.json();
+        sessionId = body.sessionId || "";
+        phoneNumber = body.phoneNumber || "";
+        serviceCode = body.serviceCode || serviceCode;
+        text = body.text ?? "";
+      } else {
+        const form = await req.formData();
+        sessionId = (form.get("sessionId") as string) || "";
+        phoneNumber = (form.get("phoneNumber") as string) || "";
+        serviceCode = (form.get("serviceCode") as string) || serviceCode;
+        text = (form.get("text") as string) || "";
+      }
+    } catch {
+      return tplain("END Invalid request body", 400);
     }
 
     if (!sessionId || !phoneNumber) {
-      return tplain("END Invalid request", 400);
+      return tplain("END Missing sessionId or phoneNumber", 400);
     }
 
     // Sanitize: only digits, *, # — but allow spaces/letters for the symptoms free-text screen.
