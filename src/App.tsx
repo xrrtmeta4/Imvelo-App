@@ -38,6 +38,7 @@ import PostHarvestGuide from "./pages/PostHarvestGuide";
 import AfricanMarkets from "./pages/AfricanMarkets";
 import KnowledgeGraphExplorer from "./pages/KnowledgeGraphExplorer";
 import Settings from "./pages/Settings";
+import UssdSimulator from "./pages/UssdSimulator";
 import { SettingsProvider } from "./hooks/useSettings";
 import MobileNav from "./components/MobileNav";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
@@ -115,6 +116,7 @@ const App = () => (
             <Route path="/african-markets" element={<ProtectedRoute><AfricanMarkets /></ProtectedRoute>} />
             <Route path="/knowledge-graph" element={<ProtectedRoute><KnowledgeGraphExplorer /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            <Route path="/ussd" element={<ProtectedRoute><UssdSimulator /></ProtectedRoute>} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/contact" element={<Contact />} />
