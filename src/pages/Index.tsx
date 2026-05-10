@@ -175,6 +175,7 @@ const Index = () => {
         </div>
       </div>
       <AIChatbot />
+      <MarketplacePromoModal />
     </div>
   );
 };
