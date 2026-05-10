@@ -4,6 +4,7 @@ import WeatherTicker from '@/components/WeatherTicker';
 import BestPractices from '@/components/BestPractices';
 import ExtensionServices from '@/components/ExtensionServices';
 import AIChatbot from '@/components/AIChatbot';
+import MarketplacePromoModal from '@/components/MarketplacePromoModal';
 import { useUsageLimits, PlanTier } from '@/hooks/useUsageLimits';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -103,6 +104,24 @@ const Index = () => {
       </header>
 
       <div className="max-w-screen-sm mx-auto px-4 py-6 space-y-6">
+        <a
+          href="https://imvelomarketplace.vercel.app"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-primary/30 bg-gradient-to-r from-primary/10 to-primary/5 hover:from-primary/15 hover:to-primary/10 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary/15">
+              <Store className="w-5 h-5 text-primary" />
+            </div>
+            <div className="text-left">
+              <p className="font-semibold text-sm text-foreground">Imvelo Marketplace</p>
+              <p className="text-[11px] text-muted-foreground">Buy & sell farm produce online</p>
+            </div>
+          </div>
+          <span className="text-xs font-medium text-primary">Open →</span>
+        </a>
+
         <div className="grid grid-cols-2 gap-3">
           {featureButtons.map((btn) => {
             const locked = isLocked(btn.requiredPlan);
@@ -151,30 +170,13 @@ const Index = () => {
           </CollapsibleContent>
         </Collapsible>
 
-        <a
-          href="https://imvelomarketplace.vercel.app"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-primary/30 bg-gradient-to-r from-primary/10 to-primary/5 hover:from-primary/15 hover:to-primary/10 transition-colors"
-        >
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/15">
-              <Store className="w-5 h-5 text-primary" />
-            </div>
-            <div className="text-left">
-              <p className="font-semibold text-sm text-foreground">Imvelo Marketplace</p>
-              <p className="text-[11px] text-muted-foreground">Buy & sell farm produce online</p>
-            </div>
-          </div>
-          <span className="text-xs font-medium text-primary">Open →</span>
-        </a>
-
         <div className="grid grid-cols-1 gap-6">
           <ExtensionServices />
           <BestPractices />
         </div>
       </div>
       <AIChatbot />
+      <MarketplacePromoModal />
     </div>
   );
 };
