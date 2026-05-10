@@ -32,7 +32,7 @@ export const PLANS = {
   },
   premium: {
     name: 'Premium',
-    price: 6,
+    price: 2,
     weeklyDetections: Infinity,
     dailyChats: Infinity,
     maxLedgerEntries: Infinity,
