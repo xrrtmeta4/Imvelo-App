@@ -1,15 +1,23 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
-import promoImage from "@/assets/imvelo-marketplace-promo.png";
+import marketplaceImage from "@/assets/imvelo-marketplace-promo.png";
+import languagesImage from "@/assets/imvelo-languages-promo.png";
 
 const STORAGE_KEY = "imvelo_marketplace_promo_last_shown";
 const SESSION_KEY = "imvelo_marketplace_promo_session_shown";
+const ROTATION_KEY = "imvelo_promo_rotation_index";
 const INTERVAL_MS = 1000 * 60 * 60 * 24 * 3; // every 3 days max
 const FIRST_DELAY_MS = 1000 * 90; // 90s after mount on first eligible visit
 const MARKETPLACE_URL = "https://imvelomarketplace.vercel.app";
 
+const ADS = [
+  { image: marketplaceImage, url: MARKETPLACE_URL, alt: "Imvelo Marketplace - Sell to customers across Africa" },
+  { image: languagesImage, url: "https://imveloappsz.vercel.app", alt: "Imvelo now supports 15 more African languages" },
+];
+
 export const MarketplacePromoModal = () => {
   const [open, setOpen] = useState(false);
+  const [adIndex, setAdIndex] = useState(0);
 
   useEffect(() => {
     if (sessionStorage.getItem(SESSION_KEY)) return;
@@ -17,6 +25,9 @@ export const MarketplacePromoModal = () => {
     if (Date.now() - last < INTERVAL_MS) return;
 
     const timer = setTimeout(() => {
+      const next = (Number(localStorage.getItem(ROTATION_KEY) || 0) + 1) % ADS.length;
+      setAdIndex(next);
+      localStorage.setItem(ROTATION_KEY, String(next));
       setOpen(true);
       sessionStorage.setItem(SESSION_KEY, "1");
       localStorage.setItem(STORAGE_KEY, String(Date.now()));
@@ -26,6 +37,8 @@ export const MarketplacePromoModal = () => {
   }, []);
 
   if (!open) return null;
+
+  const ad = ADS[adIndex];
 
   const close = (e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -49,15 +62,15 @@ export const MarketplacePromoModal = () => {
           <X className="w-4 h-4" />
         </button>
         <a
-          href={MARKETPLACE_URL}
+          href={ad.url}
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => setOpen(false)}
           className="block"
         >
           <img
-            src={promoImage}
-            alt="Imvelo Marketplace - Sell to customers across Africa"
+            src={ad.image}
+            alt={ad.alt}
             className="w-full h-auto block"
           />
         </a>
