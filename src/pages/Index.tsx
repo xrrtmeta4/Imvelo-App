@@ -4,6 +4,7 @@ import WeatherTicker from '@/components/WeatherTicker';
 import BestPractices from '@/components/BestPractices';
 import ExtensionServices from '@/components/ExtensionServices';
 import AIChatbot from '@/components/AIChatbot';
+import MarketplacePromoModal from '@/components/MarketplacePromoModal';
 import { useUsageLimits, PlanTier } from '@/hooks/useUsageLimits';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
