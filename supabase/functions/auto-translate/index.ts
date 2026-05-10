@@ -46,6 +46,7 @@ async function callAI(prompt: string, system: string) {
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+  const reqClone = req.clone();
   try {
     const { texts, targetLang } = await req.json();
     if (!Array.isArray(texts) || !targetLang) {
@@ -83,7 +84,7 @@ serve(async (req) => {
     console.error("auto-translate error:", e);
     // Graceful fallback: return originals so the UI never crashes (rate limits, etc.)
     let texts: string[] = [];
-    try { texts = (await req.clone().json())?.texts || []; } catch { /* ignore */ }
+    try { texts = (await reqClone.json())?.texts || []; } catch { /* ignore */ }
     const translations: Record<string, string> = {};
     for (const t of texts) translations[t] = t;
     const msg = e instanceof Error ? e.message : "Unknown";
