@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { MessageCircle, Send, X, Crown, ThumbsUp, ThumbsDown, Brain } from 'lucide-react';
+import { MessageCircle, Send, X, Crown, ThumbsUp, ThumbsDown, Brain, Trash2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { useUsageLimits } from '@/hooks/useUsageLimits';
@@ -154,6 +154,22 @@ const AIChatbot = () => {
         </Button>
       </CardHeader>
       <CardContent className="space-y-3">
+        {messages.length > 0 && (
+          <div className="flex justify-end">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 text-xs gap-1 text-muted-foreground hover:text-destructive"
+              onClick={() => {
+                setMessages([]);
+                toast.success('Conversation cleared');
+              }}
+            >
+              <Trash2 className="w-3 h-3" />
+              Clear chat
+            </Button>
+          </div>
+        )}
         <div className="h-64 overflow-y-auto space-y-2 border rounded-lg p-2">
           {messages.length === 0 ? (
             <p className="text-xs text-muted-foreground text-center py-8">

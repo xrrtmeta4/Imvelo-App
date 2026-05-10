@@ -180,7 +180,10 @@ const Auth = () => {
             </div>
           </div>
           <CardTitle className="text-2xl font-bold">Imvelo</CardTitle>
-          <CardDescription>{getDescription()}</CardDescription>
+          <h2 className={`mt-2 font-extrabold tracking-tight text-primary ${mode === 'signup' ? 'text-4xl sm:text-5xl' : 'text-xl'}`}>
+            {getTitle()}
+          </h2>
+          <CardDescription className="mt-1">{getDescription()}</CardDescription>
         </CardHeader>
         <CardContent>
           {(mode === 'forgot' || mode === 'reset') && (
