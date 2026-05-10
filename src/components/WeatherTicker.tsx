@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useCurrency } from '@/hooks/useCurrency';
+import { convertFromUSD } from '@/lib/fxRates';
 
 interface CommodityPrice {
   name: string;
@@ -44,6 +45,7 @@ const formatPrice = (price: number) => {
 
 const MarketTicker = () => {
   const [prices, setPrices] = useState<CommodityPrice[]>(FALLBACK);
+  const [usingFallback, setUsingFallback] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<string>("");
   const { selectedCurrency } = useCurrency();
 
@@ -61,16 +63,23 @@ const MarketTicker = () => {
       if (!error && data?.prices?.length) {
         setPrices(data.prices);
         setLastUpdated(data.updated_at);
+        setUsingFallback(false);
+        return;
       }
     } catch {
       // Keep fallback prices
     }
+    setUsingFallback(true);
   };
+
+  const displayPrices = usingFallback
+    ? prices.map((p) => ({ ...p, price: convertFromUSD(p.price, selectedCurrency.code) }))
+    : prices;
 
   return (
     <div className="bg-primary/10 border-b border-primary/20 overflow-hidden">
       <div className="animate-marquee whitespace-nowrap py-2 flex items-center gap-6">
-        {[...prices, ...prices].map((commodity, i) => (
+        {[...displayPrices, ...displayPrices].map((commodity, i) => (
           <div key={`${commodity.name}-${i}`} className="flex items-center gap-1.5 text-sm">
             <span className="font-medium text-foreground">{commodity.name}</span>
             <span className="text-foreground">{selectedCurrency.symbol}{formatPrice(commodity.price)}</span>
