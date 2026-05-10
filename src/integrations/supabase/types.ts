@@ -695,6 +695,8 @@ export type Database = {
         Row: {
           confidence: number | null
           created_at: string
+          hidden_at: string | null
+          hidden_by_user: boolean
           id: string
           image_url: string
           location: string | null
@@ -706,6 +708,8 @@ export type Database = {
         Insert: {
           confidence?: number | null
           created_at?: string
+          hidden_at?: string | null
+          hidden_by_user?: boolean
           id?: string
           image_url: string
           location?: string | null
@@ -717,6 +721,8 @@ export type Database = {
         Update: {
           confidence?: number | null
           created_at?: string
+          hidden_at?: string | null
+          hidden_by_user?: boolean
           id?: string
           image_url?: string
           location?: string | null

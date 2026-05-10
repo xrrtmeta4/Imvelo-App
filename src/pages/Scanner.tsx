@@ -28,6 +28,7 @@ const Scanner = () => {
       .from('pest_reports')
       .select('*')
       .eq('user_id', user?.id)
+      .eq('hidden_by_user', false)
       .order('created_at', { ascending: false })
       .limit(5);
 
@@ -37,7 +38,7 @@ const Scanner = () => {
   const deleteReport = async (reportId: string) => {
     const { error } = await supabase
       .from('pest_reports')
-      .delete()
+      .update({ hidden_by_user: true, hidden_at: new Date().toISOString() })
       .eq('id', reportId)
       .eq('user_id', user?.id);
 
