@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
@@ -37,14 +37,14 @@ const HarvestTracker = () => {
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ crop_name: '', plot_name: '', harvest_date: new Date().toISOString().split('T')[0], quantity: '', unit: 'kg', quality_grade: 'A', season: '', revenue: '', notes: '' });
 
-  useEffect(() => { fetchHarvests(); }, [user]);
-
-  const fetchHarvests = async () => {
+  const fetchHarvests = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase.from('harvests').select('*').eq('user_id', user.id).order('harvest_date', { ascending: false });
     setHarvests((data as any[]) || []);
     setLoading(false);
-  };
+  }, [user]);
+
+  useEffect(() => { fetchHarvests(); }, [fetchHarvests]);
 
   const handleAdd = async () => {
     if (!user || !form.crop_name || !form.quantity) return;

@@ -251,12 +251,14 @@ export const SyncProvider = ({ children }: { children: React.ReactNode }) => {
     if (isOnline && user) {
       syncNow();
     }
-  }, [isOnline, user]);
+  }, [isOnline, user, syncNow]);
 
   // Periodic sync every 2 minutes when online
   useEffect(() => {
     if (!isOnline || !user) return;
-    const interval = setInterval(syncNow, 120_000);
+    const interval = setInterval(() => {
+      syncNow();
+    }, 120_000);
     return () => clearInterval(interval);
   }, [isOnline, user, syncNow]);
 

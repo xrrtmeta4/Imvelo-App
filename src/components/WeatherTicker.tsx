@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useCurrency } from '@/hooks/useCurrency';
@@ -49,13 +49,7 @@ const MarketTicker = () => {
   const [lastUpdated, setLastUpdated] = useState<string>("");
   const { selectedCurrency } = useCurrency();
 
-  useEffect(() => {
-    fetchPrices();
-    const interval = setInterval(fetchPrices, 10 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, [selectedCurrency]);
-
-  const fetchPrices = async () => {
+  const fetchPrices = useCallback(async () => {
     try {
       const { data, error } = await supabase.functions.invoke('commodity-prices', {
         body: { currency: selectedCurrency.code },
@@ -70,7 +64,15 @@ const MarketTicker = () => {
       // Keep fallback prices
     }
     setUsingFallback(true);
-  };
+  }, [selectedCurrency]);
+
+  useEffect(() => {
+    fetchPrices();
+    const interval = setInterval(() => {
+      fetchPrices();
+    }, 10 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [fetchPrices]);
 
   const displayPrices = usingFallback
     ? prices.map((p) => ({ ...p, price: convertFromUSD(p.price, selectedCurrency.code) }))

@@ -36,16 +36,21 @@ export const useInteractionTracker = () => {
   useEffect(() => {
     startSession();
     const start = Date.now();
+    let unloadHandler: (() => void) | null = null;
 
     const handleUnload = () => {
       const minutes = Math.round((Date.now() - start) / 60000);
       if (minutes > 0) trackTimeSpent(minutes);
     };
 
+    unloadHandler = handleUnload;
     window.addEventListener('beforeunload', handleUnload);
+    
     return () => {
-      handleUnload();
-      window.removeEventListener('beforeunload', handleUnload);
+      if (unloadHandler) {
+        handleUnload();
+        window.removeEventListener('beforeunload', handleUnload);
+      }
     };
   }, []);
 };

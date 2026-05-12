@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -85,13 +85,7 @@ const PesticideCalendarContent = () => {
     notes: ''
   });
 
-  useEffect(() => {
-    if (user) {
-      fetchSchedules();
-    }
-  }, [user]);
-
-  const fetchSchedules = async () => {
+  const fetchSchedules = useCallback(async () => {
     const { data, error } = await supabase
       .from('pesticide_schedules')
       .select('*')
@@ -104,7 +98,13 @@ const PesticideCalendarContent = () => {
       setSchedules(data || []);
     }
     setLoading(false);
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchSchedules();
+    }
+  }, [user, fetchSchedules]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -223,9 +223,10 @@ const PesticideCalendarContent = () => {
         return <Badge className="bg-green-500">Done</Badge>;
       case 'skipped':
         return <Badge variant="outline">Skipped</Badge>;
-      default:
+      default: {
         const days = differenceInDays(new Date(schedule.application_date), new Date());
         return <Badge variant="outline">In {days} days</Badge>;
+      }
     }
   };
 

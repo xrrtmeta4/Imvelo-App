@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Bell, BellOff, AlertTriangle, Cloud, Bug, Loader2 } from 'lucide-react';
@@ -26,6 +26,18 @@ const PushNotificationManager = () => {
     planting_reminders: true,
   });
 
+  const checkSubscription = useCallback(async () => {
+    if (!user) return;
+    
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      const subscription = await (registration as ServiceWorkerRegistration).pushManager.getSubscription();
+      setIsSubscribed(!!subscription);
+    } catch (error) {
+      console.error('Error checking subscription:', error);
+    }
+  }, [user]);
+
   useEffect(() => {
     // Check if notifications and service workers are supported
     if ('Notification' in window && 'serviceWorker' in navigator) {
@@ -33,19 +45,7 @@ const PushNotificationManager = () => {
       setPermission(Notification.permission);
       checkSubscription();
     }
-  }, [user]);
-
-  const checkSubscription = async () => {
-    if (!user) return;
-    
-    try {
-      const registration = await navigator.serviceWorker.ready;
-      const subscription = await (registration as any).pushManager.getSubscription();
-      setIsSubscribed(!!subscription);
-    } catch (error) {
-      console.error('Error checking subscription:', error);
-    }
-  };
+  }, [checkSubscription]);
 
   const registerServiceWorker = async () => {
     try {
@@ -189,7 +189,7 @@ const PushNotificationManager = () => {
     }
   };
 
-  const showNotification = (title: string, body: string, icon?: string) => {
+  const showNotification = useCallback((title: string, body: string, icon?: string) => {
     if (permission !== 'granted') return;
 
     const notification = new Notification(title, {
@@ -203,7 +203,7 @@ const PushNotificationManager = () => {
       window.focus();
       notification.close();
     };
-  };
+  }, [permission]);
 
   // Helper function to convert VAPID key
   function urlBase64ToUint8Array(base64String: string): Uint8Array {
@@ -285,7 +285,7 @@ const PushNotificationManager = () => {
       supabase.removeChannel(weatherChannel);
       supabase.removeChannel(pestChannel);
     };
-  }, [user, permission, preferences]);
+  }, [user, permission, preferences, showNotification]);
 
   if (!isSupported) {
     return null;

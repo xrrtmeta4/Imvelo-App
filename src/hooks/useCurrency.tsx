@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation as useGeoLocation } from '@/hooks/useLocation';
 
@@ -77,23 +77,18 @@ export const useCurrency = () => {
   const [selectedCurrency, setSelectedCurrency] = useState<Currency>(currencies[0]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (user) {
-      loadCurrency();
+  const loadCurrency = useCallback(() => {
+    const stored = localStorage.getItem(`${CURRENCY_STORAGE_KEY}_${user?.id}`);
+    if (stored) {
+      const currency = currencies.find(c => c.code === stored);
+      if (currency) {
+        setSelectedCurrency(currency);
+      }
     }
+    setLoading(false);
   }, [user]);
 
-  // Auto-detect currency from location when no stored preference exists
-  useEffect(() => {
-    if (!user || !loading) return;
-    const stored = localStorage.getItem(`${CURRENCY_STORAGE_KEY}_${user.id}`);
-    if (!stored) {
-      // Try to detect from location
-      detectCurrencyFromLocation();
-    }
-  }, [user, location]);
-
-  const detectCurrencyFromLocation = async () => {
+  const detectCurrencyFromLocation = useCallback(async () => {
     try {
       let loc = location;
       if (!loc) {
@@ -111,21 +106,28 @@ export const useCurrency = () => {
           }
         }
       }
-    } catch {
-      // Keep default
+    } catch (error) {
+      console.error('Error detecting currency from location:', error);
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [location, user, getLocation]);
 
-  const loadCurrency = () => {
-    const stored = localStorage.getItem(`${CURRENCY_STORAGE_KEY}_${user?.id}`);
-    if (stored) {
-      const currency = currencies.find(c => c.code === stored);
-      if (currency) {
-        setSelectedCurrency(currency);
-      }
+  useEffect(() => {
+    if (user) {
+      loadCurrency();
     }
-    setLoading(false);
-  };
+  }, [user, loadCurrency]);
+
+  // Auto-detect currency from location when no stored preference exists
+  useEffect(() => {
+    if (!user || !loading) return;
+    const stored = localStorage.getItem(`${CURRENCY_STORAGE_KEY}_${user.id}`);
+    if (!stored) {
+      // Try to detect from location
+      detectCurrencyFromLocation();
+    }
+  }, [user, loading, detectCurrencyFromLocation]);
 
   const setCurrency = (currencyCode: string) => {
     const currency = currencies.find(c => c.code === currencyCode);

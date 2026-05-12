@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
@@ -44,14 +44,14 @@ const LivestockManager = () => {
     breeding_status: '', feed_schedule: '', notes: ''
   });
 
-  useEffect(() => { fetchAnimals(); }, [user]);
-
-  const fetchAnimals = async () => {
+  const fetchAnimals = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase.from('livestock').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
     setAnimals((data as any[]) || []);
     setLoading(false);
-  };
+  }, [user]);
+
+  useEffect(() => { fetchAnimals(); }, [fetchAnimals]);
 
   const handleAdd = async () => {
     if (!user || !form.animal_type) return;

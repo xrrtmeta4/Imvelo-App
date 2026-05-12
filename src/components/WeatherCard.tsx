@@ -46,7 +46,9 @@ const WeatherCard = () => {
             setLoading(false);
             return;
           }
-        } catch { }
+        } catch (e) {
+          console.error('Failed to parse cached weather:', e);
+        }
       }
 
       const locationData = await getLocation({ preferGps: true });

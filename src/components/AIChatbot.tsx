@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,13 +26,7 @@ const AIChatbot = () => {
 
   const remainingChats = getRemainingChats();
 
-  useEffect(() => {
-    if (user) {
-      fetchLanguagePreference();
-    }
-  }, [user]);
-
-  const fetchLanguagePreference = async () => {
+  const fetchLanguagePreference = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase
       .from('profiles')
@@ -43,7 +37,15 @@ const AIChatbot = () => {
     if (data?.preferred_language) {
       setPreferredLanguage(data.preferred_language);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchLanguagePreference();
+    }
+  }, [user, fetchLanguagePreference]);
+
+
 
   const sendMessage = async () => {
     if (!input.trim()) return;

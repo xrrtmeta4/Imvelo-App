@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,11 +11,7 @@ const OfficerDashboard = () => {
   const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    checkAccess();
-  }, [user]);
-
-  const checkAccess = async () => {
+  const checkAccess = useCallback(async () => {
     if (!user) {
       navigate('/auth');
       return;

@@ -41,11 +41,13 @@ const PWAInstallPrompt = () => {
       }
     }
 
+    let timeoutId: NodeJS.Timeout | null = null;
+
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
       // Show prompt after a short delay
-      setTimeout(() => setShowPrompt(true), 3000);
+      timeoutId = setTimeout(() => setShowPrompt(true), 3000);
     };
 
     const handleAppInstalled = () => {
@@ -58,6 +60,7 @@ const PWAInstallPrompt = () => {
     window.addEventListener('appinstalled', handleAppInstalled);
 
     return () => {
+      if (timeoutId) clearTimeout(timeoutId);
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
     };

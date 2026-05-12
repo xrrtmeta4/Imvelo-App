@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
@@ -33,14 +33,14 @@ const MarketPriceAlerts = () => {
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ commodity: '', target_price: '', direction: 'above' });
 
-  useEffect(() => { fetchAlerts(); }, [user]);
-
-  const fetchAlerts = async () => {
+  const fetchAlerts = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase.from('price_alerts').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
     setAlerts((data as any[]) || []);
     setLoading(false);
-  };
+  }, [user]);
+
+  useEffect(() => { fetchAlerts(); }, [fetchAlerts]);
 
   const handleAdd = async () => {
     if (!user || !form.commodity || !form.target_price) return;

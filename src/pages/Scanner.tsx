@@ -5,7 +5,7 @@ import SoilScanner from '@/components/SoilScanner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -17,23 +17,24 @@ const Scanner = () => {
   const { t } = useLanguage();
   const [reports, setReports] = useState<any[]>([]);
 
-  useEffect(() => {
-    if (user) {
-      fetchReports();
-    }
-  }, [user]);
-
-  const fetchReports = async () => {
+  const fetchReports = useCallback(async () => {
+    if (!user) return;
     const { data } = await supabase
       .from('pest_reports')
       .select('*')
-      .eq('user_id', user?.id)
+      .eq('user_id', user.id)
       .eq('hidden_by_user', false)
       .order('created_at', { ascending: false })
       .limit(5);
 
     if (data) setReports(data);
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchReports();
+    }
+  }, [user, fetchReports]);
 
   const deleteReport = async (reportId: string) => {
     const { error } = await supabase

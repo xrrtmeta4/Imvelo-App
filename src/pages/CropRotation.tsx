@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
@@ -38,14 +38,14 @@ const CropRotation = () => {
   const [form, setForm] = useState({ plot_name: '', plot_size: '', plot_unit: 'hectares', current_crop: '', current_season: '', soil_type: '', notes: '' });
   const [rotationEntries, setRotationEntries] = useState<{ season: string; crop: string }[]>([]);
 
-  useEffect(() => { fetchPlots(); }, [user]);
-
-  const fetchPlots = async () => {
+  const fetchPlots = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase.from('crop_rotations').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
     setPlots((data as any[]) || []);
     setLoading(false);
-  };
+  }, [user]);
+
+  useEffect(() => { fetchPlots(); }, [fetchPlots]);
 
   const handleAdd = async () => {
     if (!user || !form.plot_name) return;

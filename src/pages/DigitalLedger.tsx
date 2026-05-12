@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -104,20 +104,12 @@ const DigitalLedgerContent = () => {
     alert_threshold: '80'
   });
 
-  useEffect(() => {
-    if (user) {
-      fetchEntries();
-      fetchBudgets();
-    } else {
-      setLoading(false);
-    }
-  }, [user]);
-
-  const fetchEntries = async () => {
+  const fetchEntries = useCallback(async () => {
+    if (!user) return;
     const { data, error } = await supabase
       .from('ledger_entries')
       .select('*')
-      .eq('user_id', user?.id)
+      .eq('user_id', user.id)
       .order('entry_date', { ascending: false })
       .limit(100);
 
@@ -127,17 +119,28 @@ const DigitalLedgerContent = () => {
       setEntries(data || []);
     }
     setLoading(false);
-  };
+  }, [user]);
 
-  const fetchBudgets = async () => {
+  const fetchBudgets = useCallback(async () => {
+    if (!user) return;
     const { data, error } = await supabase
       .from('budget_limits')
       .select('*')
-      .eq('user_id', user?.id);
+      .eq('user_id', user.id);
 
     if (!error && data) {
       setBudgets(data);
     }
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchEntries();
+      fetchBudgets();
+    } else {
+      setLoading(false);
+    }
+  }, [user, fetchEntries, fetchBudgets]);
   };
 
   const getMonthlySpending = (category: string) => {

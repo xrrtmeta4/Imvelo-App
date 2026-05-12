@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
@@ -70,14 +70,7 @@ export const useUsageLimits = () => {
   const [loadingPremium, setLoadingPremium] = useState(true);
   const [trialDaysLeft, setTrialDaysLeft] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (user) {
-      loadUsage();
-      checkPremiumStatus();
-    }
-  }, [user]);
-
-  const checkPremiumStatus = async () => {
+  const checkPremiumStatus = useCallback(async () => {
     if (!user) {
       setLoadingPremium(false);
       return;
@@ -106,9 +99,9 @@ export const useUsageLimits = () => {
     } finally {
       setLoadingPremium(false);
     }
-  };
+  }, [user]);
 
-  const loadUsage = () => {
+  const loadUsage = useCallback(() => {
     if (!user) return;
     const stored = localStorage.getItem(getStorageKey(user.id));
     if (stored) {
@@ -132,7 +125,14 @@ export const useUsageLimits = () => {
       }
       setUsage(data);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      loadUsage();
+      checkPremiumStatus();
+    }
+  }, [user, loadUsage, checkPremiumStatus]);
 
   const saveUsage = (newUsage: UsageData) => {
     if (!user) return;

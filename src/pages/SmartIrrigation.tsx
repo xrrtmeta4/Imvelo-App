@@ -48,7 +48,7 @@ const SmartIrrigation = () => {
 
   useEffect(() => {
     if (user) fetchAnalysis();
-  }, [user]);
+  }, [user, fetchAnalysis]);
 
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {

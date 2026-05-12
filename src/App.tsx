@@ -52,6 +52,8 @@ const queryClient = new QueryClient();
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
 
+  useInteractionTracker();
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -63,8 +65,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   if (!user) {
     return <Navigate to="/auth" replace />;
   }
-
-  useInteractionTracker();
 
   return (
     <>

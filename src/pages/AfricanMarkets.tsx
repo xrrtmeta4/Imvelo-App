@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useLocation } from '@/hooks/useLocation';
@@ -58,17 +58,17 @@ const AfricanMarkets = () => {
   const [loading, setLoading] = useState(true);
   const [demandFilter, setDemandFilter] = useState<string>('all');
 
-  useEffect(() => {
-    initAndFetch();
-  }, [selectedCurrency]);
-
-  const initAndFetch = async () => {
+  const initAndFetch = useCallback(async () => {
     let loc = location;
     if (!loc) {
       loc = await getLocation();
     }
     fetchMarketData(loc?.country_name);
-  };
+  }, [location, getLocation]);
+
+  useEffect(() => {
+    initAndFetch();
+  }, [initAndFetch, selectedCurrency]);
 
   const fetchMarketData = async (country?: string) => {
     setLoading(true);

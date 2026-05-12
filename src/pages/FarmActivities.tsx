@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -62,14 +62,7 @@ const FarmActivities = () => {
     weather_conditions: ''
   });
 
-  useEffect(() => {
-    if (user) {
-      fetchActivities();
-      fetchLanguagePreference();
-    }
-  }, [user]);
-
-  const fetchLanguagePreference = async () => {
+  const fetchLanguagePreference = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase
       .from('profiles')
@@ -79,13 +72,14 @@ const FarmActivities = () => {
     if (data?.preferred_language) {
       setPreferredLanguage(data.preferred_language);
     }
-  };
+  }, [user]);
 
-  const fetchActivities = async () => {
+  const fetchActivities = useCallback(async () => {
+    if (!user) return;
     const { data, error } = await supabase
       .from('farm_activities')
       .select('*')
-      .eq('user_id', user?.id)
+      .eq('user_id', user.id)
       .order('activity_date', { ascending: false })
       .limit(50);
 
@@ -95,7 +89,14 @@ const FarmActivities = () => {
       setActivities(data || []);
     }
     setLoading(false);
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchActivities();
+      fetchLanguagePreference();
+    }
+  }, [user, fetchActivities, fetchLanguagePreference]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
@@ -36,14 +36,14 @@ const FarmInventory = () => {
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ item_name: '', category: 'Seeds', quantity: '', unit: 'kg', low_stock_threshold: '5', purchase_date: '', expiry_date: '', cost_per_unit: '', supplier: '' });
 
-  useEffect(() => { fetchItems(); }, [user]);
-
-  const fetchItems = async () => {
+  const fetchItems = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase.from('farm_inventory').select('*').eq('user_id', user.id).order('category');
     setItems((data as any[]) || []);
     setLoading(false);
-  };
+  }, [user]);
+
+  useEffect(() => { fetchItems(); }, [fetchItems]);
 
   const handleAdd = async () => {
     if (!user || !form.item_name || !form.quantity) return;

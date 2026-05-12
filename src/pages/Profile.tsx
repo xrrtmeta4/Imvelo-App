@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,18 +42,12 @@ const Profile = () => {
     preferred_language: 'en',
   });
 
-  useEffect(() => {
-    if (user) {
-      fetchProfile();
-      fetchSubscription();
-    }
-  }, [user]);
-
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
+    if (!user) return;
     const { data } = await supabase
       .from('profiles')
       .select('*')
-      .eq('id', user?.id)
+      .eq('id', user.id)
       .single();
 
     if (data) {
@@ -66,9 +60,9 @@ const Profile = () => {
       });
     }
     setLoading(false);
-  };
+  }, [user]);
 
-  const fetchSubscription = async () => {
+  const fetchSubscription = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase
       .from('premium_subscriptions')
@@ -77,7 +71,14 @@ const Profile = () => {
       .eq('status', 'active')
       .maybeSingle();
     setSubscription(data);
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchProfile();
+      fetchSubscription();
+    }
+  }, [user, fetchProfile, fetchSubscription]);
 
   const currentPlan: PlanTier = subscription?.plan || 'free';
   const isPremium = currentPlan !== 'free';

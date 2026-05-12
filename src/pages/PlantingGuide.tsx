@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar, Sprout, Sun, Cloud, Bell, Check } from 'lucide-react';
@@ -43,13 +43,7 @@ const PlantingGuide = () => {
     }
   ];
 
-  useEffect(() => {
-    if (user) {
-      fetchSubscriptions();
-    }
-  }, [user]);
-
-  const fetchSubscriptions = async () => {
+  const fetchSubscriptions = useCallback(async () => {
     const { data, error } = await supabase
       .from('crop_reminders')
       .select('crop_name')
@@ -58,7 +52,13 @@ const PlantingGuide = () => {
     if (!error && data) {
       setSubscribedCrops(data.map(r => r.crop_name));
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchSubscriptions();
+    }
+  }, [user, fetchSubscriptions]);
 
   const toggleReminder = async (cropName: string, startMonth: number, endMonth: number) => {
     if (!user) {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -88,13 +88,14 @@ const ExtensionDirectory = () => {
   const [loadingContacts, setLoadingContacts] = useState(true);
   const [countryName, setCountryName] = useState("");
 
+  const initFetch = useCallback(async () => {
+    const loc = await getLocation();
+    await fetchContacts(loc.country_name, loc.country_code);
+  }, [getLocation]);
+
   useEffect(() => {
-    const init = async () => {
-      const loc = await getLocation();
-      await fetchContacts(loc.country_name, loc.country_code);
-    };
-    init();
-  }, []);
+    initFetch();
+  }, [initFetch]);
 
   const fetchContacts = async (country_name: string, country_code: string) => {
     setLoadingContacts(true);

@@ -11,9 +11,11 @@ const ScanningOverlay = ({ active, label = 'ANALYZING' }: ScanningOverlayProps) 
 
   useEffect(() => {
     if (!active) return;
+    
     const interval = setInterval(() => {
       setScanLinePos(prev => (prev >= 100 ? 0 : prev + 1.5));
     }, 20);
+    
     return () => clearInterval(interval);
   }, [active]);
 
