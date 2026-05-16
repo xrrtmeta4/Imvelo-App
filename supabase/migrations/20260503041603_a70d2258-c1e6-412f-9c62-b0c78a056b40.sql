@@ -1,0 +1,1 @@
+ALTER VIEW public.climate_observations_by_country SET (security_invoker = true);

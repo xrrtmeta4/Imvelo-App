@@ -1,0 +1,2 @@
+-- Enable realtime for marketplace notifications
+ALTER PUBLICATION supabase_realtime ADD TABLE public.marketplace_listings;

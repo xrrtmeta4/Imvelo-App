@@ -1,0 +1,64 @@
+project_id = "ufoketygwxdlusngppef"
+
+[functions.identify-pest]
+verify_jwt = false
+
+[functions.get-weather]
+verify_jwt = false
+
+[functions.ai-assistant]
+verify_jwt = false
+
+[functions.identify-animal-disease]
+verify_jwt = false
+
+[functions.estimate-produce]
+verify_jwt = false
+
+[functions.check-planting-reminders]
+verify_jwt = false
+
+[functions.send-weather-notifications]
+verify_jwt = false
+
+[functions.send-push-notification]
+verify_jwt = false
+
+[functions.send-password-reset]
+verify_jwt = false
+
+[functions.send-sms-notification]
+verify_jwt = false
+
+[functions.send-scheduled-sms]
+verify_jwt = false
+
+[functions.dodo-webhook]
+verify_jwt = false
+
+[functions.ussd-callback]
+verify_jwt = false
+
+[functions.ussd-4800]
+verify_jwt = false
+
+[functions.analyze-ledger]
+verify_jwt = false
+
+[functions.analyze-crop-health]
+verify_jwt = false
+
+[functions.climate-risk-analysis]
+verify_jwt = false
+
+[functions.create-checkout]
+verify_jwt = false
+
+[functions.knowledge-graph-query]
+verify_jwt = false
+
+[functions.knowledge-graph-ingest]
+verify_jwt = false
+
+[functions.dashboard-api]
+verify_jwt = false
