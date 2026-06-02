@@ -41,7 +41,7 @@ const PWAInstallPrompt = () => {
       }
     }
 
-    let timeoutId: NodeJS.Timeout | null = null;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();

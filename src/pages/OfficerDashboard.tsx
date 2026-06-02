@@ -34,7 +34,11 @@ const OfficerDashboard = () => {
     }
 
     fetchReports();
-  };
+  }, [user, navigate]);
+
+  useEffect(() => {
+    checkAccess();
+  }, [checkAccess]);
 
   const fetchReports = async () => {
     try {
