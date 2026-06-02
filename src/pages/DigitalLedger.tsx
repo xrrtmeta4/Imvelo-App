@@ -141,7 +141,6 @@ const DigitalLedgerContent = () => {
       setLoading(false);
     }
   }, [user, fetchEntries, fetchBudgets]);
-  };
 
   const getMonthlySpending = (category: string) => {
     const now = new Date();
