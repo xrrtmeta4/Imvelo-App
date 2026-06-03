@@ -46,7 +46,8 @@ const formatPrice = (price: number) => {
 const MarketTicker = () => {
   const [prices, setPrices] = useState<CommodityPrice[]>(FALLBACK);
   const [usingFallback, setUsingFallback] = useState(true);
-  const [lastUpdated, setLastUpdated] = useState<string>("");
+  const [, setLastUpdated] = useState<string>("");
+  const [index, setIndex] = useState(0);
   const { selectedCurrency } = useCurrency();
 
   const fetchPrices = useCallback(async () => {
@@ -78,11 +79,23 @@ const MarketTicker = () => {
     ? prices.map((p) => ({ ...p, price: convertFromUSD(p.price, selectedCurrency.code) }))
     : prices;
 
+  useEffect(() => {
+    if (displayPrices.length === 0) return;
+    const id = setInterval(() => {
+      setIndex((i) => (i + 1) % displayPrices.length);
+    }, 3000);
+    return () => clearInterval(id);
+  }, [displayPrices.length]);
+
+  const visible = displayPrices.slice(index, index + 3).concat(
+    displayPrices.slice(0, Math.max(0, index + 3 - displayPrices.length))
+  );
+
   return (
-    <div className="bg-primary/10 border-b border-primary/20 overflow-hidden">
-      <div className="animate-marquee whitespace-nowrap py-2 flex items-center gap-6">
-        {[...displayPrices, ...displayPrices].map((commodity, i) => (
-          <div key={`${commodity.name}-${i}`} className="flex items-center gap-1.5 text-sm">
+    <div className="bg-primary/10 border-b border-primary/20 py-2 px-3">
+      <div className="flex items-center gap-4 overflow-x-auto scrollbar-none">
+        {visible.map((commodity, i) => (
+          <div key={`${commodity.name}-${i}`} className="flex items-center gap-1.5 text-sm shrink-0">
             <span className="font-medium text-foreground">{commodity.name}</span>
             <span className="text-foreground">{selectedCurrency.symbol}{formatPrice(commodity.price)}</span>
             <span className="text-xs text-muted-foreground">{commodity.unit}</span>
