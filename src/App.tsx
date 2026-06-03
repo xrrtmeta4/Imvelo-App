@@ -46,6 +46,7 @@ import SubscriptionPopup from "./components/SubscriptionPopup";
 import SyncStatusBar from "./components/SyncStatusBar";
 import { SyncProvider } from "./hooks/useOfflineSync";
 import { useInteractionTracker } from "./hooks/useInteractionTracker";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 const queryClient = new QueryClient();
 
@@ -76,6 +77,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const App = () => (
+  <ErrorBoundary>
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
@@ -130,6 +132,7 @@ const App = () => (
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;
