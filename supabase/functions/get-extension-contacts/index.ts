@@ -20,11 +20,20 @@ serve(async (req) => {
       );
     }
 
+    const LOVABLE_API_KEY_LOV = Deno.env.get('LOVABLE_API_KEY');
+    const GEMINI_KEY = Deno.env.get('Gemini');
+    const USE_LOVABLE = !GEMINI_KEY && !!LOVABLE_API_KEY_LOV;
+    const AI_KEY = GEMINI_KEY || LOVABLE_API_KEY_LOV;
+    const AI_URL = USE_LOVABLE
+      ? 'https://ai.gateway.lovable.dev/v1/chat/completions'
+      : 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
+    const AI_MODEL_PREFIX = USE_LOVABLE ? 'google/' : '';
+
     const response = await fetch(AI_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${Deno.env.get("LOVABLE_API_KEY")}`,
+        "Authorization": `Bearer ${AI_KEY}`,
       },
       body: JSON.stringify({
         model: `${AI_MODEL_PREFIX}gemini-2.5-flash`,
