@@ -11,7 +11,7 @@ async function callAI(messages: any[]) {
   const url = (!gemKey && lovKey)
     ? "https://ai.gateway.lovable.dev/v1/chat/completions"
     : "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
-  const key = lovKey || gemKey;
+  const key = gemKey || lovKey;
   const model = (!gemKey && lovKey) ? "google/gemini-3-flash-preview" : "gemini-2.5-flash";
   if (!key) throw new Error("No AI API key configured");
   const resp = await fetch(url, {
