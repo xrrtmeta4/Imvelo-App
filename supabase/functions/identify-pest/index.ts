@@ -17,8 +17,8 @@ serve(async (req) => {
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     const GEMINI_KEY = Deno.env.get('Gemini');
-    const useLovable = !!LOVABLE_API_KEY;
-    const apiKey = LOVABLE_API_KEY || GEMINI_KEY;
+    const useLovable = !GEMINI_KEY && !!LOVABLE_API_KEY;
+    const apiKey = GEMINI_KEY || LOVABLE_API_KEY;
     if (!apiKey) throw new Error('No AI API key configured');
 
     const aiUrl = useLovable
