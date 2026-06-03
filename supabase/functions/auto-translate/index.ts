@@ -17,11 +17,11 @@ async function callAI(prompt: string, system: string) {
   // Prefer Lovable AI Gateway, fall back to direct Gemini
   const lovKey = Deno.env.get("LOVABLE_API_KEY");
   const gemKey = Deno.env.get("Gemini");
-  const url = lovKey
+  const url = (!gemKey && lovKey)
     ? "https://ai.gateway.lovable.dev/v1/chat/completions"
     : "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
-  const key = lovKey || gemKey;
-  const model = lovKey ? "google/gemini-3-flash-preview" : "gemini-2.5-flash-lite";
+  const key = gemKey || lovKey;
+  const model = (!gemKey && lovKey) ? "google/gemini-3-flash-preview" : "gemini-2.5-flash-lite";
   if (!key) throw new Error("No AI API key configured");
 
   const resp = await fetch(url, {

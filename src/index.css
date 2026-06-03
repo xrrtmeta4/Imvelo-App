@@ -120,18 +120,16 @@ All colors MUST be HSL.
   .animate-marquee {
     animation: marquee 20s linear infinite;
     will-change: transform;
-    transform: translateZ(0);
+    transform: translate3d(0, 0, 0);
+    -webkit-transform: translate3d(0, 0, 0);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
-    perspective: 1000px;
+    contain: layout paint;
+    isolation: isolate;
   }
-  
+
   @keyframes marquee {
-    0% {
-      transform: translateX(0%);
-    }
-    100% {
-      transform: translateX(-50%);
-    }
+    from { transform: translate3d(0, 0, 0); }
+    to   { transform: translate3d(-50%, 0, 0); }
   }
 }
