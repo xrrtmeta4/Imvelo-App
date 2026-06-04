@@ -4,7 +4,7 @@ import WeatherTicker from '@/components/WeatherTicker';
 import BestPractices from '@/components/BestPractices';
 import AIChatbot from '@/components/AIChatbot';
 import MarketplacePromoModal from '@/components/MarketplacePromoModal';
-import { useUsageLimits, PlanTier } from '@/hooks/useUsageLimits';
+import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/lib/supabase';
@@ -13,7 +13,6 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
-import { trackFeatureUsage } from '@/lib/interactionTracker';
 import heroTractor from '@/assets/hero-tractor.jpg.asset.json';
 
 const Index = () => {
