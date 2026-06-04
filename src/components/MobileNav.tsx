@@ -1,4 +1,4 @@
-import { Home, Bug, Cloud, BookOpen, User, Droplets, Settings, WifiOff } from 'lucide-react';
+import { Home, Bug, BookOpen, User, Settings, BarChart3 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useOfflineSync } from '@/hooks/useOfflineSync';
@@ -10,7 +10,7 @@ const MobileNav = () => {
   const navItems = [
     { to: '/', icon: Home, label: t('home') },
     { to: '/scanner', icon: Bug, label: t('scan') },
-    { to: '/pesticide-calendar', icon: Droplets, label: t('spray') },
+    { to: '/analysis', icon: BarChart3, label: 'Analysis' },
     { to: '/ledger', icon: BookOpen, label: t('ledger') },
     { to: '/profile', icon: User, label: t('profile') },
     { to: '/settings', icon: Settings, label: t('settings') },
