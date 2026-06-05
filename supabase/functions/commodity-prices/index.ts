@@ -18,9 +18,35 @@ const FALLBACK_PRICES = [
   { name: "Cocoa", price: 8420, currency: "USD", change: 5.2, unit: "/ton" },
 ];
 
-// In-memory cache per isolate to absorb bursts and reduce AI calls
+const FX_RATES: Record<string, number> = {
+  USD: 1,
+  SZL: 18.2,
+  ZAR: 18.2,
+  EUR: 0.92,
+  GBP: 0.78,
+  KES: 129.5,
+  NGN: 1540,
+  GHS: 15.1,
+  ZMW: 27.2,
+  BWP: 13.7,
+};
+
+// In-memory cache per isolate to keep responses consistent across bursts.
 const cache = new Map<string, { at: number; payload: unknown }>();
 const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+function normalizeCurrency(value: unknown) {
+  return typeof value === 'string' && /^[A-Z]{3}$/.test(value) ? value : 'USD';
+}
+
+function pricesForCurrency(currency: string) {
+  const rate = FX_RATES[currency] ?? 1;
+  return FALLBACK_PRICES.map((price) => ({
+    ...price,
+    currency,
+    price: Number((price.price * rate).toFixed(price.price < 1 ? 3 : 2)),
+  }));
+}
 
 function ok(payload: unknown) {
   return new Response(JSON.stringify(payload), {
@@ -37,7 +63,7 @@ serve(async (req) => {
   let currency = 'USD';
   try {
     const body = await req.json();
-    if (body?.currency) currency = body.currency;
+    currency = normalizeCurrency(body?.currency);
   } catch { /* no body, use default */ }
 
   const cached = cache.get(currency);
@@ -45,58 +71,11 @@ serve(async (req) => {
     return ok(cached.payload);
   }
 
-  try {
-    const LOVABLE_API_KEY_LOV = Deno.env.get('LOVABLE_API_KEY');
-    const GEMINI_KEY = Deno.env.get('Gemini');
-    const USE_LOVABLE = !GEMINI_KEY && !!LOVABLE_API_KEY_LOV;
-    const LOVABLE_API_KEY = GEMINI_KEY || LOVABLE_API_KEY_LOV;
-    const AI_URL = USE_LOVABLE ? 'https://ai.gateway.lovable.dev/v1/chat/completions' : 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
-    const AI_MODEL_PREFIX = USE_LOVABLE ? 'google/' : '';
-    if (!LOVABLE_API_KEY) {
-      return ok({ prices: FALLBACK_PRICES, updated_at: new Date().toISOString(), fallback: true });
-    }
-
-    const today = new Date().toISOString().split('T')[0];
-
-    const response = await fetch(AI_URL, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: `${AI_MODEL_PREFIX}gemini-2.5-flash-lite`,
-        messages: [
-          {
-            role: "system",
-            content: `You are a commodity market data provider. Return ONLY a valid JSON array of current international agricultural commodity prices as of ${today}. Each object must have: name (string), price (number), currency (always "${currency}"), change (number, percent change from yesterday, can be negative), unit (string like "/ton", "/lb", "/cwt", "/bu"). Include these commodities: Maize, Wheat, Soybeans, Rice, Sugar, Coffee, Cotton, Cattle, Palm Oil, Cocoa, Sunflower Oil, Barley. Use realistic current market prices CONVERTED TO ${currency}. Return ONLY the JSON array, no markdown.`
-          },
-          { role: "user", content: `Current agricultural commodity prices for ${today} in ${currency}` }
-        ],
-        temperature: 0.2,
-      }),
-    });
-
-    if (!response.ok) {
-      // Always return 200 with fallback so the client never sees a 4xx/5xx
-      // (avoids the global blank-screen handler firing on a non-critical widget).
-      console.warn('AI gateway non-OK', response.status);
-      const payload = { prices: FALLBACK_PRICES, updated_at: new Date().toISOString(), fallback: true, reason: response.status === 429 ? 'rate_limited' : `ai_${response.status}` };
-      cache.set(currency, { at: Date.now(), payload });
-      return ok(payload);
-    }
-
-    const aiData = await response.json();
-    let content = aiData.choices?.[0]?.message?.content || '[]';
-    content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-
-    const prices = JSON.parse(content);
-    const payload = { prices, updated_at: new Date().toISOString() };
-    cache.set(currency, { at: Date.now(), payload });
-
-    return ok(payload);
-  } catch (error) {
-    console.error('Error fetching commodity prices:', error);
-    return ok({ prices: FALLBACK_PRICES, updated_at: new Date().toISOString(), fallback: true, reason: 'exception' });
-  }
+  const payload = {
+    prices: pricesForCurrency(currency),
+    updated_at: new Date().toISOString(),
+    source: 'stable_baseline',
+  };
+  cache.set(currency, { at: Date.now(), payload });
+  return ok(payload);
 });
