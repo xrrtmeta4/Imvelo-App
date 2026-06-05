@@ -5,9 +5,44 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+const FALLBACK_PRICES = [
+  { name: "Maize", price: 215.5, currency: "USD", change: 1.8, unit: "/ton" },
+  { name: "Wheat", price: 248.3, currency: "USD", change: -0.6, unit: "/ton" },
+  { name: "Soybeans", price: 382.4, currency: "USD", change: 2.1, unit: "/ton" },
+  { name: "Rice", price: 518.0, currency: "USD", change: 0.3, unit: "/ton" },
+  { name: "Sugar", price: 0.224, currency: "USD", change: -1.2, unit: "/lb" },
+  { name: "Coffee", price: 4.82, currency: "USD", change: 3.4, unit: "/lb" },
+  { name: "Cotton", price: 0.72, currency: "USD", change: -0.4, unit: "/lb" },
+  { name: "Cattle", price: 198.5, currency: "USD", change: 0.9, unit: "/cwt" },
+  { name: "Palm Oil", price: 892.0, currency: "USD", change: -1.7, unit: "/ton" },
+  { name: "Cocoa", price: 8420, currency: "USD", change: 5.2, unit: "/ton" },
+];
+
+// In-memory cache per isolate to absorb bursts and reduce AI calls
+const cache = new Map<string, { at: number; payload: unknown }>();
+const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+function ok(payload: unknown) {
+  return new Response(JSON.stringify(payload), {
+    status: 200,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  let currency = 'USD';
+  try {
+    const body = await req.json();
+    if (body?.currency) currency = body.currency;
+  } catch { /* no body, use default */ }
+
+  const cached = cache.get(currency);
+  if (cached && Date.now() - cached.at < CACHE_TTL_MS) {
+    return ok(cached.payload);
   }
 
   try {
@@ -17,13 +52,9 @@ serve(async (req) => {
     const LOVABLE_API_KEY = GEMINI_KEY || LOVABLE_API_KEY_LOV;
     const AI_URL = USE_LOVABLE ? 'https://ai.gateway.lovable.dev/v1/chat/completions' : 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
     const AI_MODEL_PREFIX = USE_LOVABLE ? 'google/' : '';
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
-
-    let currency = 'USD';
-    try {
-      const body = await req.json();
-      if (body?.currency) currency = body.currency;
-    } catch { /* no body, use default */ }
+    if (!LOVABLE_API_KEY) {
+      return ok({ prices: FALLBACK_PRICES, updated_at: new Date().toISOString(), fallback: true });
+    }
 
     const today = new Date().toISOString().split('T')[0];
 
@@ -47,12 +78,12 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limited, try again later" }), {
-          status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
-      }
-      throw new Error(`AI gateway error: ${response.status}`);
+      // Always return 200 with fallback so the client never sees a 4xx/5xx
+      // (avoids the global blank-screen handler firing on a non-critical widget).
+      console.warn('AI gateway non-OK', response.status);
+      const payload = { prices: FALLBACK_PRICES, updated_at: new Date().toISOString(), fallback: true, reason: response.status === 429 ? 'rate_limited' : `ai_${response.status}` };
+      cache.set(currency, { at: Date.now(), payload });
+      return ok(payload);
     }
 
     const aiData = await response.json();
@@ -60,16 +91,12 @@ serve(async (req) => {
     content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
 
     const prices = JSON.parse(content);
+    const payload = { prices, updated_at: new Date().toISOString() };
+    cache.set(currency, { at: Date.now(), payload });
 
-    return new Response(
-      JSON.stringify({ prices, updated_at: new Date().toISOString() }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return ok(payload);
   } catch (error) {
     console.error('Error fetching commodity prices:', error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return ok({ prices: FALLBACK_PRICES, updated_at: new Date().toISOString(), fallback: true, reason: 'exception' });
   }
 });
