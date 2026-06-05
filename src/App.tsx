@@ -44,8 +44,6 @@ import { SettingsProvider } from "./hooks/useSettings";
 import MobileNav from "./components/MobileNav";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import SubscriptionPopup from "./components/SubscriptionPopup";
-import SyncStatusBar from "./components/SyncStatusBar";
-import { SyncProvider } from "./hooks/useOfflineSync";
 import { useInteractionTracker } from "./hooks/useInteractionTracker";
 import ErrorBoundary from "./components/ErrorBoundary";
 
@@ -88,8 +86,6 @@ const App = () => (
         <AuthProvider>
           <LanguageProvider>
           <SettingsProvider>
-          <SyncProvider>
-          <SyncStatusBar />
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
@@ -127,7 +123,6 @@ const App = () => (
             <Route path="/about" element={<About />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
-          </SyncProvider>
           </SettingsProvider>
           </LanguageProvider>
         </AuthProvider>

@@ -6,7 +6,27 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   console.log('Service Worker activated');
-  event.waitUntil(clients.claim());
+  event.waitUntil((async () => {
+    // Kill-switch: purge any stale Workbox/vite-plugin-pwa caches from a
+    // previous offline build so returning users don't get a blank screen
+    // from old precached HTML pointing at deleted JS chunks.
+    try {
+      const keys = await caches.keys();
+      await Promise.all(
+        keys
+          .filter((k) => /workbox|precache|runtime|html-cache|api-cache|weather-cache|image-cache/i.test(k))
+          .map((k) => caches.delete(k))
+      );
+    } catch (_) {}
+    await clients.claim();
+  })());
+});
+
+// Network-only for navigations — never serve stale HTML from cache.
+self.addEventListener('fetch', (event) => {
+  if (event.request.mode === 'navigate') {
+    event.respondWith(fetch(event.request).catch(() => Response.error()));
+  }
 });
 
 self.addEventListener('push', (event) => {

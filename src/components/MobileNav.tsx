@@ -1,11 +1,9 @@
 import { Home, Bug, BookOpen, User, Settings, BarChart3 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLanguage } from '@/hooks/useLanguage';
-import { useOfflineSync } from '@/hooks/useOfflineSync';
 
 const MobileNav = () => {
   const { t } = useLanguage();
-  const { isOnline, pendingCount } = useOfflineSync();
 
   const navItems = [
     { to: '/', icon: Home, label: t('home') },
@@ -28,14 +26,6 @@ const MobileNav = () => {
           >
             <item.icon className="w-[18px] h-[18px] mb-0.5" />
             <span className="text-[10px] leading-tight truncate max-w-full">{item.label}</span>
-            {item.to === '/profile' && !isOnline && (
-              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-amber-500" />
-            )}
-            {item.to === '/ledger' && pendingCount > 0 && (
-              <span className="absolute -top-0.5 right-0 min-w-[14px] h-[14px] rounded-full bg-destructive text-destructive-foreground text-[8px] flex items-center justify-center font-bold px-0.5">
-                {pendingCount > 9 ? '9+' : pendingCount}
-              </span>
-            )}
           </NavLink>
         ))}
       </div>
