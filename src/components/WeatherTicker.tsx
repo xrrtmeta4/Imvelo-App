@@ -58,7 +58,7 @@ const MarketTicker = () => {
       if (!error && data?.prices?.length) {
         setPrices(data.prices);
         setLastUpdated(data.updated_at);
-        setUsingFallback(false);
+        setUsingFallback(Boolean(data.fallback));
         return;
       }
     } catch {
