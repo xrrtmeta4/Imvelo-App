@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, CloudLightning, Droplets } from 'lucide-react';
+import { ArrowLeft, CloudLightning, Droplets, Leaf } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -20,12 +20,21 @@ const Analysis = () => {
     },
     {
       icon: Droplets,
-      title: t('irrigation'),
-      desc: t('rainWaterAdvisor'),
+      title: 'Smart Irrigation Planner',
+      desc: '7-day rainfall analysis with watering schedule and water-saving tips.',
       path: '/smart-irrigation',
       iconBg: 'bg-blue-500/15',
       iconColor: 'text-blue-500',
       border: 'border-blue-500/20',
+    },
+    {
+      icon: Leaf,
+      title: 'Carbon Score & Analysis',
+      desc: 'Estimate your farm carbon footprint and find sustainability opportunities.',
+      path: '/carbon-score',
+      iconBg: 'bg-emerald-500/15',
+      iconColor: 'text-emerald-600',
+      border: 'border-emerald-500/20',
     },
   ];
 

@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react';
 import WeatherCard from '@/components/WeatherCard';
 import WeatherTicker from '@/components/WeatherTicker';
-import BestPractices from '@/components/BestPractices';
 import AIChatbot from '@/components/AIChatbot';
 import MarketplacePromoModal from '@/components/MarketplacePromoModal';
 import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/lib/supabase';
-import { Sprout, Crown, ChevronDown, ChevronUp, Cloud, Store } from 'lucide-react';
+import { Sprout, Crown, ChevronDown, ChevronUp, Cloud, Store, Users, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -116,7 +115,25 @@ const Index = () => {
         </Collapsible>
 
         <div className="grid grid-cols-1 gap-6">
-          <BestPractices />
+          <button
+            onClick={() => navigate('/extension-directory')}
+            className="w-full text-left rounded-xl border border-border bg-card p-4 hover:bg-accent/50 transition-colors"
+          >
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-primary/15">
+                <Users className="w-5 h-5 text-primary" />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-sm text-foreground">Extension Services</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Contacts for agricultural extension officers across every African country.
+                </p>
+                <span className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-primary">
+                  <Phone className="w-3 h-3" /> Find an officer →
+                </span>
+              </div>
+            </div>
+          </button>
         </div>
       </div>
       <AIChatbot />
