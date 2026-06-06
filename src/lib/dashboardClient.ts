@@ -17,6 +17,7 @@ export const dashboardSupabase = createClient(DASHBOARD_URL, DASHBOARD_ANON_KEY,
   auth: {
     persistSession: false,
     autoRefreshToken: false,
+    storageKey: 'imvelo-dashboard-auth',
   },
 });
 
