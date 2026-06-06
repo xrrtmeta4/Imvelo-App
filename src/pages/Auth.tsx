@@ -32,7 +32,7 @@ const Auth = () => {
     full_name: '',
     phone: '',
     country: '',
-    role: 'farmer' as 'farmer' | 'trader' | 'extension_officer',
+    role: 'farmer' as 'farmer' | 'trader',
   });
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -250,7 +250,6 @@ const Auth = () => {
                     <SelectContent>
                       <SelectItem value="farmer">{t('farmer')}</SelectItem>
                       <SelectItem value="trader">{t('trader')}</SelectItem>
-                      <SelectItem value="extension_officer">{t('extensionOfficer')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
