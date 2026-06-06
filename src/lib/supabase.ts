@@ -16,9 +16,27 @@ if (supabaseUrl && supabaseAnonKey) {
 	// crashes. Call sites will receive predictable failures they can handle.
 	console.warn('Supabase not configured: VITE_SUPABASE_URL or VITE_SUPABASE_PUBLISHABLE_KEY is missing.');
 	const noop = async () => ({ data: null, error: new Error('Supabase not configured') });
+	const queryBuilder: any = {
+		select: () => queryBuilder,
+		insert: () => queryBuilder,
+		update: () => queryBuilder,
+		delete: () => queryBuilder,
+		eq: () => queryBuilder,
+		neq: () => queryBuilder,
+		gte: () => queryBuilder,
+		lte: () => queryBuilder,
+		order: () => queryBuilder,
+		limit: () => queryBuilder,
+		single: noop,
+		maybeSingle: noop,
+		then: (resolve: any) => Promise.resolve(noop()).then(resolve),
+	};
 	supabase = {
 		auth: {
 			signIn: noop,
+			signUp: noop,
+			signInWithPassword: noop,
+			signInWithOAuth: noop,
 			signOut: noop,
 			user: null,
 			// onAuthStateChange should return an object matching the real client
@@ -26,10 +44,11 @@ if (supabaseUrl && supabaseAnonKey) {
 			onAuthStateChange: (cb: any) => ({ data: { subscription: { unsubscribe: () => {} } } }),
 			getSession: async () => ({ data: { session: null }, error: null }),
 		},
-		from: () => ({ select: noop, insert: noop, update: noop, delete: noop }),
+		from: () => queryBuilder,
+		functions: { invoke: noop },
 		rpc: noop,
 		storage: {
-			from: () => ({ download: noop, upload: noop }),
+			from: () => ({ download: noop, upload: noop, getPublicUrl: () => ({ data: { publicUrl: '' } }) }),
 		},
 	} as any;
 }
