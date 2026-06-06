@@ -146,6 +146,18 @@ Deno.serve(async (req) => {
   try {
     const apiKey = Deno.env.get('AFRICASTALKING_API_KEY');
     const username = Deno.env.get('AFRICASTALKING_USERNAME');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+
+    // Restrict to internal/service-role callers only (cron uses service key)
+    const authHeader = req.headers.get('Authorization') || '';
+    const token = authHeader.replace(/^Bearer\s+/i, '');
+    if (!token || token !== supabaseServiceKey) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     if (!apiKey || !username) {
       console.error('Africa\'s Talking credentials not configured');
       return new Response(
@@ -155,7 +167,6 @@ Deno.serve(async (req) => {
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Get all users with phone numbers

@@ -12,17 +12,38 @@ serve(async (req) => {
   }
 
   try {
+    // Require authenticated user; derive user_id from JWT, never from body
+    const authHeader = req.headers.get('Authorization') || '';
+    if (!authHeader.toLowerCase().startsWith('bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    const authClient = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+    const { data: userData, error: userErr } = await authClient.auth.getUser();
+    if (userErr || !userData?.user) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    const verifiedUserId = userData.user.id;
+
     const { 
       contributionType, // scan_confirmation | activity_log | harvest_report | manual_feedback
       entities, // array of { name, nodeType }
       relationships, // optional array of { sourceName, targetName, relationship }
       context, // { location, season, outcome, ... }
-      userId 
     } = await req.json();
 
-    if (!contributionType || !entities || !userId) {
+    if (!contributionType || !entities) {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields: contributionType, entities, userId' }),
+        JSON.stringify({ error: 'Missing required fields: contributionType, entities' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -146,7 +167,7 @@ serve(async (req) => {
     await supabase
       .from('knowledge_contributions')
       .insert({
-        user_id: userId,
+        user_id: verifiedUserId,
         contribution_type: contributionType,
         source_node_id: sourceNode?.id || null,
         target_node_id: targetNode?.id || null,

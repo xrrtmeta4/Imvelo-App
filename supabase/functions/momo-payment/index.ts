@@ -12,11 +12,33 @@ serve(async (req) => {
   }
 
   try {
-    const { amount, currency, phone_number, payer_message, payee_note, user_id, plan } = await req.json();
-
-    if (!amount || !phone_number || !user_id) {
+    // Require authenticated user; ignore client-supplied user_id
+    const authHeader = req.headers.get('Authorization') || '';
+    if (!authHeader.toLowerCase().startsWith('bearer ')) {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields: amount, phone_number, user_id' }),
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    const authClient = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+    const { data: userData, error: userErr } = await authClient.auth.getUser();
+    if (userErr || !userData?.user) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    const user_id = userData.user.id;
+
+    const { amount, currency, phone_number, payer_message, payee_note, plan } = await req.json();
+
+    if (!amount || !phone_number) {
+      return new Response(
+        JSON.stringify({ error: 'Missing required fields: amount, phone_number' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
