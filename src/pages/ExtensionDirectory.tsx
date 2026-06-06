@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Phone, Mail, MapPin, Search, Users, Building2, Loader2, Globe } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "@/hooks/useLocation";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
 const COUNTRIES = [
