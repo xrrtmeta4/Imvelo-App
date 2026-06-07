@@ -101,7 +101,10 @@ const PestScanner = () => {
       data: {
         pest_name: result.pest_name,
         treatment: result.treatment,
-        confidence: `${result.confidence}%`
+        confidence: `${result.confidence}%`,
+        ...(result.severity ? { severity: result.severity } : {}),
+        ...(Array.isArray(result.evidence) && result.evidence.length ? { evidence: result.evidence } : {}),
+        disclaimer: result.disclaimer || 'AI-assisted identification — not a substitute for professional agricultural advice. Always verify with a qualified extension officer before applying any chemical treatment.'
       }
     });
   };
