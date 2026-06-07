@@ -8,6 +8,10 @@
  import { toast } from 'sonner';
  import { useAuth } from '@/hooks/useAuth';
  import { useLocation } from '@/hooks/useLocation';
+import {
+  ResponsiveContainer, ComposedChart, Line, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid,
+  BarChart, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
+} from 'recharts';
  
  const ClimateRiskContent = () => {
    const { user } = useAuth();
@@ -61,6 +65,104 @@
      }
    };
  
+  // ---- Chart data builders -------------------------------------------------
+  const forecastChartData = (() => {
+    const f = analysis?.forecastData;
+    if (!f?.time) return [];
+    return f.time.map((d: string, i: number) => ({
+      day: new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+      tMax: f.temperature_2m_max?.[i],
+      tMin: f.temperature_2m_min?.[i],
+      rain: f.precipitation_sum?.[i] ?? 0,
+      rainProb: f.precipitation_probability_max?.[i] ?? 0,
+    }));
+  })();
+
+  const eventChartData = analysis?.extremeEventProbabilities
+    ? Object.entries(analysis.extremeEventProbabilities).map(([k, v]: any) => ({
+        event: k.charAt(0).toUpperCase() + k.slice(1),
+        probability: Math.round((v.probability || 0) * 100),
+        severity: v.severity,
+      }))
+    : [];
+
+  const climatologyData = analysis?.historicalMonthly
+    ? Object.entries(analysis.historicalMonthly).map(([m, v]: any) => ({
+        month: new Date(2000, Number(m), 1).toLocaleString(undefined, { month: 'short' }),
+        temp: Number((v.avgTemp ?? 0).toFixed(1)),
+        rain: Number((v.avgPrecip ?? 0).toFixed(0)),
+      }))
+    : [];
+
+  const outlooks = analysis?.outlooks || {
+    twoWeeks: analysis?.shortTermOutlook,
+    threeMonths: analysis?.midTermOutlook,
+    sixMonths: null,
+    oneYear: analysis?.longTermOutlook,
+  };
+
+  const renderOutlook = (o: any) => {
+    if (!o) return <p className="text-sm text-muted-foreground">No data available for this horizon yet.</p>;
+    return (
+      <div className="space-y-3">
+        {o.conditions && <p className="text-sm">{o.conditions}</p>}
+        <div className="grid grid-cols-2 gap-2 text-xs">
+          {o.tempTrend && (
+            <div className="p-2 bg-muted rounded">
+              <p className="text-muted-foreground">Temperature</p>
+              <p className="font-semibold">{o.tempTrend}</p>
+            </div>
+          )}
+          {o.rainfallTrend && (
+            <div className="p-2 bg-muted rounded">
+              <p className="text-muted-foreground">Rainfall</p>
+              <p className="font-semibold">{o.rainfallTrend}</p>
+            </div>
+          )}
+          {o.yieldProjection && (
+            <div className="p-2 bg-muted rounded col-span-2">
+              <p className="text-muted-foreground">Yield Projection</p>
+              <p className="font-semibold text-primary">{o.yieldProjection}</p>
+            </div>
+          )}
+        </div>
+        {o.farmingOpportunities?.length > 0 && (
+          <div>
+            <p className="text-xs text-muted-foreground mb-1">Opportunities</p>
+            <div className="flex flex-wrap gap-1">
+              {o.farmingOpportunities.map((x: string, i: number) => (
+                <span key={i} className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">{x}</span>
+              ))}
+            </div>
+          </div>
+        )}
+        {o.risks?.length > 0 && (
+          <div>
+            <p className="text-xs text-muted-foreground mb-1">Risks</p>
+            <div className="flex flex-wrap gap-1">
+              {o.risks.map((x: string, i: number) => (
+                <span key={i} className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">{x}</span>
+              ))}
+            </div>
+          </div>
+        )}
+        {o.climateTrends?.length > 0 && (
+          <ul className="text-sm space-y-1">
+            {o.climateTrends.map((t: string, i: number) => <li key={i}>• {t}</li>)}
+          </ul>
+        )}
+        {o.suitabilityChanges?.length > 0 && (
+          <div>
+            <p className="text-xs text-muted-foreground mb-1">Crop suitability shifts</p>
+            <ul className="text-sm space-y-1">
+              {o.suitabilityChanges.map((t: string, i: number) => <li key={i}>→ {t}</li>)}
+            </ul>
+          </div>
+        )}
+      </div>
+    );
+  };
+
    if (loading) {
      return (
        <div className="min-h-screen bg-background pb-20">
@@ -108,7 +210,35 @@
            </CardContent>
          </Card>
  
-         {/* Extreme Event Probabilities */}
+          {/* 16-day forecast chart */}
+          {forecastChartData.length > 0 && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4" /> 16-Day Forecast
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="w-full h-56">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={forecastChartData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                      <XAxis dataKey="day" tick={{ fontSize: 10 }} interval={1} />
+                      <YAxis yAxisId="left" tick={{ fontSize: 10 }} />
+                      <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} />
+                      <Tooltip />
+                      <Legend wrapperStyle={{ fontSize: 11 }} />
+                      <Bar yAxisId="right" dataKey="rain" name="Rain (mm)" fill="hsl(var(--primary))" opacity={0.5} />
+                      <Line yAxisId="left" type="monotone" dataKey="tMax" name="Max °C" stroke="#ef4444" dot={false} strokeWidth={2} />
+                      <Line yAxisId="left" type="monotone" dataKey="tMin" name="Min °C" stroke="#3b82f6" dot={false} strokeWidth={2} />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Extreme Event Probabilities */}
          <Card>
            <CardHeader>
              <CardTitle className="flex items-center gap-2">
@@ -117,6 +247,19 @@
              </CardTitle>
            </CardHeader>
            <CardContent>
+              {eventChartData.length > 0 && (
+                <div className="w-full h-48 mb-3">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={eventChartData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                      <XAxis dataKey="event" tick={{ fontSize: 11 }} />
+                      <YAxis tick={{ fontSize: 10 }} unit="%" />
+                      <Tooltip />
+                      <Bar dataKey="probability" name="Probability" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
              <div className="grid grid-cols-2 gap-3">
                {analysis?.extremeEventProbabilities && Object.entries(analysis.extremeEventProbabilities).map(([event, data]: [string, any]) => (
                  <div key={event} className="p-3 bg-muted rounded-lg">
@@ -135,6 +278,33 @@
            </CardContent>
          </Card>
  
+          {/* Climatology */}
+          {climatologyData.length > 0 && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Database className="w-4 h-4" /> Local Climatology (3-yr avg)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="w-full h-48">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={climatologyData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                      <XAxis dataKey="month" tick={{ fontSize: 10 }} />
+                      <YAxis yAxisId="left" tick={{ fontSize: 10 }} />
+                      <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} />
+                      <Tooltip />
+                      <Legend wrapperStyle={{ fontSize: 11 }} />
+                      <Bar yAxisId="right" dataKey="rain" name="Rain (mm/mo)" fill="hsl(var(--primary))" opacity={0.4} />
+                      <Line yAxisId="left" type="monotone" dataKey="temp" name="Avg °C" stroke="#ef4444" strokeWidth={2} dot={false} />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           <Tabs defaultValue="outlook" className="w-full">
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="outlook">Outlook</TabsTrigger>
@@ -144,71 +314,30 @@
             </TabsList>
  
            <TabsContent value="outlook" className="mt-4 space-y-4">
-             {/* Short Term */}
-             <Card>
-               <CardHeader className="pb-2">
-                 <CardTitle className="text-base flex items-center gap-2">
-                   <Calendar className="w-4 h-4" />
-                   {analysis?.shortTermOutlook?.period}
-                 </CardTitle>
-               </CardHeader>
-               <CardContent>
-                 <p className="text-sm mb-3">{analysis?.shortTermOutlook?.conditions}</p>
-                 {analysis?.shortTermOutlook?.farmingOpportunities?.length > 0 && (
-                   <div className="mb-2">
-                     <p className="text-xs text-muted-foreground mb-1">Opportunities:</p>
-                     <div className="flex flex-wrap gap-1">
-                       {analysis.shortTermOutlook.farmingOpportunities.map((opp: string, i: number) => (
-                         <span key={i} className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">{opp}</span>
-                       ))}
-                     </div>
-                   </div>
-                 )}
-                 {analysis?.shortTermOutlook?.risks?.length > 0 && (
-                   <div>
-                     <p className="text-xs text-muted-foreground mb-1">Risks:</p>
-                     <div className="flex flex-wrap gap-1">
-                       {analysis.shortTermOutlook.risks.map((risk: string, i: number) => (
-                         <span key={i} className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">{risk}</span>
-                       ))}
-                     </div>
-                   </div>
-                 )}
-               </CardContent>
-             </Card>
- 
-             {/* Mid Term */}
-             <Card>
-               <CardHeader className="pb-2">
-                 <CardTitle className="text-base flex items-center gap-2">
-                   <TrendingUp className="w-4 h-4" />
-                   {analysis?.midTermOutlook?.period}
-                 </CardTitle>
-               </CardHeader>
-               <CardContent>
-                 <p className="text-sm mb-2">{analysis?.midTermOutlook?.conditions}</p>
-                 {analysis?.midTermOutlook?.yieldProjection && (
-                   <p className="text-sm font-medium">
-                     Yield Projection: <span className="text-primary">{analysis.midTermOutlook.yieldProjection}</span>
-                   </p>
-                 )}
-               </CardContent>
-             </Card>
- 
-             {/* Long Term */}
-             <Card>
-               <CardHeader className="pb-2">
-                 <CardTitle className="text-base flex items-center gap-2">
-                   <Shield className="w-4 h-4" />
-                   {analysis?.longTermOutlook?.period}
-                 </CardTitle>
-               </CardHeader>
-               <CardContent>
-                 {analysis?.longTermOutlook?.climateTrends?.map((trend: string, i: number) => (
-                   <p key={i} className="text-sm mb-1">• {trend}</p>
-                 ))}
-               </CardContent>
-             </Card>
+             <Tabs defaultValue="twoWeeks" className="w-full">
+               <TabsList className="grid w-full grid-cols-4">
+                 <TabsTrigger value="twoWeeks" className="text-xs">2 weeks</TabsTrigger>
+                 <TabsTrigger value="threeMonths" className="text-xs">3 months</TabsTrigger>
+                 <TabsTrigger value="sixMonths" className="text-xs">6 months</TabsTrigger>
+                 <TabsTrigger value="oneYear" className="text-xs">1 year</TabsTrigger>
+               </TabsList>
+               {(['twoWeeks', 'threeMonths', 'sixMonths', 'oneYear'] as const).map((k) => (
+                 <TabsContent key={k} value={k} className="mt-3">
+                   <Card>
+                     <CardHeader className="pb-2">
+                       <CardTitle className="text-base flex items-center gap-2">
+                         {k === 'twoWeeks' && <Calendar className="w-4 h-4" />}
+                         {k === 'threeMonths' && <TrendingUp className="w-4 h-4" />}
+                         {k === 'sixMonths' && <Sun className="w-4 h-4" />}
+                         {k === 'oneYear' && <Shield className="w-4 h-4" />}
+                         {outlooks?.[k]?.period || k}
+                       </CardTitle>
+                     </CardHeader>
+                     <CardContent>{renderOutlook(outlooks?.[k])}</CardContent>
+                   </Card>
+                 </TabsContent>
+               ))}
+             </Tabs>
            </TabsContent>
  
            <TabsContent value="crops" className="mt-4 space-y-3">
