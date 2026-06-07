@@ -8,21 +8,25 @@ const corsHeaders = {
 
 async function fetchHistoricalClimate(lat: number, lon: number): Promise<any> {
   try {
+    // Shorter window (3 years) for much faster response while keeping seasonal signal
+    const end = new Date();
+    const start = new Date();
+    start.setFullYear(end.getFullYear() - 3);
+    const fmt = (d: Date) => d.toISOString().slice(0, 10);
     const response = await fetch(
-      `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=2015-01-01&end_date=2024-12-31&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max&timezone=auto`
+      `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${fmt(start)}&end_date=${fmt(end)}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=auto`
     );
     if (!response.ok) return null;
     const data = await response.json();
 
-    const monthlyData: Record<number, { temps: number[], precip: number[], wind: number[] }> = {};
+    const monthlyData: Record<number, { temps: number[], precip: number[] }> = {};
     if (data.daily?.time) {
       data.daily.time.forEach((date: string, i: number) => {
         const month = new Date(date).getMonth();
-        if (!monthlyData[month]) monthlyData[month] = { temps: [], precip: [], wind: [] };
+        if (!monthlyData[month]) monthlyData[month] = { temps: [], precip: [] };
         const avgTemp = (data.daily.temperature_2m_max[i] + data.daily.temperature_2m_min[i]) / 2;
         monthlyData[month].temps.push(avgTemp);
         monthlyData[month].precip.push(data.daily.precipitation_sum[i] || 0);
-        monthlyData[month].wind.push(data.daily.windspeed_10m_max?.[i] || 0);
       });
     }
 
@@ -33,8 +37,6 @@ async function fetchHistoricalClimate(lat: number, lon: number): Promise<any> {
       monthlyAverages[month] = {
         avgTemp: avg(d.temps),
         avgPrecip: avg(d.precip) * 30,
-        avgWind: avg(d.wind),
-        tempStdDev: Math.sqrt(d.temps.reduce((s, v) => s + Math.pow(v - avg(d.temps), 2), 0) / d.temps.length),
       };
     }
     return monthlyAverages;
@@ -187,9 +189,11 @@ serve(async (req) => {
     // Harvest data for future research (non-blocking)
     harvestClimateData(lat, lon, currentConditions, forecastData, regionGuess);
 
-    // Query knowledge graph for crop-specific context
+    // Knowledge graph query with a hard 2s timeout so it can never block analysis
     let knowledgeContext = '';
     try {
+      const ctl = new AbortController();
+      const t = setTimeout(() => ctl.abort(), 2000);
       const graphResponse = await fetch(
         `${Deno.env.get('SUPABASE_URL')}/functions/v1/knowledge-graph-query`,
         {
@@ -199,14 +203,16 @@ serve(async (req) => {
             'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
           },
           body: JSON.stringify({ crop: crops?.[0], region: regionGuess }),
+          signal: ctl.signal,
         }
       );
+      clearTimeout(t);
       if (graphResponse.ok) {
         const gd = await graphResponse.json();
         if (gd.context?.trim()) knowledgeContext = gd.context;
       }
     } catch (e) {
-      console.error('Knowledge graph query failed (non-fatal):', e);
+      console.error('Knowledge graph query skipped (non-fatal):', (e as Error).message);
     }
 
     const systemPrompt = `You are an expert agricultural climate scientist specializing in climate risk assessment for African farming regions.
@@ -218,22 +224,11 @@ Respond in JSON format:
 {
   "overallRiskLevel": "low" | "moderate" | "high" | "critical",
   "riskScore": number (0-100),
-  "shortTermOutlook": {
-    "period": "Next 2 weeks",
-    "conditions": "description",
-    "farmingOpportunities": ["list"],
-    "risks": ["list"]
-  },
-  "midTermOutlook": {
-    "period": "Next 1-3 months",
-    "conditions": "description",
-    "yieldProjection": "percentage vs normal",
-    "risks": ["list"]
-  },
-  "longTermOutlook": {
-    "period": "Next season",
-    "climateTrends": ["list"],
-    "suitabilityChanges": ["crops becoming more/less suitable"]
+  "outlooks": {
+    "twoWeeks":  { "period": "Next 2 weeks",  "conditions": "string", "tempTrend": "string", "rainfallTrend": "string", "farmingOpportunities": ["list"], "risks": ["list"], "yieldProjection": "string" },
+    "threeMonths": { "period": "Next 3 months", "conditions": "string", "tempTrend": "string", "rainfallTrend": "string", "farmingOpportunities": ["list"], "risks": ["list"], "yieldProjection": "string" },
+    "sixMonths":  { "period": "Next 6 months", "conditions": "string", "tempTrend": "string", "rainfallTrend": "string", "farmingOpportunities": ["list"], "risks": ["list"], "yieldProjection": "string" },
+    "oneYear":    { "period": "Next 12 months","conditions": "string", "tempTrend": "string", "rainfallTrend": "string", "climateTrends": ["list"], "suitabilityChanges": ["list"], "yieldProjection": "string" }
   },
   "cropRecommendations": [
     {
@@ -288,12 +283,12 @@ Provide comprehensive climate risk analysis with scenario-based yield projection
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: `${AI_MODEL_PREFIX}gemini-2.5-flash`,
+        model: `${AI_MODEL_PREFIX}gemini-2.5-flash-lite`,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt }
         ],
-        max_tokens: 3000,
+        max_tokens: 2500,
       }),
     });
 
@@ -332,8 +327,17 @@ Provide comprehensive climate risk analysis with scenario-based yield projection
     analysis.extremeEventProbabilities = extremeEvents;
     analysis.forecastDays = forecastData?.time?.length || 0;
     analysis.currentConditions = currentConditions;
+    analysis.forecastData = forecastData;
+    analysis.historicalMonthly = historicalData;
     analysis.dataHarvested = true;
     analysis.knowledgeGraphUsed = !!knowledgeContext;
+
+    // Backward-compat shims so older UI fields still resolve
+    if (analysis.outlooks) {
+      analysis.shortTermOutlook = analysis.outlooks.twoWeeks;
+      analysis.midTermOutlook = analysis.outlooks.threeMonths;
+      analysis.longTermOutlook = analysis.outlooks.oneYear;
+    }
 
     console.log("Climate risk analysis complete:", analysis.overallRiskLevel);
 
