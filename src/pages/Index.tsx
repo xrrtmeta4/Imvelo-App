@@ -12,7 +12,6 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
-import heroTractor from '@/assets/hero-tractor.jpg.asset.json';
 
 const Index = () => {
   const { isPremium } = useUsageLimits();
@@ -43,8 +42,8 @@ const Index = () => {
       
       <header className="relative overflow-hidden text-primary-foreground min-h-[70vh] flex flex-col">
         <img
-          src={heroTractor.url}
-          alt="Tractor at sunset in field"
+          src="/placeholder.svg"
+          alt="Hero background illustration"
           className="absolute inset-0 w-full h-full object-cover"
           loading="eager"
         />
