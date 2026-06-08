@@ -50,8 +50,9 @@ const Auth = () => {
       }
     } catch (error: any) {
       console.error(`${provider} sign in error:`, error);
-      if (error.message?.includes('unsupported provider')) {
-        toast.error(`${provider.charAt(0).toUpperCase() + provider.slice(1)} OAuth is not configured. Please contact support.`);
+      const message = String(error?.message || '').toLowerCase();
+      if (message.includes('unsupported provider') || message.includes('missing oauth secret') || message.includes('provider not configured')) {
+        toast.error(`${provider.charAt(0).toUpperCase() + provider.slice(1)} OAuth is not configured in Supabase. Please add the provider credentials and try again.`);
       } else {
         toast.error(error.message || `${provider.charAt(0).toUpperCase() + provider.slice(1)} sign in failed`);
       }
