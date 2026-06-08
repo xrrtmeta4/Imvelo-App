@@ -24,6 +24,7 @@ const Index = () => {
   const [userName, setUserName] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [weatherOpen, setWeatherOpen] = useState(false);
+  const [alertsOpen, setAlertsOpen] = useState(true);
   const [homeAlerts, setHomeAlerts] = useState<any[]>([]);
   const [marketAds, setMarketAds] = useState<any[]>([]);
   const [homeLoading, setHomeLoading] = useState(true);
@@ -180,44 +181,56 @@ const Index = () => {
         </a>
 
         <div className="grid gap-5">
-          <section className="rounded-3xl border border-border bg-card p-4">
-            <div className="flex items-center justify-between gap-3 mb-4">
-              <div>
-                <p className="text-sm font-semibold text-foreground">Critical weather alerts</p>
-                <p className="text-xs text-muted-foreground">Detected in your area and updated in real time</p>
-              </div>
-              <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                {homeAlerts.length} alert{homeAlerts.length === 1 ? '' : 's'}
-              </span>
-            </div>
-
-            {homeLoading ? (
-              <div className="space-y-3">
-                <div className="h-12 rounded-xl bg-border animate-pulse" />
-                <div className="h-12 rounded-xl bg-border animate-pulse" />
-              </div>
-            ) : homeAlerts.length > 0 ? (
-              <div className="space-y-3">
-                {homeAlerts.map((alert) => (
-                  <div key={alert.id} className="rounded-2xl border border-border bg-background p-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">{alert.message}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{new Date(alert.created_at).toLocaleString()}</p>
-                      </div>
-                      <span className="rounded-full bg-orange-500/10 px-2 py-1 text-[11px] font-semibold text-orange-700">
-                        {alert.severity || 'Medium'}
-                      </span>
-                    </div>
+          <Collapsible open={alertsOpen} onOpenChange={setAlertsOpen}>
+            <div className="rounded-3xl border border-border bg-card overflow-hidden">
+              <CollapsibleTrigger asChild>
+                <button className="w-full flex items-center justify-between gap-3 px-4 py-4 text-left text-sm font-semibold text-foreground hover:bg-accent/50 transition-colors">
+                  <div>
+                    <p>Critical weather alerts</p>
+                    <p className="text-xs text-muted-foreground">Detected in your area and updated in real time</p>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-2xl border border-dashed border-border bg-background p-4 text-sm text-muted-foreground">
-                No critical weather alerts found in your area. We'll notify you automatically when conditions change.
-              </div>
-            )}
-          </section>
+                  <div className="inline-flex items-center gap-2">
+                    <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                      {homeAlerts.length} alert{homeAlerts.length === 1 ? '' : 's'}
+                    </span>
+                    {alertsOpen ? (
+                      <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                    )}
+                  </div>
+                </button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="p-4">
+                {homeLoading ? (
+                  <div className="space-y-3">
+                    <div className="h-12 rounded-xl bg-border animate-pulse" />
+                    <div className="h-12 rounded-xl bg-border animate-pulse" />
+                  </div>
+                ) : homeAlerts.length > 0 ? (
+                  <div className="space-y-3">
+                    {homeAlerts.map((alert) => (
+                      <div key={alert.id} className="rounded-2xl border border-border bg-background p-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="text-sm font-semibold text-foreground">{alert.message}</p>
+                            <p className="text-xs text-muted-foreground mt-1">{new Date(alert.created_at).toLocaleString()}</p>
+                          </div>
+                          <span className="rounded-full bg-orange-500/10 px-2 py-1 text-[11px] font-semibold text-orange-700">
+                            {alert.severity || 'Medium'}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-2xl border border-dashed border-border bg-background p-4 text-sm text-muted-foreground">
+                    No critical weather alerts found in your area. We'll notify you automatically when conditions change.
+                  </div>
+                )}
+              </CollapsibleContent>
+            </div>
+          </Collapsible>
 
           <section className="rounded-3xl border border-border bg-card p-4">
             <div className="flex items-center justify-between gap-3 mb-4">

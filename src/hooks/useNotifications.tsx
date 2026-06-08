@@ -3,6 +3,19 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
+const getTodayKey = (userId: string) => `imvelo-last-weather-toast-${userId}`;
+const getTodayDate = () => new Date().toISOString().split('T')[0];
+
+const shouldShowWeatherToast = (userId: string) => {
+  if (typeof window === 'undefined') return true;
+  const key = getTodayKey(userId);
+  const today = getTodayDate();
+  const last = window.localStorage.getItem(key);
+  if (last === today) return false;
+  window.localStorage.setItem(key, today);
+  return true;
+};
+
 export const useNotifications = () => {
   const { user } = useAuth();
 
@@ -19,7 +32,7 @@ export const useNotifications = () => {
           table: 'messages',
           filter: `receiver_id=eq.${user.id}`
         },
-        (payload) => {
+        () => {
           toast.info('Umlayeto omusha!', {
             description: 'Utfole umlayeto lomusha'
           });
@@ -55,8 +68,10 @@ export const useNotifications = () => {
           filter: `user_id=eq.${user.id}`
         },
         (payload: any) => {
+          if (!shouldShowWeatherToast(user.id)) return;
+
           const alert = payload.new;
-          
+
           if (alert.alert_type === 'planting_reminder') {
             toast.success('🌱 Sikhumbutso Sekutjala!', {
               description: alert.message,

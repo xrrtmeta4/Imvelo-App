@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Bell } from 'lucide-react';
+import { Bell, Trash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -134,13 +134,22 @@ const NotificationBell = () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
   };
 
-  const dismissNotification = async (id: string) => {
+  const deleteNotification = async (id: string) => {
     await supabase
       .from('weather_alerts')
-      .update({ read: true })
+      .delete()
       .eq('id', id);
-    
+
     setNotifications(prev => prev.filter(n => n.id !== id));
+  };
+
+  const deleteAllNotifications = async () => {
+    await supabase
+      .from('weather_alerts')
+      .delete()
+      .eq('user_id', user?.id);
+
+    setNotifications([]);
   };
 
   const formatTime = (dateString: string) => {
@@ -176,16 +185,28 @@ const NotificationBell = () => {
       <PopoverContent className="w-80 p-0" align="end">
         <div className="flex items-center justify-between p-3 border-b">
           <h4 className="font-semibold text-sm">Notifications</h4>
-          {unreadCount > 0 && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="text-xs h-7"
-              onClick={markAllAsRead}
-            >
-              Mark all read
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {unreadCount > 0 && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-xs h-7"
+                onClick={markAllAsRead}
+              >
+                Mark all read
+              </Button>
+            )}
+            {notifications.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-xs h-7"
+                onClick={deleteAllNotifications}
+              >
+                Delete all
+              </Button>
+            )}
+          </div>
         </div>
         <ScrollArea className="h-[300px]">
           {loading ? (
@@ -203,10 +224,9 @@ const NotificationBell = () => {
                 <div 
                   key={notification.id}
                   className={cn(
-                    "p-3 hover:bg-muted/50 transition-colors cursor-pointer",
-                    !notification.read && "bg-primary/5"
+                    "group p-3 rounded-2xl transition-colors",
+                    !notification.read ? "bg-primary/5" : "hover:bg-muted/10"
                   )}
-                  onClick={() => markAsRead(notification.id)}
                 >
                   <div className="flex items-start gap-3">
                     <div className={cn(
@@ -215,7 +235,7 @@ const NotificationBell = () => {
                     )}>
                       {alertIcons[notification.alert_type] || <AlertTriangle className="w-4 h-4" />}
                     </div>
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0" onClick={() => markAsRead(notification.id)}>
                       <p className={cn(
                         "text-sm",
                         !notification.read && "font-medium"
@@ -226,17 +246,24 @@ const NotificationBell = () => {
                         {formatTime(notification.created_at)}
                       </p>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        dismissNotification(notification.id);
-                      }}
-                    >
-                      <X className="w-3 h-3" />
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 shrink-0"
+                        onClick={() => markAsRead(notification.id)}
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 shrink-0"
+                        onClick={() => deleteNotification(notification.id)}
+                      >
+                        <Trash className="w-3 h-3" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
