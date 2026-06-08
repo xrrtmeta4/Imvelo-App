@@ -15,9 +15,9 @@ const en: Record<string, string> = {
   brightnessLabel: 'Brightness', brightnessHint: 'Adjust screen brightness for outdoor use',
 
   // Auth
-  signIn: 'Sign In', signUp: 'Create Account', email: 'Email', password: 'Password',
+  signIn: 'Sign Into Imvelo App', signUp: 'Create Account', email: 'Email', password: 'Password',
   country: 'Country', phoneRequired: 'Phone number is required', countryRequired: 'Country is required',
-  signInWith: 'Sign in with your account', registerFor: 'Register for Imvelo',
+  signInWith: 'Sign into Imvelo App with your account', registerFor: 'Register for Imvelo',
   resetPassword: 'Reset Password', setNewPassword: 'Set New Password',
   enterEmailReset: 'Enter your email to receive a reset link', enterNewPassword: 'Enter your new password',
   fullName: 'Full Name', phone: 'Phone Number', phoneHint: 'For SMS weather alerts and farming tips',
