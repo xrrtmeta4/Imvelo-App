@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">imveloapp</string>
+    <string name="title_activity_main">imveloapp</string>
+    <string name="package_name">app.lovable.b4f47cfe1b284d6ea4df806ad32c6fc9</string>
+    <string name="custom_url_scheme">app.lovable.b4f47cfe1b284d6ea4df806ad32c6fc9</string>
+</resources>

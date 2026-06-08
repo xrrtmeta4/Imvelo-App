@@ -41,10 +41,27 @@ git clone https://github.com/YourUsername/imvelo-app.git
 cd imvelo-app
 
 # Install dependencies
-[Insert Install Command, e.g., npm install or flutter pub get]
+npm install
 
-# Run the application
-[Insert Run Command, e.g., npm start or flutter run]
+# Run the web application locally
+npm run dev
+
+# Build the web app and sync native Capacitor assets for Android
+npm run android:sync
+
+# Open the Android project in Android Studio
+npm run android:open
+
+# Build a release Android App Bundle (AAB) for Play Store / AppGallery
+npm run android:bundle
+
+# Alternatively build a release APK
+npm run android:apk
+
+Note: The Android build requires the Android SDK and Java toolchain to be installed and available via ANDROID_SDK_ROOT or ANDROID_HOME.
+
+For Play Store and AppGallery, upload the generated AAB from `android/app/build/outputs/bundle/release/app-release.aab`. AppGallery may also accept the same release bundle.
+
 Intellectual Property & Licensing
 Imvelo Tech Group retains 100% ownership of all Intellectual Property (IP) associated with the Imvelo application, including the AI diagnostic engine, source code, and technical architecture.
 
