@@ -62,6 +62,15 @@ Note: The Android build requires the Android SDK and Java toolchain to be instal
 
 For Play Store and AppGallery, upload the generated AAB from `android/app/build/outputs/bundle/release/app-release.aab`. AppGallery may also accept the same release bundle.
 
+App Gallery / Huawei signing certificates
+- AppGallery Connect does not expose the private app signing key. Register the public SHA-256 certificate fingerprint for the signing key that will be used to publish the app.
+- Use the following fingerprints when prompted in AppGallery Connect or the Huawei developer console:
+  - App signing certificate: `8C:27:71:6B:68:C8:CD:B8:0B:37:51:73:BB:C9:90:ED:7E:C3:68:0B:F8:DC:B6:39:9A:14:DE:62:F1:C0:7C:2E`
+  - Upload certificate: `14:15:28:17:BC:54:0D:DC:40:33:EA:EA:ED:C8:94:20:58:28:D3:5A:35:5F:71:D8:CC:25:CA:E0:95:F9:B5:EA`
+- If you use Huawei services that require an SHA-256 certificate fingerprint, register the matching fingerprint in the Huawei developer console as well.
+- To verify the fingerprint of your own release keystore locally, run:
+  `./gradlew :app:printReleaseSigningFingerprint -PkeystoreFile=/path/to/your-release-key.jks -PkeystorePassword=YOUR_PASSWORD -PkeyAlias=YOUR_ALIAS -PkeyPassword=YOUR_PASSWORD`
+
 Intellectual Property & Licensing
 Imvelo Tech Group retains 100% ownership of all Intellectual Property (IP) associated with the Imvelo application, including the AI diagnostic engine, source code, and technical architecture.
 
