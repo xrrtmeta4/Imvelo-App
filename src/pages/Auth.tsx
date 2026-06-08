@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Sprout, Loader2, ArrowLeft } from 'lucide-react';
+import { Sprout, Loader2, ArrowLeft, LogIn } from 'lucide-react';
 import { z } from 'zod';
 import { Separator } from '@/components/ui/separator';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -34,6 +34,31 @@ const Auth = () => {
     country: '',
     role: 'farmer' as 'farmer' | 'trader',
   });
+
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/`,
+          queryParams: {
+            prompt: 'consent',
+            access_type: 'offline',
+          },
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+    } catch (error: any) {
+      console.error('Google sign in error:', error);
+      toast.error(error.message || 'Google sign in failed');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -186,6 +211,25 @@ const Auth = () => {
           <CardDescription className="mt-1">{getDescription()}</CardDescription>
         </CardHeader>
         <CardContent>
+          {mode === 'login' && (
+            <div className="space-y-3 mb-4">
+              <Button
+                type="button"
+                variant="secondary"
+                className="w-full gap-2"
+                onClick={handleGoogleSignIn}
+                disabled={loading}
+              >
+                <LogIn className="w-4 h-4" />
+                {t('continueWithGoogle')}
+              </Button>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span className="h-px flex-1 bg-border" />
+                <span>or</span>
+                <span className="h-px flex-1 bg-border" />
+              </div>
+            </div>
+          )}
           {(mode === 'forgot' || mode === 'reset') && (
             <Button
               variant="ghost"
