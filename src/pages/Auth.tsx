@@ -211,7 +211,7 @@ const Auth = () => {
           <CardDescription className="mt-1">{getDescription()}</CardDescription>
         </CardHeader>
         <CardContent>
-          {mode === 'login' && (
+          {(mode === 'login' || mode === 'signup') && (
             <div className="space-y-3 mb-4">
               <Button
                 type="button"
