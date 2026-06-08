@@ -1,31 +1,73 @@
-// Service Worker for Push Notifications
+const CACHE_NAME = 'imvelo-app-shell-v1';
+const APP_SHELL = ['/', '/index.html', '/icon-192.png', '/icon-512.png', '/favicon.ico'];
+
 self.addEventListener('install', (event) => {
   console.log('Service Worker installed');
-  self.skipWaiting();
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)).then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener('activate', (event) => {
   console.log('Service Worker activated');
   event.waitUntil((async () => {
-    // Kill-switch: purge any stale Workbox/vite-plugin-pwa caches from a
-    // previous offline build so returning users don't get a blank screen
-    // from old precached HTML pointing at deleted JS chunks.
-    try {
-      const keys = await caches.keys();
-      await Promise.all(
-        keys
-          .filter((k) => /workbox|precache|runtime|html-cache|api-cache|weather-cache|image-cache/i.test(k))
-          .map((k) => caches.delete(k))
-      );
-    } catch (_) {}
+    const keys = await caches.keys();
+    await Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)));
     await clients.claim();
   })());
 });
 
-// Network-only for navigations — never serve stale HTML from cache.
+const networkFirst = async (request) => {
+  try {
+    const response = await fetch(request);
+    const cache = await caches.open(CACHE_NAME);
+    cache.put(request, response.clone());
+    return response;
+  } catch {
+    const cached = await caches.match(request);
+    if (cached) return cached;
+    if (request.mode === 'navigate') {
+      return caches.match('/index.html');
+    }
+    return caches.match('/icon-192.png');
+  }
+};
+
+const cacheFirst = async (request) => {
+  const cached = await caches.match(request);
+  if (cached) return cached;
+
+  try {
+    const response = await fetch(request);
+    const cache = await caches.open(CACHE_NAME);
+    cache.put(request, response.clone());
+    return response;
+  } catch {
+    if (request.mode === 'navigate') {
+      return caches.match('/index.html');
+    }
+    return caches.match('/icon-192.png');
+  }
+};
+
 self.addEventListener('fetch', (event) => {
-  if (event.request.mode === 'navigate') {
-    event.respondWith(fetch(event.request).catch(() => Response.error()));
+  const { request } = event;
+
+  if (request.method !== 'GET') return;
+
+  if (request.mode === 'navigate' || request.destination === 'document') {
+    event.respondWith(networkFirst(request));
+    return;
+  }
+
+  if (
+    request.destination === 'style' ||
+    request.destination === 'script' ||
+    request.destination === 'image' ||
+    request.destination === 'font' ||
+    request.destination === 'manifest'
+  ) {
+    event.respondWith(cacheFirst(request));
   }
 });
 

@@ -7,6 +7,14 @@ import "./index.css";
 // service workers, clear caches, and reload once so the user never sees a
 // blank white screen.
 if (typeof window !== "undefined") {
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("/sw.js").catch((error) => {
+        console.error("Service worker registration failed:", error);
+      });
+    });
+  }
+
   const STORAGE_KEY = "__imvelo_sw_recovery";
   const tryRecover = async (reason: unknown) => {
     if (sessionStorage.getItem(STORAGE_KEY)) return; // already attempted
