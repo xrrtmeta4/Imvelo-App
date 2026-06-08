@@ -48,6 +48,7 @@ const NotificationBell = () => {
       .from('weather_alerts')
       .select('*')
       .eq('user_id', user.id)
+      .eq('read', false)
       .order('created_at', { ascending: false })
       .limit(20);
 
@@ -119,9 +120,7 @@ const NotificationBell = () => {
       .update({ read: true })
       .eq('id', id);
     
-    setNotifications(prev => 
-      prev.map(n => n.id === id ? { ...n, read: true } : n)
-    );
+    setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
   const markAllAsRead = async () => {
@@ -131,7 +130,7 @@ const NotificationBell = () => {
       .eq('user_id', user?.id)
       .eq('read', false);
     
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    setNotifications([]);
   };
 
   const deleteNotification = async (id: string) => {
@@ -147,7 +146,8 @@ const NotificationBell = () => {
     await supabase
       .from('weather_alerts')
       .delete()
-      .eq('user_id', user?.id);
+      .eq('user_id', user?.id)
+      .eq('read', false);
 
     setNotifications([]);
   };

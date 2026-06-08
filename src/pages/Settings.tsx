@@ -109,6 +109,33 @@ const Settings = () => {
             <p className="text-xs text-muted-foreground">{t('brightnessHint')}</p>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Type className="w-4 h-4" />
+              Legal & Privacy
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Button
+              variant="outline"
+              className="w-full justify-between"
+              onClick={() => navigate('/terms-of-service')}
+            >
+              <span>{t('termsOfService')}</span>
+              <span className="text-xs text-muted-foreground">View</span>
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full justify-between"
+              onClick={() => navigate('/privacy-policy')}
+            >
+              <span>{t('privacyPolicy')}</span>
+              <span className="text-xs text-muted-foreground">View</span>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

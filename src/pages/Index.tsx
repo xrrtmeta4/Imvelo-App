@@ -7,7 +7,7 @@ import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/lib/supabase';
-import { Sprout, Crown, ChevronDown, ChevronUp, Cloud, Users, Phone } from 'lucide-react';
+import { Sprout, Crown, ChevronDown, ChevronUp, Cloud, Store, Users, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -94,6 +94,22 @@ const Index = () => {
       </header>
 
       <div className="max-w-screen-sm mx-auto px-4 py-6 space-y-6">
+        <button
+          onClick={() => { window.location.href = 'https://imvelomarketplace.vercel.app'; }}
+          className="w-full flex items-center justify-between rounded-xl border border-border bg-card p-4 hover:bg-accent/50 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <div className="rounded-xl bg-primary/10 p-3">
+              <Store className="w-5 h-5 text-primary" />
+            </div>
+            <div className="text-left">
+              <p className="font-semibold text-sm text-foreground">Access Imvelo Marketplace</p>
+              <p className="text-xs text-muted-foreground">Shop and sell farm goods with the Imvelo marketplace.</p>
+            </div>
+          </div>
+          <span className="text-xs font-medium text-primary">Go</span>
+        </button>
+
         <div className="grid gap-5">
           <Collapsible open={weatherOpen} onOpenChange={setWeatherOpen}>
             <CollapsibleTrigger asChild>
