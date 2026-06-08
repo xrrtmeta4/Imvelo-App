@@ -75,7 +75,7 @@ const Analysis = () => {
             <CardContent>
               <p className="text-sm text-muted-foreground mb-3">{tool.desc}</p>
               <Button variant="outline" size="sm" className="w-full">
-                Open analysis →
+                {t('openAnalysis')}
               </Button>
             </CardContent>
           </Card>

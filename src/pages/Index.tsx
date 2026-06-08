@@ -11,6 +11,7 @@ import { Sprout, Crown, ChevronDown, ChevronUp, Cloud, Store, Users, Phone } fro
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import heroImage from '@/assets/download (30).jpeg';
 
@@ -20,21 +21,25 @@ const Index = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [userName, setUserName] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [weatherOpen, setWeatherOpen] = useState(false);
 
   useEffect(() => {
-    const fetchUserName = async () => {
+    const fetchProfile = async () => {
       if (!user) return;
       const { data } = await supabase
         .from('profiles')
-        .select('full_name')
+        .select('full_name, avatar_url')
         .eq('id', user.id)
         .single();
       if (data?.full_name) {
         setUserName(data.full_name.split(' ')[0]);
       }
+      if (data?.avatar_url) {
+        setAvatarUrl(data.avatar_url);
+      }
     };
-    fetchUserName();
+    fetchProfile();
   }, [user]);
 
   return (
@@ -51,8 +56,17 @@ const Index = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/30 to-black/85" />
         <div className="relative flex-1 flex flex-col max-w-screen-sm mx-auto w-full px-4 pt-6 pb-10">
           <div className="flex justify-between items-start">
-            <div className="bg-white/10 backdrop-blur-sm p-3 rounded-full border border-white/20">
-              <Sprout className="w-8 h-8" />
+            <div className="bg-white/10 backdrop-blur-sm p-1 rounded-full border border-white/20">
+              {avatarUrl ? (
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={avatarUrl} alt="User avatar" />
+                  <AvatarFallback>{userName ? userName.charAt(0) : 'U'}</AvatarFallback>
+                </Avatar>
+              ) : (
+                <div className="flex h-10 w-10 items-center justify-center">
+                  <Sprout className="w-7 h-7" />
+                </div>
+              )}
             </div>
             <LanguageSwitcher />
           </div>

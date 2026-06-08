@@ -133,6 +133,7 @@ const en: Record<string, string> = {
 
   // Climate Risk
   climateRiskAnalysis: 'Climate Risk Analysis',
+  openAnalysis: 'Open analysis →',
   riskOverview: 'Risk Overview', adaptations: 'Adaptations', forecast: 'Forecast',
   research: 'Research', liveConditions: 'Live Conditions', dataQuality: 'Data Quality',
 

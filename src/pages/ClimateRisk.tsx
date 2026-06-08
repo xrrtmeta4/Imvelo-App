@@ -94,6 +94,7 @@ import {
       }))
     : [];
 
+  const cropRecommendations = analysis?.cropRecommendations || [];
   const outlooks = analysis?.outlooks || {
     twoWeeks: analysis?.shortTermOutlook,
     threeMonths: analysis?.midTermOutlook,
@@ -150,6 +151,31 @@ import {
           <ul className="text-sm space-y-1">
             {o.climateTrends.map((t: string, i: number) => <li key={i}>• {t}</li>)}
           </ul>
+        )}
+        {o.suitableCrops?.length > 0 && (
+          <div>
+            <p className="text-xs text-muted-foreground mb-1">Suggested crops</p>
+            <div className="flex flex-wrap gap-1">
+              {o.suitableCrops.map((crop: string, i: number) => (
+                <span key={i} className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
+                  {crop}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+        {o.recommendedActions?.length > 0 && (
+          <div>
+            <p className="text-xs text-muted-foreground mb-1">Recommended actions</p>
+            <ul className="text-sm space-y-1">
+              {o.recommendedActions.map((a: string, i: number) => <li key={i}>→ {a}</li>)}
+            </ul>
+          </div>
+        )}
+        {!o.suitableCrops?.length && !o.recommendedActions?.length && (
+          <p className="text-sm text-muted-foreground">
+            Review local weather trends and adjust planting or protection measures as conditions evolve.
+          </p>
         )}
         {o.suitabilityChanges?.length > 0 && (
           <div>
@@ -341,40 +367,83 @@ import {
            </TabsContent>
  
            <TabsContent value="crops" className="mt-4 space-y-3">
-             {analysis?.cropRecommendations?.map((crop: any, idx: number) => (
-               <Card key={idx}>
-                 <CardContent className="pt-4">
-                   <div className="flex items-center justify-between mb-2">
-                     <div className="flex items-center gap-2">
-                       <Sprout className="w-5 h-5 text-green-500" />
-                       <span className="font-medium">{crop.crop}</span>
+             {cropRecommendations.length > 0 ? (
+               cropRecommendations.map((crop: any, idx: number) => (
+                 <Card key={idx}>
+                   <CardContent className="pt-4">
+                     <div className="flex items-center justify-between mb-2">
+                       <div className="flex items-center gap-2">
+                         <Sprout className="w-5 h-5 text-green-500" />
+                         <span className="font-medium">{crop.crop}</span>
+                       </div>
+                       <span className={`text-xs px-2 py-1 rounded capitalize ${
+                         crop.suitability === 'high' ? 'bg-green-100 text-green-700' :
+                         crop.suitability === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                         'bg-red-100 text-red-700'
+                       }`}>
+                         {crop.suitability} suitability
+                       </span>
                      </div>
-                     <span className={`text-xs px-2 py-1 rounded capitalize ${
-                       crop.suitability === 'high' ? 'bg-green-100 text-green-700' :
-                       crop.suitability === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                       'bg-red-100 text-red-700'
-                     }`}>
-                       {crop.suitability} suitability
-                     </span>
-                   </div>
-                   {crop.optimalPlantingWindow && (
-                     <p className="text-sm text-muted-foreground mb-2">
-                       Best planting: {crop.optimalPlantingWindow}
-                     </p>
-                   )}
-                   {crop.adaptations?.length > 0 && (
-                     <div className="text-sm">
-                       <p className="font-medium mb-1">Adaptations:</p>
-                       <ul className="list-disc list-inside text-muted-foreground">
-                         {crop.adaptations.map((a: string, i: number) => (
-                           <li key={i}>{a}</li>
-                         ))}
-                       </ul>
-                     </div>
-                   )}
+                     {crop.optimalPlantingWindow && (
+                       <p className="text-sm text-muted-foreground mb-2">
+                         Best planting: {crop.optimalPlantingWindow}
+                       </p>
+                     )}
+                     {crop.conditions?.length > 0 && (
+                       <div className="mb-3">
+                         <p className="text-xs text-muted-foreground mb-1">Current crop conditions</p>
+                         <ul className="list-disc list-inside text-sm text-muted-foreground">
+                           {crop.conditions.map((condition: string, i: number) => (
+                             <li key={i}>{condition}</li>
+                           ))}
+                         </ul>
+                       </div>
+                     )}
+                     {crop.adaptations?.length > 0 ? (
+                       <div className="text-sm">
+                         <p className="font-medium mb-1">Adaptations:</p>
+                         <ul className="list-disc list-inside text-muted-foreground">
+                           {crop.adaptations.map((a: string, i: number) => (
+                             <li key={i}>{a}</li>
+                           ))}
+                         </ul>
+                       </div>
+                     ) : (
+                       <p className="text-sm text-muted-foreground">
+                         {crop.suitability === 'low'
+                           ? 'Avoid this crop until conditions improve. Focus on drought-tolerant varieties, mulching, and stronger irrigation.'
+                           : crop.suitability === 'medium'
+                             ? 'Use caution: monitor soil moisture, add mulch, and protect young plants during unpredictable weather.'
+                             : 'Good match for current conditions; maintain regular care and monitor any sudden weather shifts.'}
+                       </p>
+                     )}
+                     {crop.recommendedActions?.length > 0 && (
+                       <div className="mt-3 text-sm">
+                         <p className="font-medium mb-1">Action plan</p>
+                         <ul className="list-disc list-inside text-muted-foreground">
+                           {crop.recommendedActions.map((action: string, i: number) => (
+                             <li key={i}>{action}</li>
+                           ))}
+                         </ul>
+                       </div>
+                     )}
+                   </CardContent>
+                 </Card>
+               ))
+             ) : (
+               <Card>
+                 <CardContent>
+                   <p className="text-sm text-muted-foreground mb-2">
+                     No crop-specific recommendations are available yet. Based on current risk conditions, choose resilient crops and use moisture-saving practices.
+                   </p>
+                   <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
+                     <li>Prefer drought-tolerant seeds and mulching.</li>
+                     <li>Monitor rainfall closely before planting.</li>
+                     <li>Apply adaptive irrigation and pest protection early.</li>
+                   </ul>
                  </CardContent>
                </Card>
-             ))}
+             )}
            </TabsContent>
  
            <TabsContent value="actions" className="mt-4 space-y-3">
