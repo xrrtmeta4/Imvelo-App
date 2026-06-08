@@ -57,14 +57,19 @@ export const useNotifications = () => {
         (payload: any) => {
           const alert = payload.new;
           
-          // Handle planting reminders differently
           if (alert.alert_type === 'planting_reminder') {
             toast.success('🌱 Sikhumbutso Sekutjala!', {
               description: alert.message,
               duration: 10000
             });
+            return;
           }
-          // Weather alerts are now shown in the notification bell only, no popup
+
+          const title = alert.severity === 'high' ? 'Critical weather alert!' : 'Weather alert';
+          toast.error(title, {
+            description: alert.message,
+            duration: 12000,
+          });
         }
       )
       .subscribe();

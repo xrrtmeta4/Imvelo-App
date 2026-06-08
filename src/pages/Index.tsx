@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import WeatherCard from '@/components/WeatherCard';
 import WeatherTicker from '@/components/WeatherTicker';
 import AIChatbot from '@/components/AIChatbot';
 import MarketplacePromoModal from '@/components/MarketplacePromoModal';
+import NotificationBell from '@/components/NotificationBell';
 import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -23,6 +24,36 @@ const Index = () => {
   const [userName, setUserName] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [weatherOpen, setWeatherOpen] = useState(false);
+  const [homeAlerts, setHomeAlerts] = useState<any[]>([]);
+  const [marketAds, setMarketAds] = useState<any[]>([]);
+  const [homeLoading, setHomeLoading] = useState(true);
+
+  const fetchHomeData = useCallback(async () => {
+    if (!user) return;
+    setHomeLoading(true);
+
+    const [{ data: alerts, error: alertsError }, { data: listings }] = await Promise.all([
+      supabase
+        .from('weather_alerts')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(3),
+      supabase
+        .from('marketplace_listings')
+        .select('id, title, price, description')
+        .order('created_at', { ascending: false })
+        .limit(3),
+    ]);
+
+    if (!alertsError && alerts) {
+      setHomeAlerts(alerts);
+    }
+    if (listings) {
+      setMarketAds(listings);
+    }
+    setHomeLoading(false);
+  }, [user]);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -40,7 +71,43 @@ const Index = () => {
       }
     };
     fetchProfile();
-  }, [user]);
+    fetchHomeData();
+  }, [user, fetchHomeData]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('home-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'weather_alerts',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          fetchHomeData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'marketplace_listings'
+        },
+        () => {
+          fetchHomeData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, fetchHomeData]);
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -55,7 +122,7 @@ const Index = () => {
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/30 to-black/85" />
         <div className="relative flex-1 flex flex-col max-w-screen-sm mx-auto w-full px-4 pt-6 pb-10">
-          <div className="flex justify-between items-start">
+          <div className="flex justify-between items-center gap-3">
             <div className="bg-white/10 backdrop-blur-sm p-1 rounded-full border border-white/20">
               {avatarUrl ? (
                 <Avatar className="h-10 w-10">
@@ -68,7 +135,10 @@ const Index = () => {
                 </div>
               )}
             </div>
-            <LanguageSwitcher />
+            <div className="flex items-center gap-2">
+              <NotificationBell />
+              <LanguageSwitcher />
+            </div>
           </div>
           <div className="mt-auto">
             <h1 className="text-4xl font-bold mb-2 drop-shadow-lg">
@@ -108,6 +178,88 @@ const Index = () => {
           </div>
           <span className="text-xs font-medium text-primary">Open →</span>
         </a>
+
+        <div className="grid gap-5">
+          <section className="rounded-3xl border border-border bg-card p-4">
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <div>
+                <p className="text-sm font-semibold text-foreground">Critical weather alerts</p>
+                <p className="text-xs text-muted-foreground">Detected in your area and updated in real time</p>
+              </div>
+              <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                {homeAlerts.length} alert{homeAlerts.length === 1 ? '' : 's'}
+              </span>
+            </div>
+
+            {homeLoading ? (
+              <div className="space-y-3">
+                <div className="h-12 rounded-xl bg-border animate-pulse" />
+                <div className="h-12 rounded-xl bg-border animate-pulse" />
+              </div>
+            ) : homeAlerts.length > 0 ? (
+              <div className="space-y-3">
+                {homeAlerts.map((alert) => (
+                  <div key={alert.id} className="rounded-2xl border border-border bg-background p-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">{alert.message}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{new Date(alert.created_at).toLocaleString()}</p>
+                      </div>
+                      <span className="rounded-full bg-orange-500/10 px-2 py-1 text-[11px] font-semibold text-orange-700">
+                        {alert.severity || 'Medium'}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-dashed border-border bg-background p-4 text-sm text-muted-foreground">
+                No critical weather alerts found in your area. We'll notify you automatically when conditions change.
+              </div>
+            )}
+          </section>
+
+          <section className="rounded-3xl border border-border bg-card p-4">
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <div>
+                <p className="text-sm font-semibold text-foreground">Imvelo Marketplace adverts</p>
+                <p className="text-xs text-muted-foreground">Fresh listings from the marketplace</p>
+              </div>
+              <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                {marketAds.length} item{marketAds.length === 1 ? '' : 's'}
+              </span>
+            </div>
+
+            {homeLoading ? (
+              <div className="space-y-3">
+                <div className="h-12 rounded-xl bg-border animate-pulse" />
+                <div className="h-12 rounded-xl bg-border animate-pulse" />
+              </div>
+            ) : marketAds.length > 0 ? (
+              <div className="space-y-3">
+                {marketAds.map((listing) => (
+                  <a
+                    key={listing.id}
+                    href="https://imvelomarketplace.vercel.app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block rounded-2xl border border-border bg-background p-3 hover:border-primary/40 transition-colors"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-sm font-semibold text-foreground">{listing.title}</p>
+                      <span className="text-xs font-medium text-primary">${listing.price}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">{listing.description}</p>
+                  </a>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-dashed border-border bg-background p-4 text-sm text-muted-foreground">
+                No marketplace adverts available right now. Check again soon for fresh offers.
+              </div>
+            )}
+          </section>
+        </div>
 
         <Collapsible open={weatherOpen} onOpenChange={setWeatherOpen}>
           <CollapsibleTrigger asChild>
