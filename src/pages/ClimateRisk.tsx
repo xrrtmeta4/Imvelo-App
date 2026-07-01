@@ -4,6 +4,8 @@
  import { Button } from '@/components/ui/button';
  import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
  import { CloudLightning, Loader2, AlertTriangle, TrendingUp, Thermometer, Droplets, Wind, Sun, Sprout, Calendar, Shield, Database, Bug } from 'lucide-react';
+import { Atom } from 'lucide-react';
+import { useUsageLimits } from '@/hooks/useUsageLimits';
  import { supabase } from '@/lib/supabase';
  import { toast } from 'sonner';
  import { useAuth } from '@/hooks/useAuth';
@@ -18,6 +20,8 @@ import {
    const { getLocation } = useLocation();
    const [loading, setLoading] = useState(true);
    const [analysis, setAnalysis] = useState<any>(null);
+   const [quantumMode, setQuantumMode] = useState(false);
+   const { isPremium, openUpgrade } = useUsageLimits();
  
    const fetchClimateAnalysis = useCallback(async () => {
      try {
@@ -28,7 +32,8 @@ import {
          body: { 
            latitude: location.latitude,
            longitude: location.longitude,
-           crops: ['Maize', 'Beans', 'Vegetables']
+           crops: ['Maize', 'Beans', 'Vegetables'],
+           quantum: quantumMode && isPremium,
          }
        });
  
@@ -40,7 +45,7 @@ import {
      } finally {
        setLoading(false);
      }
-   }, [getLocation]);
+   }, [getLocation, quantumMode, isPremium]);
  
    useEffect(() => {
      if (user) {
