@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Bug, Camera, Loader2, Download, Crown, Upload, AlertTriangle, Eye } from 'lucide-react';
+import { Bug, Camera, Loader2, Download, Crown, Upload, AlertTriangle, Eye, Atom } from 'lucide-react';
 import ScanningOverlay from './ScanningOverlay';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
@@ -13,6 +13,7 @@ const PestScanner = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
+  const [quantumMode, setQuantumMode] = useState(false);
   const { canUseDetection, incrementDetection, getRemainingDetections, openUpgrade, isPremium } = useUsageLimits();
 
   const remaining = getRemainingDetections();
@@ -45,7 +46,7 @@ const PestScanner = () => {
 
       const { data: identifyData, error: identifyError } = await supabase.functions
         .invoke('identify-pest', {
-          body: { imageUrl: publicUrl }
+          body: { imageUrl: publicUrl, quantum: quantumMode && isPremium }
         });
 
       if (identifyError) throw identifyError;
