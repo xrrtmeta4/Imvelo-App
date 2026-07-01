@@ -199,7 +199,7 @@ const PestScanner = () => {
               }`}
             >
               <span className="flex items-center gap-2">
-                <Atom className={`w-4 h-4 ${quantumMode && isPremium ? 'animate-spin-slow' : ''}`} />
+                <Atom className={`w-4 h-4 ${quantumMode && isPremium ? 'animate-pulse' : ''}`} />
                 Quantum Intelligence {!isPremium && '(Premium)'}
               </span>
               <span className="text-[10px] font-semibold uppercase">
