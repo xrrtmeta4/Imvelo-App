@@ -5,11 +5,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
-import { Droplets, Loader2, CloudRain, Calendar, Lightbulb, AlertTriangle, TrendingDown, Sprout, RefreshCw, Gauge } from 'lucide-react';
+import { Droplets, Loader2, CloudRain, Calendar, Lightbulb, AlertTriangle, TrendingDown, Sprout, RefreshCw, Gauge, Atom } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation } from '@/hooks/useLocation';
+import { useUsageLimits } from '@/hooks/useUsageLimits';
 
 const cropOptions = ['Maize', 'Beans', 'Vegetables', 'Sugarcane', 'Cotton', 'Groundnuts', 'Sweet Potatoes', 'Citrus', 'Sorghum'];
 const soilOptions = ['Clay', 'Sandy', 'Loam', 'Silt', 'Clay Loam', 'Sandy Loam'];
@@ -21,6 +22,8 @@ const SmartIrrigation = () => {
   const [analysis, setAnalysis] = useState<any>(null);
   const [selectedCrops, setSelectedCrops] = useState<string[]>(['Maize']);
   const [soilType, setSoilType] = useState('Loam');
+  const [quantumMode, setQuantumMode] = useState(false);
+  const { isPremium, openUpgrade } = useUsageLimits();
 
   const fetchAnalysis = useCallback(async () => {
     try {
@@ -33,6 +36,7 @@ const SmartIrrigation = () => {
           longitude: location.longitude,
           crops: selectedCrops,
           soilType,
+          quantum: quantumMode && isPremium,
         }
       });
 
@@ -44,7 +48,7 @@ const SmartIrrigation = () => {
     } finally {
       setLoading(false);
     }
-  }, [getLocation, selectedCrops, soilType]);
+  }, [getLocation, selectedCrops, soilType, quantumMode, isPremium]);
 
   useEffect(() => {
     if (user) fetchAnalysis();
@@ -121,6 +125,20 @@ const SmartIrrigation = () => {
       </header>
 
       <div className="max-w-screen-sm mx-auto px-4 py-6 space-y-6">
+        <button
+          type="button"
+          onClick={() => { if (!isPremium) { openUpgrade(); return; } setQuantumMode(v => !v); }}
+          className={`w-full flex items-center justify-between gap-2 text-xs rounded-lg border p-3 transition-colors ${
+            quantumMode && isPremium ? 'border-primary bg-primary/5 text-primary' : 'border-border hover:bg-accent text-muted-foreground'
+          }`}
+        >
+          <span className="flex items-center gap-2">
+            <Atom className="w-4 h-4" />
+            Quantum Intelligence {!isPremium && '(Premium)'}
+            {analysis?.quantum?.enabled && <span className="ml-2 text-[10px] font-bold uppercase">· {analysis.quantum.consensusFrom} models</span>}
+          </span>
+          <span className="text-[10px] font-semibold uppercase">{quantumMode && isPremium ? 'ON' : 'OFF'}</span>
+        </button>
         {/* Config */}
         <Card>
           <CardContent className="pt-4 space-y-3">
