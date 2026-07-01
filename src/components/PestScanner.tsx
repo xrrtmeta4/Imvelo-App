@@ -185,12 +185,40 @@ const PestScanner = () => {
                 </Button>
               </label>
             </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (!isPremium) { openUpgrade(); return; }
+                setQuantumMode(v => !v);
+              }}
+              className={`w-full flex items-center justify-between gap-2 text-xs rounded-lg border p-3 transition-colors ${
+                quantumMode && isPremium
+                  ? 'border-primary bg-primary/5 text-primary'
+                  : 'border-border hover:bg-accent text-muted-foreground'
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <Atom className={`w-4 h-4 ${quantumMode && isPremium ? 'animate-spin-slow' : ''}`} />
+                Quantum Intelligence {!isPremium && '(Premium)'}
+              </span>
+              <span className="text-[10px] font-semibold uppercase">
+                {quantumMode && isPremium ? 'ON' : 'OFF'}
+              </span>
+            </button>
           </>
         )}
 
         {result && (
           <div className="mt-4 p-4 rounded-lg bg-accent space-y-2">
-            <h4 className="font-semibold text-sm text-primary">Results:</h4>
+            <div className="flex items-center justify-between">
+              <h4 className="font-semibold text-sm text-primary">Results:</h4>
+              {result.quantum?.enabled && (
+                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-primary/10 text-primary flex items-center gap-1">
+                  <Atom className="w-3 h-3" /> Quantum · {result.quantum.agreement}
+                </span>
+              )}
+            </div>
             <p className="text-sm"><strong>Pest:</strong> {result.pest_name}</p>
             <p className="text-sm"><strong>Treatment:</strong> {result.treatment}</p>
             <p className="text-sm"><strong>Confidence:</strong> {result.confidence}%</p>
