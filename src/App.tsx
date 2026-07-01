@@ -41,10 +41,13 @@ import KnowledgeGraphExplorer from "./pages/KnowledgeGraphExplorer";
 import Settings from "./pages/Settings";
 import UssdSimulator from "./pages/UssdSimulator";
 import Analysis from "./pages/Analysis";
+import AIChat from "./pages/AIChat";
 import { SettingsProvider } from "./hooks/useSettings";
 import MobileNav from "./components/MobileNav";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import SubscriptionPopup from "./components/SubscriptionPopup";
+import AppTutorial from "./components/AppTutorial";
+import VoiceNav from "./components/VoiceNav";
 import { useInteractionTracker } from "./hooks/useInteractionTracker";
 import ErrorBoundary from "./components/ErrorBoundary";
 
@@ -73,6 +76,8 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       {children}
       <MobileNav />
       <SubscriptionPopup />
+      <AppTutorial />
+      <VoiceNav />
     </>
   );
 };
@@ -119,6 +124,7 @@ const App = () => (
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/ussd" element={<ProtectedRoute><UssdSimulator /></ProtectedRoute>} />
             <Route path="/analysis" element={<ProtectedRoute><Analysis /></ProtectedRoute>} />
+            <Route path="/ai-chat" element={<ProtectedRoute><AIChat /></ProtectedRoute>} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/contact" element={<Contact />} />

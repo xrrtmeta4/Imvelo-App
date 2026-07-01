@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { latitude, longitude, crops, soilType } = await req.json();
+    const { latitude, longitude, crops, soilType, quantum = false } = await req.json();
     const LOVABLE_API_KEY_LOV = Deno.env.get('LOVABLE_API_KEY');
     const GEMINI_KEY = Deno.env.get('Gemini');
     const USE_LOVABLE = !GEMINI_KEY && !!LOVABLE_API_KEY_LOV;
@@ -89,50 +89,57 @@ ${JSON.stringify(weatherData.daily, null, 2)}
 
 Provide a complete irrigation plan with daily schedule, water deficit analysis, and crop-specific advice.`;
 
-    const response = await fetch(AI_URL, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: `${AI_MODEL_PREFIX}gemini-3-flash-preview`,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ],
-        max_tokens: 2500,
-      }),
-    });
+    const callModel = async (model: string) => {
+      const r = await fetch(AI_URL, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: `${AI_MODEL_PREFIX}${model}`,
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt },
+          ],
+          max_tokens: 2500,
+        }),
+      });
+      if (!r.ok) throw new Error(`${model}: ${r.status}`);
+      const j = await r.json();
+      const c = j.choices?.[0]?.message?.content || '';
+      const m = c.match(/\{[\s\S]*\}/);
+      return m ? JSON.parse(m[0]) : null;
+    };
 
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded, please try again later." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted. Please try again later." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
-      throw new Error(`AI analysis failed: ${response.status}`);
-    }
-
-    const aiResponse = await response.json();
-    const content = aiResponse.choices?.[0]?.message?.content;
-
-    let analysis;
+    let analysis: any;
+    let quantumMeta: any = null;
     try {
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        analysis = JSON.parse(jsonMatch[0]);
+      if (quantum) {
+        const models = ['gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.5-flash-lite'];
+        const results = await Promise.allSettled(models.map(callModel));
+        const ok = results
+          .map((r, i) => ({ r, m: models[i] }))
+          .filter(x => x.r.status === 'fulfilled' && (x.r as any).value)
+          .map(x => ({ model: x.m, value: (x.r as PromiseFulfilledResult<any>).value }));
+        if (ok.length === 0) throw new Error('all models failed');
+        // Pick the most complete result (has weeklySchedule with items)
+        ok.sort((a, b) =>
+          (b.value.weeklySchedule?.length || 0) - (a.value.weeklySchedule?.length || 0) ||
+          Object.keys(b.value).length - Object.keys(a.value).length
+        );
+        analysis = ok[0].value;
+        // Average water recommendation across models
+        const waters = ok.map(x => Number(x.value.recommendedWater_mm)).filter(n => !isNaN(n));
+        if (waters.length) analysis.recommendedWater_mm = Math.round(waters.reduce((a, b) => a + b, 0) / waters.length);
+        quantumMeta = {
+          enabled: true,
+          modelsResponded: ok.map(x => x.model),
+          consensusFrom: ok.length,
+        };
       } else {
-        throw new Error("No JSON found");
+        analysis = await callModel('gemini-3-flash-preview').catch(() => callModel('gemini-2.5-flash'));
       }
-    } catch {
+      if (!analysis) throw new Error('No JSON found');
+    } catch (e) {
+      console.error('Analysis error:', e);
       analysis = {
         soilMoistureEstimate: "unknown",
         irrigationNeeded: true,
@@ -149,6 +156,7 @@ Provide a complete irrigation plan with daily schedule, water deficit analysis, 
 
     // Attach raw weather data for charts
     analysis.weatherData = weatherData.daily;
+    if (quantumMeta) analysis.quantum = quantumMeta;
 
     return new Response(JSON.stringify(analysis), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

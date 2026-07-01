@@ -161,7 +161,7 @@ serve(async (req) => {
   }
 
   try {
-    const { latitude, longitude, crops } = await req.json();
+    const { latitude, longitude, crops, quantum = false } = await req.json();
     const LOVABLE_API_KEY_LOV = Deno.env.get('LOVABLE_API_KEY');
     const GEMINI_KEY = Deno.env.get('Gemini');
     const USE_LOVABLE = !GEMINI_KEY && !!LOVABLE_API_KEY_LOV;
@@ -276,46 +276,55 @@ Historical monthly averages (10 years): ${JSON.stringify(historicalData)}
 
 Provide comprehensive climate risk analysis with scenario-based yield projections, adaptive recommendations, and research insights for long-term climate monitoring.`;
 
-    const response = await fetch(AI_URL, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: `${AI_MODEL_PREFIX}gemini-2.5-flash-lite`,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ],
-        max_tokens: 2500,
-      }),
-    });
+    const callModel = async (model: string) => {
+      const r = await fetch(AI_URL, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: `${AI_MODEL_PREFIX}${model}`,
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt },
+          ],
+          max_tokens: 2500,
+        }),
+      });
+      if (!r.ok) throw new Error(`${model}: ${r.status}`);
+      const j = await r.json();
+      const c = j.choices?.[0]?.message?.content || '';
+      const m = c.match(/\{[\s\S]*\}/);
+      return m ? JSON.parse(m[0]) : null;
+    };
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" }
-        });
-      }
-      throw new Error(`AI analysis failed: ${response.status}`);
-    }
-
-    const aiResponse = await response.json();
-    const content = aiResponse.choices?.[0]?.message?.content;
-
-    let analysis;
+    let analysis: any;
+    let quantumMeta: any = null;
     try {
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        analysis = JSON.parse(jsonMatch[0]);
+      if (quantum) {
+        const models = ['gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.5-flash-lite'];
+        const settled = await Promise.allSettled(models.map(callModel));
+        const ok = settled
+          .map((r, i) => ({ r, m: models[i] }))
+          .filter(x => x.r.status === 'fulfilled' && (x.r as any).value)
+          .map(x => ({ model: x.m, value: (x.r as PromiseFulfilledResult<any>).value }));
+        if (ok.length === 0) throw new Error('all models failed');
+        // Consensus risk score: mean of numeric riskScore across models
+        const scores = ok.map(x => Number(x.value.riskScore)).filter(n => !isNaN(n));
+        // Pick most detailed model output as base
+        ok.sort((a, b) => JSON.stringify(b.value).length - JSON.stringify(a.value).length);
+        analysis = ok[0].value;
+        if (scores.length) analysis.riskScore = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+        // Consensus risk level: most common
+        const levels: Record<string, number> = {};
+        ok.forEach(x => { const l = x.value.overallRiskLevel; if (l) levels[l] = (levels[l] || 0) + 1; });
+        const topLevel = Object.entries(levels).sort((a, b) => b[1] - a[1])[0]?.[0];
+        if (topLevel) analysis.overallRiskLevel = topLevel;
+        quantumMeta = { enabled: true, modelsResponded: ok.map(x => x.model), consensusFrom: ok.length };
       } else {
-        throw new Error("No JSON found");
+        analysis = await callModel('gemini-2.5-flash-lite');
       }
+      if (!analysis) throw new Error('No JSON found');
     } catch (parseError) {
-      console.error("Parse error:", content);
+      console.error("Parse error:", parseError);
       analysis = {
         overallRiskLevel: "moderate",
         riskScore: 50,
@@ -331,6 +340,7 @@ Provide comprehensive climate risk analysis with scenario-based yield projection
     analysis.historicalMonthly = historicalData;
     analysis.dataHarvested = true;
     analysis.knowledgeGraphUsed = !!knowledgeContext;
+    if (quantumMeta) analysis.quantum = quantumMeta;
 
     // Backward-compat shims so older UI fields still resolve
     if (analysis.outlooks) {

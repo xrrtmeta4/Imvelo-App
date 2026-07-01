@@ -4,6 +4,8 @@
  import { Button } from '@/components/ui/button';
  import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
  import { CloudLightning, Loader2, AlertTriangle, TrendingUp, Thermometer, Droplets, Wind, Sun, Sprout, Calendar, Shield, Database, Bug } from 'lucide-react';
+import { Atom } from 'lucide-react';
+import { useUsageLimits } from '@/hooks/useUsageLimits';
  import { supabase } from '@/lib/supabase';
  import { toast } from 'sonner';
  import { useAuth } from '@/hooks/useAuth';
@@ -18,6 +20,8 @@ import {
    const { getLocation } = useLocation();
    const [loading, setLoading] = useState(true);
    const [analysis, setAnalysis] = useState<any>(null);
+   const [quantumMode, setQuantumMode] = useState(false);
+   const { isPremium, openUpgrade } = useUsageLimits();
  
    const fetchClimateAnalysis = useCallback(async () => {
      try {
@@ -28,7 +32,8 @@ import {
          body: { 
            latitude: location.latitude,
            longitude: location.longitude,
-           crops: ['Maize', 'Beans', 'Vegetables']
+           crops: ['Maize', 'Beans', 'Vegetables'],
+           quantum: quantumMode && isPremium,
          }
        });
  
@@ -40,7 +45,7 @@ import {
      } finally {
        setLoading(false);
      }
-   }, [getLocation]);
+   }, [getLocation, quantumMode, isPremium]);
  
    useEffect(() => {
      if (user) {
@@ -220,6 +225,22 @@ import {
        </header>
  
        <div className="max-w-screen-sm mx-auto px-4 py-6 space-y-6">
+         {/* Quantum Intelligence toggle */}
+         <button
+           type="button"
+           onClick={() => { if (!isPremium) { openUpgrade(); return; } setQuantumMode(v => { const nv = !v; setTimeout(fetchClimateAnalysis, 0); return nv; }); }}
+           className={`w-full flex items-center justify-between gap-2 text-xs rounded-lg border p-3 transition-colors ${
+             quantumMode && isPremium ? 'border-primary bg-primary/5 text-primary' : 'border-border hover:bg-accent text-muted-foreground'
+           }`}
+         >
+           <span className="flex items-center gap-2">
+             <Atom className="w-4 h-4" />
+             Quantum Intelligence {!isPremium && '(Premium)'}
+             {analysis?.quantum?.enabled && <span className="ml-2 text-[10px] font-bold uppercase">· {analysis.quantum.consensusFrom} models</span>}
+           </span>
+           <span className="text-[10px] font-semibold uppercase">{quantumMode && isPremium ? 'ON' : 'OFF'}</span>
+         </button>
+
          {/* Risk Overview Card */}
          <Card className={`${getRiskColor(analysis?.overallRiskLevel)}`}>
            <CardContent className="pt-6">
