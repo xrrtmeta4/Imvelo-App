@@ -13,6 +13,7 @@ const SoilScanner = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const { canUseDetection, incrementDetection, getRemainingDetections, openUpgrade, isPremium } = useUsageLimits();
 
   const remaining = getRemainingDetections();
@@ -23,6 +24,8 @@ const SoilScanner = () => {
     // Soil analysis is free for all users
 
     const file = e.target.files[0];
+    const localPreview = URL.createObjectURL(file);
+    setPreviewUrl(localPreview);
     setLoading(true);
     setResult(null);
 
@@ -76,6 +79,7 @@ const SoilScanner = () => {
       toast.error('Analysis failed. Please try again.');
     } finally {
       setLoading(false);
+      setTimeout(() => { URL.revokeObjectURL(localPreview); setPreviewUrl(null); }, 400);
     }
   };
 
@@ -98,7 +102,7 @@ const SoilScanner = () => {
 
   return (
     <>
-      <ScanningOverlay active={loading} label="SOIL SCAN" />
+      <ScanningOverlay active={loading} label="SOIL SCAN" imageUrl={previewUrl} />
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
