@@ -14,6 +14,7 @@ const PestScanner = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [quantumMode, setQuantumMode] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const { canUseDetection, incrementDetection, getRemainingDetections, openUpgrade, isPremium } = useUsageLimits();
 
   const remaining = getRemainingDetections();
@@ -27,6 +28,8 @@ const PestScanner = () => {
     }
     
     const file = e.target.files[0];
+    const localPreview = URL.createObjectURL(file);
+    setPreviewUrl(localPreview);
     setLoading(true);
     setResult(null);
 
@@ -91,6 +94,11 @@ const PestScanner = () => {
       toast.error('Something went wrong. Please try again.');
     } finally {
       setLoading(false);
+      // Give the overlay a beat to fade before releasing the object URL
+      setTimeout(() => {
+        URL.revokeObjectURL(localPreview);
+        setPreviewUrl(null);
+      }, 400);
     }
   };
 
@@ -112,7 +120,7 @@ const PestScanner = () => {
 
   return (
     <>
-      <ScanningOverlay active={loading} label="PEST SCAN" />
+      <ScanningOverlay active={loading} label="PEST SCAN" imageUrl={previewUrl} />
       <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
