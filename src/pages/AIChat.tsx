@@ -45,9 +45,19 @@ export default function AIChat() {
   const [state, setState] = useState<State>('idle');
   const [voiceSupported, setVoiceSupported] = useState(true);
   const [listening, setListening] = useState(false);
+  const [autoListen, setAutoListen] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return true;
+    const v = localStorage.getItem('imvelo.autoListen');
+    return v === null ? true : v === '1';
+  });
   const [preferredLanguage, setPreferredLanguage] = useState('en');
   const recRef = useRef<any>(null);
+  const autoListenRef = useRef(autoListen);
+  const stateRef = useRef<State>('idle');
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => { autoListenRef.current = autoListen; }, [autoListen]);
+  useEffect(() => { stateRef.current = state; }, [state]);
 
   useEffect(() => {
     const SR: any = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -64,10 +74,39 @@ export default function AIChat() {
     rec.onend = () => {
       setListening(false);
       setState('idle');
+      // If auto-listen is enabled and we're not busy speaking/thinking, resume listening
+      if (autoListenRef.current && stateRef.current === 'idle') {
+        setTimeout(() => {
+          try {
+            recRef.current?.start();
+            setListening(true);
+            setState('listening');
+          } catch { /* already started */ }
+        }, 400);
+      }
     };
     rec.onerror = () => { setListening(false); setState('idle'); };
     recRef.current = rec;
+
+    return () => {
+      try { rec.stop(); } catch { /* ignore */ }
+    };
   }, []);
+
+  // Kick off auto-listening on mount when enabled
+  useEffect(() => {
+    if (!voiceSupported || !autoListen) return;
+    const t = setTimeout(() => {
+      try {
+        recRef.current?.start();
+        setListening(true);
+        setState('listening');
+      } catch { /* ignore */ }
+    }, 600);
+    return () => clearTimeout(t);
+    // Only on mount + when toggled on
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoListen, voiceSupported]);
 
   useEffect(() => {
     (async () => {
@@ -84,10 +123,23 @@ export default function AIChat() {
   const speak = (text: string) => {
     try {
       if (!('speechSynthesis' in window)) return;
+      // Pause listening while speaking to avoid feedback loop
+      try { recRef.current?.stop(); } catch { /* ignore */ }
       const u = new SpeechSynthesisUtterance(text.replace(/\*+/g, '').slice(0, 500));
       u.rate = 1;
       u.onstart = () => setState('speaking');
-      u.onend = () => setState('idle');
+      u.onend = () => {
+        setState('idle');
+        if (autoListenRef.current) {
+          setTimeout(() => {
+            try {
+              recRef.current?.start();
+              setListening(true);
+              setState('listening');
+            } catch { /* ignore */ }
+          }, 300);
+        }
+      };
       window.speechSynthesis.speak(u);
     } catch { /* ignore */ }
   };
