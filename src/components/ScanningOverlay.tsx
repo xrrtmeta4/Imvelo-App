@@ -3,9 +3,10 @@ import { useEffect, useState } from 'react';
 interface ScanningOverlayProps {
   active: boolean;
   label?: string;
+  imageUrl?: string | null;
 }
 
-const ScanningOverlay = ({ active, label = 'ANALYZING' }: ScanningOverlayProps) => {
+const ScanningOverlay = ({ active, label = 'ANALYZING', imageUrl }: ScanningOverlayProps) => {
   const [scanLinePos, setScanLinePos] = useState(0);
   const [dots, setDots] = useState('');
 
@@ -30,15 +31,50 @@ const ScanningOverlay = ({ active, label = 'ANALYZING' }: ScanningOverlayProps) 
   if (!active) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center">
-      <div className="relative w-72 h-72 sm:w-80 sm:h-80">
+    <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center [perspective:1200px]">
+      <div
+        className="relative w-72 h-72 sm:w-80 sm:h-80"
+        style={{ transform: 'rotateX(14deg) rotateY(-8deg)', transformStyle: 'preserve-3d' }}
+      >
+        {imageUrl && (
+          <>
+            <img
+              src={imageUrl}
+              alt="Scanning subject"
+              className="absolute inset-2 w-[calc(100%-1rem)] h-[calc(100%-1rem)] object-cover rounded-md"
+              style={{
+                filter: 'brightness(0.85) contrast(1.1) saturate(1.2) hue-rotate(-8deg)',
+                boxShadow: '0 0 60px hsl(var(--primary) / 0.6), inset 0 0 40px hsl(var(--primary) / 0.4)',
+              }}
+            />
+            {/* Scan light sweep over image */}
+            <div
+              className="absolute inset-2 rounded-md pointer-events-none overflow-hidden"
+              style={{
+                background: `linear-gradient(180deg, transparent ${Math.max(0, scanLinePos - 8)}%, hsl(var(--primary) / 0.35) ${scanLinePos}%, transparent ${Math.min(100, scanLinePos + 8)}%)`,
+                mixBlendMode: 'screen',
+              }}
+            />
+            {/* Wireframe hologram overlay */}
+            <div
+              className="absolute inset-2 rounded-md pointer-events-none opacity-40"
+              style={{
+                backgroundImage:
+                  'linear-gradient(hsl(var(--primary) / 0.3) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary) / 0.3) 1px, transparent 1px)',
+                backgroundSize: '18px 18px',
+                mixBlendMode: 'screen',
+              }}
+            />
+          </>
+        )}
         {/* Corner brackets */}
         <div className="absolute top-0 left-0 w-10 h-10 border-t-2 border-l-2 border-primary animate-pulse" />
         <div className="absolute top-0 right-0 w-10 h-10 border-t-2 border-r-2 border-primary animate-pulse" />
         <div className="absolute bottom-0 left-0 w-10 h-10 border-b-2 border-l-2 border-primary animate-pulse" />
         <div className="absolute bottom-0 right-0 w-10 h-10 border-b-2 border-r-2 border-primary animate-pulse" />
 
-        {/* Grid lines */}
+        {/* Grid lines (only when no image) */}
+        {!imageUrl && (
         <div className="absolute inset-4 opacity-20">
           {[...Array(5)].map((_, i) => (
             <div key={`h-${i}`} className="absolute w-full h-px bg-primary" style={{ top: `${(i + 1) * 16.6}%` }} />
@@ -47,6 +83,7 @@ const ScanningOverlay = ({ active, label = 'ANALYZING' }: ScanningOverlayProps) 
             <div key={`v-${i}`} className="absolute h-full w-px bg-primary" style={{ left: `${(i + 1) * 16.6}%` }} />
           ))}
         </div>
+        )}
 
         {/* Scanning beam */}
         <div
