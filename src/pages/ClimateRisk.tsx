@@ -10,10 +10,6 @@ import { useUsageLimits } from '@/hooks/useUsageLimits';
  import { toast } from 'sonner';
  import { useAuth } from '@/hooks/useAuth';
  import { useLocation } from '@/hooks/useLocation';
-import {
-  ResponsiveContainer, ComposedChart, Line, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid,
-  BarChart, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
-} from 'recharts';
  
  const ClimateRiskContent = () => {
    const { user } = useAuth();
