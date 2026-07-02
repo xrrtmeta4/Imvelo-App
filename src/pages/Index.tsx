@@ -1,13 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import WeatherCard from '@/components/WeatherCard';
 import WeatherTicker from '@/components/WeatherTicker';
-import AIChatbot from '@/components/AIChatbot';
 import NotificationBell from '@/components/NotificationBell';
 import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/lib/supabase';
-import { Sprout, Crown, ChevronDown, ChevronUp, Cloud, Store, Users, Phone } from 'lucide-react';
+import { Sprout, Crown, ChevronDown, ChevronUp, Cloud, Store, Users, Phone, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -46,7 +45,7 @@ const Index = () => {
     <div className="min-h-screen bg-background pb-20">
       <WeatherTicker />
       
-      <header className="relative overflow-hidden text-primary-foreground min-h-[70vh] flex flex-col">
+      <header className="relative overflow-hidden text-primary-foreground min-h-[45vh] flex flex-col">
         <img
           src={heroImage}
           alt="Agriculture hero background"
@@ -149,9 +148,28 @@ const Index = () => {
               </div>
             </div>
           </button>
+
+          <button
+            onClick={() => navigate('/ai-chat')}
+            className="w-full text-left rounded-xl border border-border bg-card p-4 hover:bg-accent/50 transition-colors"
+          >
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-primary/15">
+                <Sparkles className="w-5 h-5 text-primary" />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-sm text-foreground">Ask Imvelo AI</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Chat with your AI farming assistant — text or voice.
+                </p>
+                <span className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-primary">
+                  Open chat →
+                </span>
+              </div>
+            </div>
+          </button>
         </div>
       </div>
-      <AIChatbot />
     </div>
   );
 };

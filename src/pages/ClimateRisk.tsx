@@ -10,10 +10,6 @@ import { useUsageLimits } from '@/hooks/useUsageLimits';
  import { toast } from 'sonner';
  import { useAuth } from '@/hooks/useAuth';
  import { useLocation } from '@/hooks/useLocation';
-import {
-  ResponsiveContainer, ComposedChart, Line, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid,
-  BarChart, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
-} from 'recharts';
  
  const ClimateRiskContent = () => {
    const { user } = useAuth();
@@ -257,34 +253,6 @@ import {
            </CardContent>
          </Card>
  
-          {/* 16-day forecast chart */}
-          {forecastChartData.length > 0 && (
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4" /> 16-Day Forecast
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="w-full h-56">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <ComposedChart data={forecastChartData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                      <XAxis dataKey="day" tick={{ fontSize: 10 }} interval={1} />
-                      <YAxis yAxisId="left" tick={{ fontSize: 10 }} />
-                      <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} />
-                      <Tooltip />
-                      <Legend wrapperStyle={{ fontSize: 11 }} />
-                      <Bar yAxisId="right" dataKey="rain" name="Rain (mm)" fill="hsl(var(--primary))" opacity={0.5} />
-                      <Line yAxisId="left" type="monotone" dataKey="tMax" name="Max °C" stroke="#ef4444" dot={false} strokeWidth={2} />
-                      <Line yAxisId="left" type="monotone" dataKey="tMin" name="Min °C" stroke="#3b82f6" dot={false} strokeWidth={2} />
-                    </ComposedChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
           {/* Extreme Event Probabilities */}
          <Card>
            <CardHeader>
@@ -294,19 +262,6 @@ import {
              </CardTitle>
            </CardHeader>
            <CardContent>
-              {eventChartData.length > 0 && (
-                <div className="w-full h-48 mb-3">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={eventChartData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                      <XAxis dataKey="event" tick={{ fontSize: 11 }} />
-                      <YAxis tick={{ fontSize: 10 }} unit="%" />
-                      <Tooltip />
-                      <Bar dataKey="probability" name="Probability" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              )}
              <div className="grid grid-cols-2 gap-3">
                {analysis?.extremeEventProbabilities && Object.entries(analysis.extremeEventProbabilities).map(([event, data]: [string, any]) => (
                  <div key={event} className="p-3 bg-muted rounded-lg">
@@ -325,33 +280,6 @@ import {
            </CardContent>
          </Card>
  
-          {/* Climatology */}
-          {climatologyData.length > 0 && (
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Database className="w-4 h-4" /> Local Climatology (3-yr avg)
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="w-full h-48">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <ComposedChart data={climatologyData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                      <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-                      <YAxis yAxisId="left" tick={{ fontSize: 10 }} />
-                      <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} />
-                      <Tooltip />
-                      <Legend wrapperStyle={{ fontSize: 11 }} />
-                      <Bar yAxisId="right" dataKey="rain" name="Rain (mm/mo)" fill="hsl(var(--primary))" opacity={0.4} />
-                      <Line yAxisId="left" type="monotone" dataKey="temp" name="Avg °C" stroke="#ef4444" strokeWidth={2} dot={false} />
-                    </ComposedChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
           <Tabs defaultValue="outlook" className="w-full">
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="outlook">Outlook</TabsTrigger>

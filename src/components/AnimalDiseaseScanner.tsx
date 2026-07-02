@@ -13,6 +13,7 @@ const AnimalDiseaseScanner = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const { canUseDetection, incrementDetection, getRemainingDetections, openUpgrade, isPremium } = useUsageLimits();
 
   const remaining = getRemainingDetections();
@@ -26,6 +27,8 @@ const AnimalDiseaseScanner = () => {
     }
     
     const file = e.target.files[0];
+    const localPreview = URL.createObjectURL(file);
+    setPreviewUrl(localPreview);
     setLoading(true);
     setResult(null);
 
@@ -81,6 +84,7 @@ const AnimalDiseaseScanner = () => {
       toast.error('Something went wrong. Please try again.');
     } finally {
       setLoading(false);
+      setTimeout(() => { URL.revokeObjectURL(localPreview); setPreviewUrl(null); }, 400);
     }
   };
 
@@ -102,7 +106,7 @@ const AnimalDiseaseScanner = () => {
 
   return (
     <>
-      <ScanningOverlay active={loading} label="DISEASE SCAN" />
+      <ScanningOverlay active={loading} label="DISEASE SCAN" imageUrl={previewUrl} />
       <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
