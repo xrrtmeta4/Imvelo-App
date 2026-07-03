@@ -72,6 +72,76 @@ async function fetchCurrentConditions(lat: number, lon: number): Promise<any> {
   }
 }
 
+// Free open API: Open-Meteo Air Quality (no key required)
+async function fetchAirQuality(lat: number, lon: number): Promise<any> {
+  try {
+    const r = await fetch(
+      `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=pm10,pm2_5,dust,uv_index&timezone=auto`
+    );
+    if (!r.ok) return null;
+    return (await r.json()).current;
+  } catch (e) { console.error('AQ error:', e); return null; }
+}
+
+// Free open API: Open-Meteo Climate Change Projections (downscaled CMIP6, monthly means)
+async function fetchClimateProjections(lat: number, lon: number): Promise<any> {
+  try {
+    const start = new Date(); start.setDate(1);
+    const end = new Date(start); end.setFullYear(start.getFullYear() + 1);
+    const fmt = (d: Date) => d.toISOString().slice(0, 10);
+    const r = await fetch(
+      `https://climate-api.open-meteo.com/v1/climate?latitude=${lat}&longitude=${lon}&start_date=${fmt(start)}&end_date=${fmt(end)}&models=MRI_AGCM3_2_S&daily=temperature_2m_mean,precipitation_sum&timezone=auto`
+    );
+    if (!r.ok) return null;
+    const j = await r.json();
+    // Aggregate to monthly for compactness
+    const daily = j.daily;
+    if (!daily?.time) return null;
+    const buckets: Record<string, { t: number[]; p: number[] }> = {};
+    daily.time.forEach((d: string, i: number) => {
+      const key = d.slice(0, 7);
+      buckets[key] = buckets[key] || { t: [], p: [] };
+      if (daily.temperature_2m_mean?.[i] != null) buckets[key].t.push(daily.temperature_2m_mean[i]);
+      if (daily.precipitation_sum?.[i] != null) buckets[key].p.push(daily.precipitation_sum[i]);
+    });
+    const monthly: Record<string, { meanTemp: number; totalPrecip: number }> = {};
+    for (const k in buckets) {
+      const b = buckets[k];
+      monthly[k] = {
+        meanTemp: b.t.length ? +(b.t.reduce((a, c) => a + c, 0) / b.t.length).toFixed(2) : 0,
+        totalPrecip: +b.p.reduce((a, c) => a + c, 0).toFixed(1),
+      };
+    }
+    return monthly;
+  } catch (e) { console.error('Projection error:', e); return null; }
+}
+
+// Free open API: NASA POWER agroclimatology (solar radiation, ET0, dew point)
+async function fetchNasaPower(lat: number, lon: number): Promise<any> {
+  try {
+    const end = new Date(); end.setDate(end.getDate() - 3);
+    const start = new Date(end); start.setDate(end.getDate() - 30);
+    const fmt = (d: Date) => d.toISOString().slice(0, 10).replace(/-/g, '');
+    const r = await fetch(
+      `https://power.larc.nasa.gov/api/temporal/daily/point?parameters=ALLSKY_SFC_SW_DWN,T2M,PRECTOTCORR,RH2M&community=AG&longitude=${lon}&latitude=${lat}&start=${fmt(start)}&end=${fmt(end)}&format=JSON`
+    );
+    if (!r.ok) return null;
+    const j = await r.json();
+    const p = j?.properties?.parameter || {};
+    const avg = (o: any) => {
+      const vals = Object.values(o || {}).filter((v: any) => typeof v === 'number' && v > -900) as number[];
+      return vals.length ? +(vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(2) : null;
+    };
+    return {
+      avgSolarRadiation_MJ_m2: avg(p.ALLSKY_SFC_SW_DWN),
+      avgTemp_C: avg(p.T2M),
+      totalPrecip_mm: p.PRECTOTCORR ? +Object.values(p.PRECTOTCORR).filter((v: any) => v > -900).reduce((a: number, b: any) => a + b, 0).toFixed(1) : null,
+      avgHumidity_pct: avg(p.RH2M),
+      windowDays: 30,
+    };
+  } catch (e) { console.error('NASA POWER error:', e); return null; }
+}
+
 function calculateExtremeEventProbabilities(lat: number, lon: number, historicalData: any): any {
   const currentMonth = new Date().getMonth();
   const isWetSeason = currentMonth >= 9 || currentMonth <= 3;
@@ -174,11 +244,14 @@ serve(async (req) => {
     const lon = longitude || 31.1367;
     console.log("Analyzing climate risk for:", lat, lon);
 
-    // Fetch all data in parallel
-    const [historicalData, forecastData, currentConditions] = await Promise.all([
+    // Fetch all data in parallel (Open-Meteo + NASA POWER — all free, no key)
+    const [historicalData, forecastData, currentConditions, airQuality, projections, nasaPower] = await Promise.all([
       fetchHistoricalClimate(lat, lon),
       fetchSeasonalForecast(lat, lon),
       fetchCurrentConditions(lat, lon),
+      fetchAirQuality(lat, lon),
+      fetchClimateProjections(lat, lon),
+      fetchNasaPower(lat, lon),
     ]);
 
     const extremeEvents = calculateExtremeEventProbabilities(lat, lon, historicalData);
@@ -275,7 +348,18 @@ Extreme event probabilities: ${JSON.stringify(extremeEvents)}
 
 Historical monthly averages (10 years): ${JSON.stringify(historicalData)}
 
-Provide comprehensive climate risk analysis with scenario-based yield projections, adaptive recommendations, and research insights for long-term climate monitoring.`;
+Air quality (Open-Meteo): ${JSON.stringify(airQuality)}
+
+Downscaled CMIP6 12-month climate projection (Open-Meteo): ${JSON.stringify(projections)}
+
+NASA POWER agroclimatology (last 30d — solar radiation, temp, precip, humidity): ${JSON.stringify(nasaPower)}
+
+Cross-reference ALL of the above sources. Explicitly reason about:
+- Divergence between the 16-day forecast and the 3-year historical seasonal baseline
+- How CMIP6 projections shift the 6-month and 1-year outlook vs historical norms
+- Solar radiation & humidity trends from NASA POWER for irrigation and disease pressure
+- Dust/PM impact on photosynthesis and worker health where relevant
+Then produce comprehensive climate risk analysis with scenario-based yield projections, adaptive recommendations, and research insights. Ground every recommendation in the numeric data provided above and cite which dataset supports it in the "reason" field where applicable.`;
 
     const callModel = async (model: string) => {
       const r = await fetch(AI_URL, {
@@ -360,6 +444,10 @@ Provide comprehensive climate risk analysis with scenario-based yield projection
     analysis.currentConditions = currentConditions;
     analysis.forecastData = forecastData;
     analysis.historicalMonthly = historicalData;
+    analysis.airQuality = airQuality;
+    analysis.climateProjections = projections;
+    analysis.nasaPower = nasaPower;
+    analysis.dataSources = ['open-meteo-forecast', 'open-meteo-archive', 'open-meteo-air-quality', 'open-meteo-climate-cmip6', 'nasa-power-agroclimatology'];
     analysis.dataHarvested = true;
     analysis.knowledgeGraphUsed = !!knowledgeContext;
     if (quantumMeta) analysis.quantum = quantumMeta;
