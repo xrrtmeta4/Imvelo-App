@@ -1,4 +1,4 @@
-import { Home, Bug, BookOpen, User, Settings, BarChart3 } from 'lucide-react';
+import { Home, Bug, BookOpen, Settings, BarChart3 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLanguage } from '@/hooks/useLanguage';
 
@@ -10,13 +10,12 @@ const MobileNav = () => {
     { to: '/scanner', icon: Bug, label: t('scan') },
     { to: '/analysis', icon: BarChart3, label: 'Analysis' },
     { to: '/ledger', icon: BookOpen, label: t('ledger') },
-    { to: '/profile', icon: User, label: t('profile') },
     { to: '/settings', icon: Settings, label: t('settings') },
   ];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 safe-area-bottom">
-      <div className="grid grid-cols-6 items-center h-14 max-w-screen-sm mx-auto px-1">
+      <div className="grid grid-cols-5 items-center h-14 max-w-screen-sm mx-auto px-1">
         {navItems.map((item) => (
           <NavLink
             key={item.to}

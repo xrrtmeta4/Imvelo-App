@@ -1,4 +1,4 @@
-import { ArrowLeft, Type, Wifi, Sun, Minus, Plus } from 'lucide-react';
+import { ArrowLeft, Type, Wifi, Sun, Minus, Plus, User, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useSettings } from '@/hooks/useSettings';
@@ -23,6 +23,26 @@ const Settings = () => {
       </header>
 
       <div className="max-w-screen-sm mx-auto px-4 py-4 space-y-4">
+        {/* Profile Management */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <User className="w-4 h-4" />
+              {t('profile')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Button
+              variant="outline"
+              className="w-full justify-between"
+              onClick={() => navigate('/profile')}
+            >
+              <span>Manage your profile</span>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            </Button>
+          </CardContent>
+        </Card>
+
         {/* Language */}
         <Card>
           <CardHeader className="pb-2">
