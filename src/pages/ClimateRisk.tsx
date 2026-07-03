@@ -279,6 +279,51 @@ import { useUsageLimits } from '@/hooks/useUsageLimits';
              </div>
            </CardContent>
          </Card>
+
+          {/* Climate Outlook Summary — quick view across all 4 horizons */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <TrendingUp className="w-5 h-5" />
+                Climate Outlook Summary
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-3">
+                {([
+                  { key: 'twoWeeks', label: '2 weeks', icon: <Calendar className="w-4 h-4" /> },
+                  { key: 'threeMonths', label: '3 months', icon: <TrendingUp className="w-4 h-4" /> },
+                  { key: 'sixMonths', label: '6 months', icon: <Sun className="w-4 h-4" /> },
+                  { key: 'oneYear', label: '1 year', icon: <Shield className="w-4 h-4" /> },
+                ] as const).map(({ key, label, icon }) => {
+                  const o = outlooks?.[key];
+                  return (
+                    <div key={key} className="p-3 rounded-lg border border-border bg-muted/50">
+                      <div className="flex items-center gap-1.5 mb-1 text-xs font-semibold text-primary">
+                        {icon}<span>{label}</span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground line-clamp-2 mb-1">
+                        {o?.conditions || 'No data yet'}
+                      </p>
+                      {o?.yieldProjection && (
+                        <p className="text-[11px] font-medium">📈 {o.yieldProjection}</p>
+                      )}
+                      {o?.suitableCrops?.length > 0 && (
+                        <p className="text-[10px] text-green-700 mt-1 line-clamp-1">
+                          🌱 {o.suitableCrops.slice(0, 3).join(', ')}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              {analysis?.dataSources?.length > 0 && (
+                <p className="text-[10px] text-muted-foreground mt-3 leading-tight">
+                  Data: {analysis.dataSources.join(' · ')}
+                </p>
+              )}
+            </CardContent>
+          </Card>
  
           <Tabs defaultValue="outlook" className="w-full">
             <TabsList className="grid w-full grid-cols-4">
