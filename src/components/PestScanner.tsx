@@ -91,7 +91,12 @@ const PestScanner = () => {
       toast.success('Pest identified successfully!');
     } catch (error: any) {
       console.error('Error:', error);
-      toast.error('Something went wrong. Please try again.');
+      const msg = error?.context?.body || error?.message || '';
+      if (/rate|429|quota/i.test(msg)) toast.error('AI is busy right now. Please retry in a moment.');
+      else if (/network|failed to fetch|offline/i.test(msg)) toast.error('Network issue — check your connection and try again.');
+      else if (/storage|upload|bucket/i.test(msg)) toast.error('Upload failed — try a smaller or clearer photo.');
+      else if (/invalid|unsupported|format/i.test(msg)) toast.error('Unsupported image — use JPG or PNG.');
+      else toast.error(`Scan failed: ${msg?.slice(0, 100) || 'Please try again with a clearer photo.'}`);
     } finally {
       setLoading(false);
       // Give the overlay a beat to fade before releasing the object URL
