@@ -249,13 +249,13 @@ export default function AIChat() {
         </div>
       )}
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-6">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 sm:px-4 py-4 sm:py-6">
         {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
-            <AuroraBlob state={state} />
-            <div className="text-center max-w-sm">
-              <h2 className="text-2xl font-semibold mb-2">Ask me anything</h2>
-              <p className="text-sm text-white/60">Farming, weather, pests, prices — text or voice, in your language.</p>
+          <div className="flex flex-col items-center justify-center min-h-[45vh] sm:min-h-[60vh] gap-3 sm:gap-6">
+            <div className="scale-75 sm:scale-100"><AuroraBlob state={state} /></div>
+            <div className="text-center max-w-sm px-2">
+              <h2 className="text-xl sm:text-2xl font-semibold mb-1 sm:mb-2">Ask me anything</h2>
+              <p className="text-xs sm:text-sm text-white/60">Farming, weather, pests, prices — text or voice.</p>
             </div>
             <div className="grid grid-cols-2 gap-2 w-full max-w-sm">
               {['When should I plant maize?', 'How to treat aphids?', 'Best irrigation for beans?', 'Prices this week?'].map(s => (
@@ -274,7 +274,7 @@ export default function AIChat() {
                     <Sparkles className="w-4 h-4 text-white" />
                   </div>
                 )}
-                <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-line ${
+                <div className={`max-w-[85%] sm:max-w-[80%] rounded-2xl px-3.5 sm:px-4 py-2.5 text-[13px] sm:text-sm leading-relaxed whitespace-pre-line break-words ${
                   m.role === 'user'
                     ? 'bg-primary text-primary-foreground rounded-tr-sm'
                     : 'bg-white/10 backdrop-blur border border-white/10 rounded-tl-sm text-white'
@@ -298,12 +298,12 @@ export default function AIChat() {
       </div>
 
       {messages.length > 0 && (
-        <div className="flex justify-center pb-2">
+        <div className="hidden sm:flex justify-center pb-2">
           <div className="scale-50 -my-8"><AuroraBlob state={state} /></div>
         </div>
       )}
 
-      <div className="px-4 pb-4 pt-2 sticky bottom-16 bg-gradient-to-t from-black via-black/95 to-transparent">
+      <div className="px-3 sm:px-4 pt-2 sticky bottom-16 bg-gradient-to-t from-black via-black/95 to-transparent" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}>
         {!canUseChat() ? (
           <div className="text-center py-3">
             <Button onClick={openUpgrade} className="gap-2">

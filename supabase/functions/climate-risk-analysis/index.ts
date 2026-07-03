@@ -225,11 +225,12 @@ Respond in JSON format:
   "overallRiskLevel": "low" | "moderate" | "high" | "critical",
   "riskScore": number (0-100),
   "outlooks": {
-    "twoWeeks":  { "period": "Next 2 weeks",  "conditions": "string", "tempTrend": "string", "rainfallTrend": "string", "farmingOpportunities": ["list"], "risks": ["list"], "yieldProjection": "string" },
-    "threeMonths": { "period": "Next 3 months", "conditions": "string", "tempTrend": "string", "rainfallTrend": "string", "farmingOpportunities": ["list"], "risks": ["list"], "yieldProjection": "string" },
-    "sixMonths":  { "period": "Next 6 months", "conditions": "string", "tempTrend": "string", "rainfallTrend": "string", "farmingOpportunities": ["list"], "risks": ["list"], "yieldProjection": "string" },
-    "oneYear":    { "period": "Next 12 months","conditions": "string", "tempTrend": "string", "rainfallTrend": "string", "climateTrends": ["list"], "suitabilityChanges": ["list"], "yieldProjection": "string" }
+    "twoWeeks":    { "period": "Next 2 weeks",   "conditions": "string", "tempTrend": "string", "rainfallTrend": "string", "farmingOpportunities": ["list"], "risks": ["list"], "yieldProjection": "string", "suitableCrops": ["at least 3 specific crops"], "recommendedActions": ["at least 3 concrete actions"] },
+    "threeMonths": { "period": "Next 3 months",  "conditions": "string", "tempTrend": "string", "rainfallTrend": "string", "farmingOpportunities": ["list"], "risks": ["list"], "yieldProjection": "string", "suitableCrops": ["at least 3 specific crops"], "recommendedActions": ["at least 3 concrete actions"] },
+    "sixMonths":   { "period": "Next 6 months",  "conditions": "string", "tempTrend": "string", "rainfallTrend": "string", "farmingOpportunities": ["list"], "risks": ["list"], "yieldProjection": "string", "suitableCrops": ["at least 3 specific crops"], "recommendedActions": ["at least 3 concrete actions"] },
+    "oneYear":     { "period": "Next 12 months", "conditions": "string", "tempTrend": "string", "rainfallTrend": "string", "climateTrends": ["list"], "suitabilityChanges": ["list"], "yieldProjection": "string", "suitableCrops": ["at least 3 specific crops"], "recommendedActions": ["at least 3 concrete actions"] }
   },
+  "IMPORTANT": "Every outlook horizon MUST include non-empty suitableCrops and recommendedActions arrays tailored to that horizon's expected conditions in ${regionGuess}. Never leave them empty.",
   "cropRecommendations": [
     {
       "crop": "name",
@@ -325,10 +326,31 @@ Provide comprehensive climate risk analysis with scenario-based yield projection
       if (!analysis) throw new Error('No JSON found');
     } catch (parseError) {
       console.error("Parse error:", parseError);
+      const stubHorizon = (period: string) => ({
+        period,
+        conditions: `Typical ${regionGuess} seasonal conditions expected for ${period.toLowerCase()}.`,
+        tempTrend: 'Near-normal temperatures',
+        rainfallTrend: 'Near-normal rainfall',
+        yieldProjection: 'Average yields with standard practices',
+        farmingOpportunities: ['Plan land preparation', 'Stock inputs early', 'Review crop insurance'],
+        risks: ['Unexpected dry spells', 'Localized pest pressure'],
+        suitableCrops: ['Maize', 'Beans', 'Sorghum', 'Vegetables', 'Sweet potato'],
+        recommendedActions: ['Mulch beds to conserve moisture', 'Schedule irrigation based on forecast', 'Monitor pest traps weekly'],
+      });
       analysis = {
         overallRiskLevel: "moderate",
         riskScore: 50,
-        shortTermOutlook: { period: "Next 2 weeks", conditions: "Normal conditions expected" },
+        outlooks: {
+          twoWeeks: stubHorizon('Next 2 weeks'),
+          threeMonths: stubHorizon('Next 3 months'),
+          sixMonths: stubHorizon('Next 6 months'),
+          oneYear: stubHorizon('Next 12 months'),
+        },
+        cropRecommendations: [
+          { crop: 'Maize', suitability: 'medium', optimalPlantingWindow: 'Start of rains', riskFactors: ['Dry spell mid-season'], adaptations: ['Use drought-tolerant varieties', 'Apply mulch'] },
+          { crop: 'Beans', suitability: 'high', optimalPlantingWindow: 'Early wet season', riskFactors: ['Fungal disease in humid weeks'], adaptations: ['Space rows for airflow', 'Rotate with cereals'] },
+          { crop: 'Sorghum', suitability: 'high', optimalPlantingWindow: 'Mid-season', riskFactors: ['Bird damage'], adaptations: ['Netting on heads', 'Community scaring'] },
+        ],
         adaptiveActions: []
       };
     }
