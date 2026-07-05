@@ -1083,7 +1083,17 @@ const DigitalLedgerContent = () => {
               </div>
             ) : (
               <div className="space-y-2">
-                {getFilteredEntries().map((entry) => (
+                {(() => {
+                  const list = getFilteredEntries();
+                  // Compute running balance oldest→newest, then render newest→oldest
+                  const ascending = [...list].sort((a, b) => new Date(a.entry_date).getTime() - new Date(b.entry_date).getTime());
+                  const balanceById: Record<string, number> = {};
+                  let running = 0;
+                  for (const e of ascending) {
+                    running += e.entry_type === 'income' ? e.amount : -e.amount;
+                    balanceById[e.id] = running;
+                  }
+                  return list.map((entry) => (
                   <div key={entry.id} className="flex items-center gap-3 p-3 border rounded-lg">
                     <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
                       entry.entry_type === 'income' ? 'bg-green-100 dark:bg-green-950/30' : 'bg-red-100 dark:bg-red-950/30'
@@ -1105,6 +1115,9 @@ const DigitalLedgerContent = () => {
                           </>
                         )}
                       </div>
+                      <p className="text-[10px] text-muted-foreground/80 tabular-nums mt-0.5">
+                        Balance: {balanceById[entry.id] >= 0 ? '' : '-'}{formatAmount(Math.abs(balanceById[entry.id]))}
+                      </p>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <span className={`text-sm font-semibold ${
@@ -1122,7 +1135,8 @@ const DigitalLedgerContent = () => {
                       </Button>
                     </div>
                   </div>
-                ))}
+                  ));
+                })()}
               </div>
             )}
           </CardContent>
