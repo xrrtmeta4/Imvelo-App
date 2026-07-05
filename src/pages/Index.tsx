@@ -1,15 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import WeatherCard from '@/components/WeatherCard';
 import WeatherTicker from '@/components/WeatherTicker';
+import HeroWeather from '@/components/HeroWeather';
 import NotificationBell from '@/components/NotificationBell';
 import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/lib/supabase';
-import { Sprout, Crown, ChevronDown, ChevronUp, Cloud, Store, Users, Phone, Sparkles } from 'lucide-react';
+import { Sprout, Crown, Store, Users, Phone, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import heroImage from '@/assets/download (30).jpeg';
@@ -21,8 +21,6 @@ const Index = () => {
   const navigate = useNavigate();
   const [userName, setUserName] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [weatherOpen, setWeatherOpen] = useState(false);
-
   useEffect(() => {
     const fetchProfile = async () => {
       if (!user) return;
@@ -78,6 +76,8 @@ const Index = () => {
             </h1>
             <p className="text-white/90 text-base drop-shadow">{t('farmersBestFriend')}</p>
 
+            <HeroWeather />
+
             {!isPremium && (
               <Button
                 onClick={() => navigate('/upgrade')}
@@ -110,25 +110,6 @@ const Index = () => {
         </button>
 
         <div className="grid gap-5">
-          <Collapsible open={weatherOpen} onOpenChange={setWeatherOpen}>
-            <CollapsibleTrigger asChild>
-              <button className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-border bg-card hover:bg-accent/50 transition-colors">
-                <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                  <Cloud className="w-4 h-4 text-primary" />
-                  {t('weatherForecast')}
-                </div>
-                {weatherOpen ? (
-                  <ChevronUp className="w-4 h-4 text-muted-foreground" />
-                ) : (
-                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                )}
-              </button>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="mt-2">
-              <WeatherCard />
-            </CollapsibleContent>
-          </Collapsible>
-
           <button
             onClick={() => navigate('/extension-directory')}
             className="w-full text-left rounded-xl border border-border bg-card p-4 hover:bg-accent/50 transition-colors"
