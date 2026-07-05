@@ -706,6 +706,43 @@ const DigitalLedgerContent = () => {
           </Card>
         </div>
 
+        {/* Monthly Profit & Loss (professional accounting) */}
+        <Card className="border-border">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <BookOpen className="w-4 h-4 text-primary" />
+                Monthly P&L — {format(now, 'MMMM yyyy')}
+              </span>
+              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                pctChange >= 0 ? 'bg-green-500/10 text-green-700 dark:text-green-400' : 'bg-red-500/10 text-red-700 dark:text-red-400'
+              }`}>
+                {pctChange >= 0 ? '▲' : '▼'} {Math.abs(pctChange)}% vs {format(lastMonthStart, 'MMM')}
+              </span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-1">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+              <div className="text-muted-foreground">Revenue</div>
+              <div className="text-right tabular-nums font-medium text-green-700 dark:text-green-400">{formatAmount(thisMoIncome)}</div>
+              <div className="text-muted-foreground">Operating expenses</div>
+              <div className="text-right tabular-nums font-medium text-red-700 dark:text-red-400">({formatAmount(thisMoExpense)})</div>
+              <div className="col-span-2 border-t border-border my-1" />
+              <div className="font-semibold">Net income</div>
+              <div className={`text-right tabular-nums font-bold ${thisMoNet >= 0 ? 'text-foreground' : 'text-red-600'}`}>
+                {thisMoNet >= 0 ? '' : '-'}{formatAmount(Math.abs(thisMoNet))}
+              </div>
+              <div className="text-muted-foreground">Profit margin</div>
+              <div className={`text-right tabular-nums ${profitMargin >= 0 ? 'text-foreground' : 'text-red-600'}`}>{profitMargin}%</div>
+              <div className="col-span-2 border-t border-border my-1" />
+              <div className="text-muted-foreground text-[11px]">Prior month net</div>
+              <div className="text-right tabular-nums text-muted-foreground text-[11px]">
+                {lastMoNet >= 0 ? '' : '-'}{formatAmount(Math.abs(lastMoNet))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Action Buttons */}
         <div className="flex gap-3">
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
