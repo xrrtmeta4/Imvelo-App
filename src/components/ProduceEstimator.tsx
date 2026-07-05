@@ -48,13 +48,20 @@ const ProduceEstimator = () => {
         });
 
       if (estimateError) throw estimateError;
-
+      if (estimateData?.error) throw new Error(estimateData.error);
+      if (!estimateData?.crop_type || estimateData.crop_type === 'Failed') {
+        throw new Error('Estimation failed. Try a photo taken from above showing more of the field.');
+      }
       setResult(estimateData);
       incrementDetection();
       toast.success('Estimation complete!');
     } catch (error: any) {
       console.error('Error:', error);
-      toast.error('Something went wrong. Please try again.');
+      const msg = error?.context?.body || error?.message || '';
+      if (/rate|429|quota/i.test(msg)) toast.error('AI is busy right now. Please retry in a moment.');
+      else if (/network|failed to fetch|offline/i.test(msg)) toast.error('Network issue — check your connection.');
+      else if (/storage|upload|bucket/i.test(msg)) toast.error('Upload failed — try a smaller or clearer photo.');
+      else toast.error(msg?.slice(0, 140) || 'Estimation failed. Please try again with a clearer photo.');
     } finally {
       setLoading(false);
     }

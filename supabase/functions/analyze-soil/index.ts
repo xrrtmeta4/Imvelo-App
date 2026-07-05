@@ -21,16 +21,7 @@ serve(async (req) => {
 
     if (!LOVABLE_API_KEY) throw new Error('Gemini API key is not configured');
 
-    const systemPrompt = `You are an expert soil scientist. Analyze soil images to determine:
-1. Soil type (clay, sandy, loam, silt, etc.)
-2. Estimated pH range
-3. Texture assessment
-4. Organic matter content estimate (low/medium/high)
-5. Drainage characteristics
-6. Color-based nutrient indicators
-7. Improvement recommendations
-
-Respond in JSON:
+    const systemPrompt = `You are CHLOE, Imvelo's soil-science computer-vision AI. Use the Munsell soil color chart mentally, USDA soil taxonomy, and visible aggregate structure/tilth to characterise the sample. Respond in STRICT JSON:
 {
   "soilType": "string",
   "phEstimate": "string (e.g. '6.0-6.5')",
@@ -40,6 +31,8 @@ Respond in JSON:
   "colorAnalysis": "string",
   "recommendations": ["string"],
   "suitableCrops": ["string"],
+  "structure": "granular|blocky|platy|massive|single-grain",
+  "likelyDeficiencies": ["N|P|K|Ca|Mg|S|micronutrient notes"],
   "confidence": number (1-100)
 }`;
 
