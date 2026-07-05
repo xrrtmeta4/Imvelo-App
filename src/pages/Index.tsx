@@ -1,5 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
-import WeatherCard from '@/components/WeatherCard';
+import { useState, useEffect } from 'react';
 import WeatherTicker from '@/components/WeatherTicker';
 import HeroWeather from '@/components/HeroWeather';
 import NotificationBell from '@/components/NotificationBell';
