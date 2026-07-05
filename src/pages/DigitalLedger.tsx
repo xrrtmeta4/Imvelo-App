@@ -17,6 +17,7 @@ import { useCurrency, currencies } from '@/hooks/useCurrency';
 import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { toast } from 'sonner';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
+import { subMonths } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import jsPDF from 'jspdf';
 
@@ -590,6 +591,28 @@ const DigitalLedgerContent = () => {
   const totalExpense = entries.filter(e => e.entry_type === 'expense').reduce((sum, e) => sum + e.amount, 0);
   const netBalance = totalIncome - totalExpense;
   const budgetAlerts = getOverBudgetAlerts();
+
+  // Professional accounting: current-month vs previous-month P&L
+  const now = new Date();
+  const thisMonthStart = startOfMonth(now);
+  const lastMonthStart = startOfMonth(subMonths(now, 1));
+  const lastMonthEnd = endOfMonth(subMonths(now, 1));
+  const inRange = (d: string, a: Date, b: Date) => {
+    const t = new Date(d).getTime();
+    return t >= a.getTime() && t <= b.getTime();
+  };
+  const sumWhere = (fn: (e: LedgerEntry) => boolean) =>
+    entries.filter(fn).reduce((s, e) => s + e.amount, 0);
+  const thisMoIncome = sumWhere(e => e.entry_type === 'income' && inRange(e.entry_date, thisMonthStart, now));
+  const thisMoExpense = sumWhere(e => e.entry_type === 'expense' && inRange(e.entry_date, thisMonthStart, now));
+  const lastMoIncome = sumWhere(e => e.entry_type === 'income' && inRange(e.entry_date, lastMonthStart, lastMonthEnd));
+  const lastMoExpense = sumWhere(e => e.entry_type === 'expense' && inRange(e.entry_date, lastMonthStart, lastMonthEnd));
+  const thisMoNet = thisMoIncome - thisMoExpense;
+  const lastMoNet = lastMoIncome - lastMoExpense;
+  const pctChange = lastMoNet !== 0
+    ? Math.round(((thisMoNet - lastMoNet) / Math.abs(lastMoNet)) * 100)
+    : (thisMoNet > 0 ? 100 : 0);
+  const profitMargin = thisMoIncome > 0 ? Math.round((thisMoNet / thisMoIncome) * 100) : 0;
 
   return (
     <div className="min-h-screen bg-background pb-20">
