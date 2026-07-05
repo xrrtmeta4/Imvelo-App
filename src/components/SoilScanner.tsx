@@ -48,7 +48,8 @@ const SoilScanner = () => {
       });
 
       if (error) throw error;
-
+      if (data?.error) throw new Error(data.error);
+      if (!data?.soilType) throw new Error('Soil analysis failed. Try a closer, well-lit soil photo.');
       setResult(data);
       incrementDetection();
       toast.success('Soil analysis complete!');

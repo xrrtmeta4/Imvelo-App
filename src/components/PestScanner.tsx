@@ -53,6 +53,8 @@ const PestScanner = () => {
         });
 
       if (identifyError) throw identifyError;
+      if (identifyData?.error) throw new Error(identifyData.error);
+      if (!identifyData?.pest_name) throw new Error('The AI could not read this image. Try a clearer close-up in good light.');
 
       setResult(identifyData);
       incrementDetection();
