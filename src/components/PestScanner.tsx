@@ -143,6 +143,9 @@ const PestScanner = () => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
+          <Atom className="w-3 h-3" /> Chloe AI · trained on PlantDoc · IP102 · PlantVillage
+        </div>
         {!canUseDetection() ? (
           <div className="text-center py-4 space-y-3">
            <p className="text-sm text-muted-foreground">
