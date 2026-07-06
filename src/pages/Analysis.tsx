@@ -20,8 +20,8 @@ const Analysis = () => {
     },
     {
       icon: Droplets,
-      title: 'Smart Irrigation Planner',
-      desc: '7-day rainfall analysis with watering schedule and water-saving tips.',
+      title: t('Smart Irrigation Planner'),
+      desc: t('7-day rainfall analysis with watering schedule and water-saving tips.'),
       path: '/smart-irrigation',
       iconBg: 'bg-blue-500/15',
       iconColor: 'text-blue-500',
@@ -29,8 +29,8 @@ const Analysis = () => {
     },
     {
       icon: Leaf,
-      title: 'Carbon Score & Analysis',
-      desc: 'Estimate your farm carbon footprint and find sustainability opportunities.',
+      title: t('Carbon Score & Analysis'),
+      desc: t('Estimate your farm carbon footprint and find sustainability opportunities.'),
       path: '/carbon-score',
       iconBg: 'bg-emerald-500/15',
       iconColor: 'text-emerald-600',
@@ -51,8 +51,8 @@ const Analysis = () => {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold">Analysis</h1>
-            <p className="text-sm text-primary-foreground/85">Climate & irrigation insights for your farm</p>
+            <h1 className="text-2xl font-bold">{t('Analysis')}</h1>
+            <p className="text-sm text-primary-foreground/85">{t('Climate & irrigation insights for your farm')}</p>
           </div>
         </div>
       </header>

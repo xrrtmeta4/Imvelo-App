@@ -47,7 +47,6 @@ import MobileNav from "./components/MobileNav";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import SubscriptionPopup from "./components/SubscriptionPopup";
 import AppTutorial from "./components/AppTutorial";
-import VoiceNav from "./components/VoiceNav";
 import { useInteractionTracker } from "./hooks/useInteractionTracker";
 import ErrorBoundary from "./components/ErrorBoundary";
 
@@ -77,7 +76,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       <MobileNav />
       <SubscriptionPopup />
       <AppTutorial />
-      <VoiceNav />
     </>
   );
 };

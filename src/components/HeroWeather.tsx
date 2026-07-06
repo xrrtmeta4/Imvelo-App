@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useLocation } from '@/hooks/useLocation';
-import { MapPin, Droplets, Wind, Loader2 } from 'lucide-react';
+import { MapPin, Droplets, Wind, Loader2, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface HeroWeatherData {
   temperature: number;
@@ -18,6 +19,7 @@ const CACHE_MS = 10 * 60 * 1000;
 
 const HeroWeather = () => {
   const { getLocation } = useLocation();
+  const navigate = useNavigate();
   const [data, setData] = useState<HeroWeatherData | null>(null);
   const [loc, setLoc] = useState<string>('');
   const [loading, setLoading] = useState(true);
@@ -69,7 +71,12 @@ const HeroWeather = () => {
   if (!data) return null;
 
   return (
-    <div className="mt-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 p-4 text-white shadow-xl">
+    <button
+      type="button"
+      onClick={() => navigate('/weather')}
+      aria-label="Open 7-day weather forecast"
+      className="mt-4 w-full text-left rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 p-4 text-white shadow-xl hover:bg-white/15 active:scale-[0.99] transition"
+    >
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <div className="text-4xl leading-none drop-shadow" aria-hidden>{data.emoji}</div>
@@ -95,9 +102,10 @@ const HeroWeather = () => {
           {data.precip_probability > 0 && (
             <span className="text-[10px] text-white/70">Rain {data.precip_probability}%</span>
           )}
+          <span className="flex items-center gap-0.5 text-[10px] text-white/80 mt-0.5">7-day <ChevronRight className="w-3 h-3" /></span>
         </div>
       </div>
-    </div>
+    </button>
   );
 };
 

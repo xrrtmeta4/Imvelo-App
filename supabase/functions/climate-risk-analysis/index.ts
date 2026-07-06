@@ -142,6 +142,33 @@ async function fetchNasaPower(lat: number, lon: number): Promise<any> {
   } catch (e) { console.error('NASA POWER error:', e); return null; }
 }
 
+// Meteoblue: high-resolution 7-day forecast (paid API key)
+async function fetchMeteoblue(lat: number, lon: number): Promise<any> {
+  try {
+    const key = Deno.env.get('METEOBLUE_API_KEY');
+    if (!key) return null;
+    const r = await fetch(
+      `https://my.meteoblue.com/packages/basic-day_agro-day?apikey=${key}&lat=${lat}&lon=${lon}&format=json&forecast_days=7`
+    );
+    if (!r.ok) { console.error('Meteoblue status', r.status); return null; }
+    const j = await r.json();
+    const bd = j?.data_day || {};
+    const days = (bd.time || []).map((d: string, i: number) => ({
+      date: d,
+      tempMax: bd.temperature_max?.[i],
+      tempMin: bd.temperature_min?.[i],
+      precip_mm: bd.precipitation?.[i],
+      precipProb_pct: bd.precipitation_probability?.[i],
+      windMax_kmh: bd.windspeed_max?.[i],
+      relHumidity_pct: bd.relativehumidity_mean?.[i],
+      predictability: bd.predictability?.[i],
+      soilMoisture_pct: bd.soilmoisture_0to10cm_mean?.[i] ?? bd.soilmoisture_mean?.[i],
+      evapotranspiration_mm: bd.evapotranspiration?.[i],
+    }));
+    return { source: 'meteoblue', days };
+  } catch (e) { console.error('Meteoblue error:', e); return null; }
+}
+
 function calculateExtremeEventProbabilities(lat: number, lon: number, historicalData: any): any {
   const currentMonth = new Date().getMonth();
   const isWetSeason = currentMonth >= 9 || currentMonth <= 3;
@@ -245,13 +272,14 @@ serve(async (req) => {
     console.log("Analyzing climate risk for:", lat, lon);
 
     // Fetch all data in parallel (Open-Meteo + NASA POWER — all free, no key)
-    const [historicalData, forecastData, currentConditions, airQuality, projections, nasaPower] = await Promise.all([
+    const [historicalData, forecastData, currentConditions, airQuality, projections, nasaPower, meteoblue] = await Promise.all([
       fetchHistoricalClimate(lat, lon),
       fetchSeasonalForecast(lat, lon),
       fetchCurrentConditions(lat, lon),
       fetchAirQuality(lat, lon),
       fetchClimateProjections(lat, lon),
       fetchNasaPower(lat, lon),
+      fetchMeteoblue(lat, lon),
     ]);
 
     const extremeEvents = calculateExtremeEventProbabilities(lat, lon, historicalData);
@@ -353,6 +381,8 @@ Air quality (Open-Meteo): ${JSON.stringify(airQuality)}
 Downscaled CMIP6 12-month climate projection (Open-Meteo): ${JSON.stringify(projections)}
 
 NASA POWER agroclimatology (last 30d — solar radiation, temp, precip, humidity): ${JSON.stringify(nasaPower)}
+
+Meteoblue 7-day high-resolution agro forecast (PRIMARY prediction source — prefer this for the 2-week outlook when present): ${JSON.stringify(meteoblue)}
 
 Cross-reference ALL of the above sources. Explicitly reason about:
 - Divergence between the 16-day forecast and the 3-year historical seasonal baseline
