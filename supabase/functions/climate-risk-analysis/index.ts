@@ -142,31 +142,61 @@ async function fetchNasaPower(lat: number, lon: number): Promise<any> {
   } catch (e) { console.error('NASA POWER error:', e); return null; }
 }
 
-// Meteoblue: high-resolution 7-day forecast (paid API key)
+// Meteoblue: PRIMARY high-resolution 7-day agro forecast + current + trend
 async function fetchMeteoblue(lat: number, lon: number): Promise<any> {
   try {
     const key = Deno.env.get('METEOBLUE_API_KEY');
     if (!key) return null;
-    const r = await fetch(
-      `https://my.meteoblue.com/packages/basic-day_agro-day?apikey=${key}&lat=${lat}&lon=${lon}&format=json&forecast_days=7`
-    );
-    if (!r.ok) { console.error('Meteoblue status', r.status); return null; }
+    // basic-day + agro-day + trend-day (14-day) + current in one packages call
+    const url = `https://my.meteoblue.com/packages/basic-day_agro-day_trend-day_current?apikey=${key}&lat=${lat}&lon=${lon}&format=json&forecast_days=7`;
+    const r = await fetch(url);
+    if (!r.ok) { console.error('Meteoblue status', r.status, await r.text().catch(()=> '')); return null; }
     const j = await r.json();
     const bd = j?.data_day || {};
     const days = (bd.time || []).map((d: string, i: number) => ({
       date: d,
       tempMax: bd.temperature_max?.[i],
       tempMin: bd.temperature_min?.[i],
+      tempMean: bd.temperature_mean?.[i],
       precip_mm: bd.precipitation?.[i],
       precipProb_pct: bd.precipitation_probability?.[i],
       windMax_kmh: bd.windspeed_max?.[i],
+      windMean_kmh: bd.windspeed_mean?.[i],
       relHumidity_pct: bd.relativehumidity_mean?.[i],
       predictability: bd.predictability?.[i],
       soilMoisture_pct: bd.soilmoisture_0to10cm_mean?.[i] ?? bd.soilmoisture_mean?.[i],
       evapotranspiration_mm: bd.evapotranspiration?.[i],
+      uvIndex: bd.uvindex?.[i],
+      pictocode: bd.pictocode?.[i],
     }));
-    return { source: 'meteoblue', days };
+    const trend = j?.trend_day ? {
+      time: j.trend_day.time,
+      tempMax: j.trend_day.temperature_max,
+      tempMin: j.trend_day.temperature_min,
+      precip: j.trend_day.precipitation,
+      precipProb: j.trend_day.precipitation_probability,
+    } : null;
+    const current = j?.data_current || null;
+    return { source: 'meteoblue', days, trend14: trend, current, metadata: j?.metadata };
   } catch (e) { console.error('Meteoblue error:', e); return null; }
+}
+
+// Derive early-warning flags from meteoblue days
+function deriveMeteoblueEarlyWarnings(mb: any): any[] {
+  if (!mb?.days?.length) return [];
+  const w: any[] = [];
+  const nextDays = mb.days.slice(0, 7);
+  const totalPrecip = nextDays.reduce((a: number, d: any) => a + (d.precip_mm || 0), 0);
+  const dryStreak = nextDays.filter((d: any) => (d.precip_mm || 0) < 1).length;
+  const heatDays = nextDays.filter((d: any) => (d.tempMax || 0) >= 35).length;
+  const frostDays = nextDays.filter((d: any) => (d.tempMin ?? 99) <= 2).length;
+  const windDays = nextDays.filter((d: any) => (d.windMax_kmh || 0) >= 45).length;
+  if (totalPrecip >= 80) w.push({ type: 'flood', severity: totalPrecip >= 150 ? 'high' : 'moderate', message: `Heavy rainfall expected — ${Math.round(totalPrecip)}mm total in the next 7 days.` });
+  if (dryStreak >= 6) w.push({ type: 'drought', severity: 'moderate', message: `Dry spell — less than 1mm rain on ${dryStreak} of the next 7 days.` });
+  if (heatDays >= 2) w.push({ type: 'heatwave', severity: heatDays >= 4 ? 'high' : 'moderate', message: `Heatwave — ${heatDays} day(s) at or above 35°C in the next week.` });
+  if (frostDays >= 1) w.push({ type: 'frost', severity: frostDays >= 2 ? 'high' : 'moderate', message: `Frost risk — overnight lows at or below 2°C on ${frostDays} day(s).` });
+  if (windDays >= 1) w.push({ type: 'wind', severity: windDays >= 2 ? 'high' : 'moderate', message: `Strong winds forecast — gusts above 45 km/h on ${windDays} day(s).` });
+  return w;
 }
 
 function calculateExtremeEventProbabilities(lat: number, lon: number, historicalData: any): any {
@@ -477,7 +507,16 @@ Then produce comprehensive climate risk analysis with scenario-based yield proje
     analysis.airQuality = airQuality;
     analysis.climateProjections = projections;
     analysis.nasaPower = nasaPower;
-    analysis.dataSources = ['open-meteo-forecast', 'open-meteo-archive', 'open-meteo-air-quality', 'open-meteo-climate-cmip6', 'nasa-power-agroclimatology'];
+    analysis.meteoblue = meteoblue;
+    analysis.meteoblueEarlyWarnings = deriveMeteoblueEarlyWarnings(meteoblue);
+    analysis.dataSources = [
+      meteoblue ? 'meteoblue-basic+agro+trend (primary)' : null,
+      'open-meteo-forecast (backup)',
+      'open-meteo-archive',
+      'open-meteo-air-quality',
+      'open-meteo-climate-cmip6',
+      'nasa-power-agroclimatology',
+    ].filter(Boolean);
     analysis.dataHarvested = true;
     analysis.knowledgeGraphUsed = !!knowledgeContext;
     if (quantumMeta) analysis.quantum = quantumMeta;
