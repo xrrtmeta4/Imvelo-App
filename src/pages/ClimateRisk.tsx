@@ -3,8 +3,12 @@
  import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
  import { Button } from '@/components/ui/button';
  import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
- import { CloudLightning, Loader2, AlertTriangle, TrendingUp, Thermometer, Droplets, Wind, Sun, Sprout, Calendar, Shield, Database, Bug } from 'lucide-react';
+import { CloudLightning, Loader2, AlertTriangle, TrendingUp, Thermometer, Droplets, Wind, Sun, Sprout, Calendar, Shield, Database, Bug, Sparkles, Snowflake, Flame } from 'lucide-react';
 import { Atom } from 'lucide-react';
+import {
+  ResponsiveContainer, LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  Tooltip as RTooltip, Legend, Area, ComposedChart, RadialBarChart, RadialBar,
+} from 'recharts';
 import { useUsageLimits } from '@/hooks/useUsageLimits';
  import { supabase } from '@/lib/supabase';
  import { toast } from 'sonner';
@@ -96,6 +100,30 @@ import { useUsageLimits } from '@/hooks/useUsageLimits';
     : [];
 
   const cropRecommendations = analysis?.cropRecommendations || [];
+
+  // ---- Meteoblue visualization data ---------------------------------------
+  const mbDays: any[] = analysis?.meteoblue?.days || [];
+  const mbChart = mbDays.map((d) => ({
+    day: new Date(d.date).toLocaleDateString(undefined, { weekday: 'short' }),
+    max: d.tempMax,
+    min: d.tempMin,
+    rain: d.precip_mm ?? 0,
+    rainProb: d.precipProb_pct ?? 0,
+    wind: d.windMax_kmh ?? 0,
+    soil: d.soilMoisture_pct ?? 0,
+    et0: d.evapotranspiration_mm ?? 0,
+  }));
+  const mbTrend = analysis?.meteoblue?.trend14;
+  const mbTrendChart = mbTrend?.time?.map((t: string, i: number) => ({
+    day: new Date(t).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+    max: mbTrend.tempMax?.[i],
+    min: mbTrend.tempMin?.[i],
+    rain: mbTrend.precip?.[i] ?? 0,
+  })) || [];
+  const earlyWarnings: any[] = analysis?.meteoblueEarlyWarnings || [];
+  const riskGaugeData = [{ name: 'risk', value: analysis?.riskScore || 0, fill: (analysis?.riskScore || 0) >= 70 ? '#dc2626' : (analysis?.riskScore || 0) >= 40 ? '#f59e0b' : '#16a34a' }];
+  const warnIcon = (t: string) => t === 'flood' ? <Droplets className="w-4 h-4" /> : t === 'drought' ? <Sun className="w-4 h-4" /> : t === 'heatwave' ? <Flame className="w-4 h-4" /> : t === 'frost' ? <Snowflake className="w-4 h-4" /> : <Wind className="w-4 h-4" />;
+
   const outlooks = analysis?.outlooks || {
     twoWeeks: analysis?.shortTermOutlook,
     threeMonths: analysis?.midTermOutlook,
@@ -253,6 +281,117 @@ import { useUsageLimits } from '@/hooks/useUsageLimits';
            </CardContent>
          </Card>
  
+          {/* Meteoblue Early Warnings */}
+          {earlyWarnings.length > 0 && (
+            <Card className="border-orange-300 bg-gradient-to-br from-orange-50 to-red-50">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2 text-base text-orange-800">
+                  <AlertTriangle className="w-5 h-5" />
+                  Early Warnings · Meteoblue
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {earlyWarnings.map((w, i) => (
+                  <div key={i} className={`flex items-start gap-3 p-3 rounded-lg border ${w.severity === 'high' ? 'bg-red-100 border-red-300 text-red-900' : 'bg-orange-100 border-orange-300 text-orange-900'}`}>
+                    <div className="mt-0.5">{warnIcon(w.type)}</div>
+                    <div className="flex-1">
+                      <p className="text-xs font-bold uppercase tracking-wide">{w.type} · {w.severity}</p>
+                      <p className="text-sm">{w.message}</p>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Risk Gauge (Radial) */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Sparkles className="w-5 h-5" /> Risk Gauge
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-40">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadialBarChart innerRadius="60%" outerRadius="100%" data={riskGaugeData} startAngle={180} endAngle={0}>
+                    <RadialBar background dataKey="value" cornerRadius={12} />
+                  </RadialBarChart>
+                </ResponsiveContainer>
+              </div>
+              <p className="text-center -mt-6 text-3xl font-black">{analysis?.riskScore || 0}<span className="text-sm font-medium text-muted-foreground">/100</span></p>
+              <p className="text-center text-xs text-muted-foreground capitalize">{analysis?.overallRiskLevel} risk</p>
+            </CardContent>
+          </Card>
+
+          {/* Meteoblue 7-day chart */}
+          {mbChart.length > 0 && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Thermometer className="w-5 h-5" /> 7-Day Meteoblue Forecast
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="h-52">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={mbChart} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                      <XAxis dataKey="day" fontSize={11} />
+                      <YAxis yAxisId="l" fontSize={11} />
+                      <YAxis yAxisId="r" orientation="right" fontSize={11} />
+                      <RTooltip />
+                      <Legend wrapperStyle={{ fontSize: 11 }} />
+                      <Bar yAxisId="r" dataKey="rain" name="Rain (mm)" fill="#3b82f6" opacity={0.7} radius={[4,4,0,0]} />
+                      <Line yAxisId="l" type="monotone" dataKey="max" name="Max °C" stroke="#dc2626" strokeWidth={2} dot={{ r: 3 }} />
+                      <Line yAxisId="l" type="monotone" dataKey="min" name="Min °C" stroke="#0ea5e9" strokeWidth={2} dot={{ r: 3 }} />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="h-40">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={mbChart} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                      <XAxis dataKey="day" fontSize={11} />
+                      <YAxis fontSize={11} />
+                      <RTooltip />
+                      <Legend wrapperStyle={{ fontSize: 11 }} />
+                      <Bar dataKey="soil" name="Soil moisture %" fill="#84cc16" radius={[4,4,0,0]} />
+                      <Bar dataKey="et0" name="ET₀ (mm)" fill="#f59e0b" radius={[4,4,0,0]} />
+                      <Bar dataKey="wind" name="Wind max km/h" fill="#8b5cf6" radius={[4,4,0,0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Meteoblue 14-day trend */}
+          {mbTrendChart.length > 0 && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <TrendingUp className="w-5 h-5" /> 14-Day Trend
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-48">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={mbTrendChart} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                      <XAxis dataKey="day" fontSize={10} />
+                      <YAxis fontSize={11} />
+                      <RTooltip />
+                      <Legend wrapperStyle={{ fontSize: 11 }} />
+                      <Line type="monotone" dataKey="max" name="Max °C" stroke="#dc2626" strokeWidth={2} dot={false} />
+                      <Line type="monotone" dataKey="min" name="Min °C" stroke="#0ea5e9" strokeWidth={2} dot={false} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Extreme Event Probabilities */}
          <Card>
            <CardHeader>
