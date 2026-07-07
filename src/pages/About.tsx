@@ -2,14 +2,27 @@ import { ArrowLeft, Leaf, Users, Target, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import SEO from "@/components/SEO";
 
 const About = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="About Imvelo — Farming Tech for Eswatini"
+        description="Imvelo helps Eswatini farmers improve yields with AI pest scanning, disease detection, weather alerts, and farming guides."
+        path="/about"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "AboutPage",
+          name: "About Imvelo",
+          url: "https://imveloapp.lovable.app/about",
+          description: "About Imvelo — an agricultural assistant for Eswatini farmers.",
+        }}
+      />
       <header className="bg-primary text-primary-foreground p-4 sticky top-0 z-10">
         <div className="flex items-center gap-3">
-          <Link to="/">
-            <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary/80">
+          <Link to="/" aria-label="Back to home">
+            <Button variant="ghost" size="icon" aria-label="Back to home" className="text-primary-foreground hover:bg-primary/80">
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>

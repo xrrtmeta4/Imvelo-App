@@ -1,14 +1,20 @@
 import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import SEO from "@/components/SEO";
 
 const PrivacyPolicy = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Privacy Policy — Imvelo"
+        description="How Imvelo collects, uses, and protects the personal data of farmers using our AI pest scanning and weather platform."
+        path="/privacy-policy"
+      />
       <header className="bg-primary text-primary-foreground p-4 sticky top-0 z-10">
         <div className="flex items-center gap-3">
-          <Link to="/">
-            <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary/80">
+          <Link to="/" aria-label="Back to home">
+            <Button variant="ghost" size="icon" aria-label="Back to home" className="text-primary-foreground hover:bg-primary/80">
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>

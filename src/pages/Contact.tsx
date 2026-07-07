@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { toast } from "sonner";
+import SEO from "@/components/SEO";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -31,10 +32,50 @@ const Contact = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Contact Imvelo — Support for Farmers"
+        description="Reach the Imvelo team in Mbabane, Eswatini. Email, phone, and business hours for support with AI farming tools and account help."
+        path="/contact"
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "ContactPage",
+            name: "Contact Imvelo",
+            url: "https://imveloapp.lovable.app/contact",
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "LocalBusiness",
+            name: "Imvelo",
+            url: "https://imveloapp.lovable.app",
+            email: "imveloapps@gmail.com",
+            telephone: "+268 7921 5621",
+            address: {
+              "@type": "PostalAddress",
+              addressLocality: "Mbabane",
+              addressCountry: "SZ",
+            },
+            openingHoursSpecification: [
+              {
+                "@type": "OpeningHoursSpecification",
+                dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday"],
+                opens: "08:00",
+                closes: "17:00",
+              },
+              {
+                "@type": "OpeningHoursSpecification",
+                dayOfWeek: "Friday",
+                opens: "08:00",
+                closes: "13:00",
+              },
+            ],
+          },
+        ]}
+      />
       <header className="bg-primary text-primary-foreground p-4 sticky top-0 z-10">
         <div className="flex items-center gap-3">
-          <Link to="/">
-            <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary/80">
+          <Link to="/" aria-label="Back to home">
+            <Button variant="ghost" size="icon" aria-label="Back to home" className="text-primary-foreground hover:bg-primary/80">
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>

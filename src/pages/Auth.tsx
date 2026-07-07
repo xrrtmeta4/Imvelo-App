@@ -11,6 +11,7 @@ import { Sprout, Loader2, ArrowLeft } from 'lucide-react';
 import { z } from 'zod';
 import { Separator } from '@/components/ui/separator';
 import { useLanguage } from '@/hooks/useLanguage';
+import SEO from '@/components/SEO';
 
 const signupSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -198,6 +199,12 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-primary to-primary/80 p-4">
+      <SEO
+        title={`${getTitle()} - Imvelo`}
+        description="Sign in or create an Imvelo account to access AI pest scanning, weather alerts, and farm management tools for African farmers."
+        path="/auth"
+      />
+      <main className="w-full max-w-md flex flex-col items-center">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
@@ -205,7 +212,7 @@ const Auth = () => {
               <Sprout className="w-10 h-10 text-white" />
             </div>
           </div>
-          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">Imvelo App</CardTitle>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">Imvelo App</h1>
           <h2 className={`mt-2 font-extrabold tracking-tight text-primary ${mode === 'signup' ? 'text-4xl sm:text-5xl' : 'text-xl'}`}>
             {getTitle()}
           </h2>
@@ -398,11 +405,12 @@ const Auth = () => {
       </Card>
 
       <div className="mt-6 flex flex-wrap justify-center gap-4 text-sm">
-        <Link to="/about" className="text-primary-foreground/80 hover:text-primary-foreground underline">{t('aboutUs')}</Link>
-        <Link to="/contact" className="text-primary-foreground/80 hover:text-primary-foreground underline">{t('contact')}</Link>
-        <Link to="/privacy-policy" className="text-primary-foreground/80 hover:text-primary-foreground underline">{t('privacyPolicy')}</Link>
-        <Link to="/terms-of-service" className="text-primary-foreground/80 hover:text-primary-foreground underline">{t('termsOfService')}</Link>
+        <Link to="/about" className="text-primary-foreground hover:underline underline">{t('aboutUs')}</Link>
+        <Link to="/contact" className="text-primary-foreground hover:underline underline">{t('contact')}</Link>
+        <Link to="/privacy-policy" className="text-primary-foreground hover:underline underline">{t('privacyPolicy')}</Link>
+        <Link to="/terms-of-service" className="text-primary-foreground hover:underline underline">{t('termsOfService')}</Link>
       </div>
+      </main>
     </div>
   );
 };
