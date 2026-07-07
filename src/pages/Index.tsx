@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import WeatherTicker from '@/components/WeatherTicker';
 import HeroWeather from '@/components/HeroWeather';
 import NotificationBell from '@/components/NotificationBell';
+import SEO from '@/components/SEO';
 import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -40,6 +41,11 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20">
+      <SEO
+        title="Imvelo — Modern Farming Assistant for Eswatini"
+        description="AI pest scanning, weather alerts, and farm management for African farmers. Get advice, forecasts, and extension contacts in one app."
+        path="/"
+      />
       <WeatherTicker />
       
       <header className="relative overflow-hidden text-primary-foreground min-h-[45vh] flex flex-col">
@@ -71,7 +77,7 @@ const Index = () => {
           </div>
           <div className="mt-auto">
             <h1 className="text-4xl font-bold mb-2 drop-shadow-lg">
-              {userName ? `Hi, ${userName}!` : 'Imvelo'}
+              {userName ? `Hi, ${userName}! — Imvelo Farming Assistant` : 'Imvelo — Farming Assistant for Eswatini'}
             </h1>
             <p className="text-white/90 text-base drop-shadow">{t('farmersBestFriend')}</p>
 
@@ -91,7 +97,7 @@ const Index = () => {
         </div>
       </header>
 
-      <div className="max-w-screen-sm mx-auto px-4 py-6 space-y-6">
+      <main className="max-w-screen-sm mx-auto px-4 py-6 space-y-6">
         <button
           onClick={() => { window.location.href = 'https://imvelomarketplace.vercel.app'; }}
           className="w-full flex items-center justify-between rounded-xl border border-border bg-card p-4 hover:bg-accent/50 transition-colors"
@@ -149,7 +155,7 @@ const Index = () => {
             </div>
           </button>
         </div>
-      </div>
+      </main>
     </div>
   );
 };
