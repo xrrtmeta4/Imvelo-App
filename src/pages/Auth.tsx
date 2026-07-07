@@ -212,9 +212,7 @@ const Auth = () => {
               <Sprout className="w-10 h-10 text-white" />
             </div>
           </div>
-          <CardTitle asChild>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">Imvelo App</h1>
-          </CardTitle>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">Imvelo App</h1>
           <h2 className={`mt-2 font-extrabold tracking-tight text-primary ${mode === 'signup' ? 'text-4xl sm:text-5xl' : 'text-xl'}`}>
             {getTitle()}
           </h2>
