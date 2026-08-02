@@ -41,6 +41,7 @@ import KnowledgeGraphExplorer from "./pages/KnowledgeGraphExplorer";
 import Settings from "./pages/Settings";
 import UssdSimulator from "./pages/UssdSimulator";
 import Analysis from "./pages/Analysis";
+import Campaigns from "./pages/Campaigns";
 import AIChat from "./pages/AIChat";
 import { SettingsProvider } from "./hooks/useSettings";
 import MobileNav from "./components/MobileNav";
@@ -122,6 +123,7 @@ const App = () => (
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/ussd" element={<ProtectedRoute><UssdSimulator /></ProtectedRoute>} />
             <Route path="/analysis" element={<ProtectedRoute><Analysis /></ProtectedRoute>} />
+            <Route path="/campaigns" element={<ProtectedRoute><Campaigns /></ProtectedRoute>} />
             <Route path="/ai-chat" element={<ProtectedRoute><AIChat /></ProtectedRoute>} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
