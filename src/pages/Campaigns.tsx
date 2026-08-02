@@ -80,7 +80,7 @@ export default function Campaigns() {
 
   return (
     <main className="container max-w-3xl py-6 pb-28 space-y-6">
-      <SEO title="Campaigns & SMS Advisory | Imvelo" description="Send branded Imvelo email campaigns and SMS early warnings or farming advisories to farmers." />
+      <SEO title="Campaigns & SMS Advisory | Imvelo" description="Send branded Imvelo email campaigns and SMS early warnings or farming advisories to farmers." path="/campaigns" />
       <header>
         <h1 className="text-2xl font-bold">Campaigns & Advisory</h1>
         <p className="text-sm text-muted-foreground">Branded email campaigns and SMS alerts powered by Brevo.</p>
