@@ -1,4 +1,4 @@
-import { ArrowLeft, Type, Wifi, Sun, Minus, Plus, User, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Type, Wifi, Sun, Minus, Plus, User, ChevronRight, Megaphone } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useSettings } from '@/hooks/useSettings';
@@ -7,10 +7,15 @@ import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { useAuth } from '@/hooks/useAuth';
+
+const ADMIN_EMAIL = 'ncamisoxaba56@gmail.com';
 
 const Settings = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const { user } = useAuth();
+  const isAdmin = user?.email?.toLowerCase() === ADMIN_EMAIL;
   const { fontSize, setFontSize, dataSaver, setDataSaver, brightness, setBrightness } = useSettings();
 
   return (
@@ -44,6 +49,27 @@ const Settings = () => {
         </Card>
 
         {/* Language */}
+        {isAdmin && (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Megaphone className="w-4 h-4" />
+                Admin
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Button
+                variant="outline"
+                className="w-full justify-between"
+                onClick={() => navigate('/campaigns')}
+              >
+                <span>Campaigns &amp; SMS console</span>
+                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm">{t('language')}</CardTitle>
