@@ -8,8 +8,13 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Mail, MessageSquare, Users, Loader2 } from "lucide-react";
 import SEO from "@/components/SEO";
+import { useAuth } from "@/hooks/useAuth";
+import { Link } from "react-router-dom";
+
+const ADMIN_EMAIL = "ncamisoxaba56@gmail.com";
 
 export default function Campaigns() {
+  const { user, loading } = useAuth();
   const [busy, setBusy] = useState<string | null>(null);
   const [listId, setListId] = useState("");
   const [senderEmail, setSenderEmail] = useState("");
@@ -77,6 +82,25 @@ export default function Campaigns() {
     );
     if (d) toast.success(`SMS sent to ${d.sent} farmer(s)${d.failed ? `, ${d.failed} failed` : ""}`);
   };
+
+  if (loading) {
+    return (
+      <main className="container max-w-3xl py-20 flex justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </main>
+    );
+  }
+
+  if (user?.email?.toLowerCase() !== ADMIN_EMAIL) {
+    return (
+      <main className="container max-w-md py-20 text-center space-y-4">
+        <SEO title="Restricted | Imvelo" description="Admin-only campaigns console." path="/campaigns" />
+        <h1 className="text-xl font-bold">Restricted area</h1>
+        <p className="text-sm text-muted-foreground">This campaigns console is only available to the Imvelo administrator.</p>
+        <Button asChild variant="outline"><Link to="/">Back to home</Link></Button>
+      </main>
+    );
+  }
 
   return (
     <main className="container max-w-3xl py-6 pb-28 space-y-6">
