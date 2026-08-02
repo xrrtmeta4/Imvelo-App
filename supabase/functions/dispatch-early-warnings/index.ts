@@ -105,6 +105,11 @@ Deno.serve(async (req) => {
         await supabase.functions.invoke('send-push-notification', {
           body: { user_id: uid, title: w.title, body: w.message, data: { type: w.type, severity: w.severity }, url: '/climate-risk' },
         }).catch((e) => console.error('push invoke err', e));
+
+        // SMS early warning via Brevo (reaches farmers offline / without push)
+        await supabase.functions.invoke('brevo-sms', {
+          body: { user_id: uid, message: w.message, category: 'early_warning' },
+        }).catch((e) => console.error('brevo-sms invoke err', e));
         sent++;
       }
       results.push({ uid, sent });
