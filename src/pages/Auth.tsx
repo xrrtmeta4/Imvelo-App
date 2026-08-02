@@ -36,7 +36,7 @@ const Auth = () => {
     role: 'farmer' as 'farmer' | 'trader',
   });
 
-  const handleOAuthSignIn = async (provider: 'google' | 'apple') => {
+  const handleOAuthSignIn = async (provider: 'google') => {
     setLoading(true);
     try {
       const { error } = await supabase.auth.signInWithOAuth({
@@ -235,18 +235,6 @@ const Auth = () => {
                   <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.0 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                 </svg>
                 <span className="text-gray-700 font-medium">Sign in with Google</span>
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                className="w-full gap-2 bg-black hover:bg-slate-900 text-white border border-transparent"
-                onClick={() => handleOAuthSignIn('apple')}
-                disabled={loading}
-              >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M16.365 1.43c0 1.02-.38 2.01-1.03 2.73-.68.75-1.7 1.38-2.72 1.2-.18-.94.11-1.92.68-2.61.66-.79 1.84-1.47 2.77-1.32.05.01.1.02.15.02zm2.7 7.3c-.04-1.46.56-2.56 1.72-3.38-.7-.98-1.82-1.51-3.08-1.49-1.3.03-2.53.76-3.2.76-.68 0-1.78-.72-2.93-.7-1.5.02-2.9.87-3.68 2.22-1.57 2.74-.4 6.8 1.12 9.03.74 1.08 1.62 2.3 2.77 2.25 1.1-.05 1.51-.7 2.84-.7 1.33 0 1.71.7 2.93.68 1.2-.02 1.95-1.1 2.68-2.18.84-1.27 1.18-2.51 1.2-2.58-.03-.01-2.33-.9-2.36-3.56-.02-2.13 1.74-3.16 1.8-3.22-.98-1.43-2.49-1.62-3.02-1.64z"/>
-                </svg>
-                <span className="font-medium">Sign in with Apple</span>
               </Button>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <span className="h-px flex-1 bg-border" />
