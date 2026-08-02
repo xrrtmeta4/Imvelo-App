@@ -1,19 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
-import { X, ChevronRight, ChevronLeft, Sparkles, Camera, Cloud, CloudLightning, Droplets, MessageCircle, Mic, Store } from 'lucide-react';
+import { ChevronRight, ChevronLeft } from 'lucide-react';
 
 const STORAGE_PREFIX = 'imvelo_tutorial_seen_';
 
 const steps = [
-  { icon: Sparkles, title: 'Welcome to Imvelo', body: "Your AI-powered farming companion. Let's take a quick tour of what you can do." },
-  { icon: Camera, title: 'Pest & Disease Scanner', body: 'Snap a photo of any leaf or pest — Quantum AI identifies it in seconds with treatment guidance.' },
-  { icon: Cloud, title: 'Hyper-local Weather', body: 'GPS-accurate forecasts, alerts and a daily briefing tailored for your farm.' },
-  { icon: CloudLightning, title: 'Climate Volatility Engine', body: 'See 2-week, 3-month, 6-month and 1-year outlooks with yield projections and adaptive actions.' },
-  { icon: Droplets, title: 'Smart Irrigation', body: 'Data-driven watering schedules based on rainfall, ET₀ and your soil type.' },
-  { icon: Mic, title: 'Voice Navigation', body: 'Tap the mic (bottom-left) and say things like "open weather" or "scan pest" to move hands-free.' },
-  { icon: MessageCircle, title: 'AI Chat Assistant', body: 'Ask anything about farming — text or voice — with a stunning conversational interface.' },
-  { icon: Store, title: 'Marketplace & More', body: 'Sell produce, track finances, view market prices, and connect with extension officers. You are ready to farm smarter!' },
+  { image: '/tour/field.jpg', alt: 'Farmers ploughing a green field below misty mountains', title: 'Welcome to Imvelo', body: "Your AI-powered farming companion. Let's take a quick tour of what you can do." },
+  { image: '/tour/soil.jpg', alt: 'Farmer holding rich dark compost soil above a garden bed', title: 'Soil & Pest Scanning', body: 'Snap a photo of soil, a leaf or a pest — Chloe identifies it in seconds with treatment guidance.' },
+  { image: '/tour/irrigation.jpg', alt: 'Farmer watering leafy green vegetables in raised beds', title: 'Weather & Smart Irrigation', body: 'Hyper-local forecasts plus data-driven watering schedules based on rainfall, ET₀ and your soil type.' },
+  { image: '/tour/market.jpg', alt: 'Vendor seated among baskets of fresh produce at a market', title: 'Markets & Records', body: 'Track finances, view live market prices and connect with extension officers. You are ready to farm smarter!' },
 ];
 
 export default function AppTutorial() {
@@ -38,7 +34,6 @@ export default function AppTutorial() {
 
   if (!open) return null;
   const S = steps[step];
-  const Icon = S.icon;
   const isLast = step === steps.length - 1;
 
   return (
@@ -51,11 +46,14 @@ export default function AppTutorial() {
           Skip
         </button>
 
-        <div className="relative h-40 bg-gradient-to-br from-primary via-primary/80 to-primary/40 flex items-center justify-center overflow-hidden">
-          <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_30%_50%,white,transparent_60%)]" />
-          <div className="relative rounded-2xl bg-white/15 backdrop-blur-md p-5 border border-white/20">
-            <Icon className="w-12 h-12 text-white" />
-          </div>
+        <div className="relative h-44 overflow-hidden bg-muted">
+          <img
+            src={S.image}
+            alt={S.alt}
+            loading="eager"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/70 to-transparent" />
         </div>
 
         <div className="p-6 space-y-4">
@@ -81,8 +79,8 @@ export default function AppTutorial() {
               <ChevronLeft className="w-4 h-4 mr-1" /> Back
             </Button>
             {isLast ? (
-              <Button onClick={finish} size="sm" className="gap-1">
-                Get started <Sparkles className="w-4 h-4" />
+              <Button onClick={finish} size="sm">
+                Get started
               </Button>
             ) : (
               <Button onClick={() => setStep((s) => s + 1)} size="sm" className="gap-1">
