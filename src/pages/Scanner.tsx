@@ -37,9 +37,10 @@ const Scanner = () => {
   }, [user, fetchReports]);
 
   const deleteReport = async (reportId: string) => {
+    // Permanent delete — the record must not come back on refresh.
     const { error } = await supabase
       .from('pest_reports')
-      .update({ hidden_by_user: true, hidden_at: new Date().toISOString() })
+      .delete()
       .eq('id', reportId)
       .eq('user_id', user?.id);
 
@@ -48,8 +49,9 @@ const Scanner = () => {
       return;
     }
 
-    setReports(reports.filter(r => r.id !== reportId));
+    setReports((prev) => prev.filter((r) => r.id !== reportId));
     toast.success(t('reportDeleted'));
+    fetchReports();
   };
 
   return (
