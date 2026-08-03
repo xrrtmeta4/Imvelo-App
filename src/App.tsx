@@ -1,3 +1,4 @@
+import { Suspense, lazy, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,41 +9,43 @@ import { LanguageProvider } from "@/hooks/useLanguage";
 import { useNotifications } from "@/hooks/useNotifications";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
-import Scanner from "./pages/Scanner";
-import FarmActivities from "./pages/FarmActivities";
-import DigitalLedger from "./pages/DigitalLedger";
-import Weather from "./pages/Weather";
-import Profile from "./pages/Profile";
-import OfficerDashboard from "./pages/OfficerDashboard";
-import PlantingGuide from "./pages/PlantingGuide";
-import SoilManagement from "./pages/SoilManagement";
-import WaterConservation from "./pages/WaterConservation";
-import ExtensionDirectory from "./pages/ExtensionDirectory";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import TermsOfService from "./pages/TermsOfService";
-import Contact from "./pages/Contact";
-import About from "./pages/About";
-import NotFound from "./pages/NotFound";
-import PesticideCalendar from "./pages/PesticideCalendar";
-import CropMonitoring from "./pages/CropMonitoring";
-import ClimateRisk from "./pages/ClimateRisk";
-import Upgrade from "./pages/Upgrade";
-import SmartIrrigation from "./pages/SmartIrrigation";
-import LivestockManager from "./pages/LivestockManager";
-import CropRotation from "./pages/CropRotation";
-import FertilizerCalculator from "./pages/FertilizerCalculator";
-import HarvestTracker from "./pages/HarvestTracker";
-import MarketPriceAlerts from "./pages/MarketPriceAlerts";
-import FarmInventory from "./pages/FarmInventory";
-import CarbonScore from "./pages/CarbonScore";
-import PostHarvestGuide from "./pages/PostHarvestGuide";
-import AfricanMarkets from "./pages/AfricanMarkets";
-import KnowledgeGraphExplorer from "./pages/KnowledgeGraphExplorer";
-import Settings from "./pages/Settings";
-import UssdSimulator from "./pages/UssdSimulator";
-import Analysis from "./pages/Analysis";
-import Campaigns from "./pages/Campaigns";
-import AIChat from "./pages/AIChat";
+
+// Route-level code splitting: only the first screen ships in the initial bundle.
+const Scanner = lazy(() => import("./pages/Scanner"));
+const FarmActivities = lazy(() => import("./pages/FarmActivities"));
+const DigitalLedger = lazy(() => import("./pages/DigitalLedger"));
+const Weather = lazy(() => import("./pages/Weather"));
+const Profile = lazy(() => import("./pages/Profile"));
+const OfficerDashboard = lazy(() => import("./pages/OfficerDashboard"));
+const PlantingGuide = lazy(() => import("./pages/PlantingGuide"));
+const SoilManagement = lazy(() => import("./pages/SoilManagement"));
+const WaterConservation = lazy(() => import("./pages/WaterConservation"));
+const ExtensionDirectory = lazy(() => import("./pages/ExtensionDirectory"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const TermsOfService = lazy(() => import("./pages/TermsOfService"));
+const Contact = lazy(() => import("./pages/Contact"));
+const About = lazy(() => import("./pages/About"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const PesticideCalendar = lazy(() => import("./pages/PesticideCalendar"));
+const CropMonitoring = lazy(() => import("./pages/CropMonitoring"));
+const ClimateRisk = lazy(() => import("./pages/ClimateRisk"));
+const Upgrade = lazy(() => import("./pages/Upgrade"));
+const SmartIrrigation = lazy(() => import("./pages/SmartIrrigation"));
+const LivestockManager = lazy(() => import("./pages/LivestockManager"));
+const CropRotation = lazy(() => import("./pages/CropRotation"));
+const FertilizerCalculator = lazy(() => import("./pages/FertilizerCalculator"));
+const HarvestTracker = lazy(() => import("./pages/HarvestTracker"));
+const MarketPriceAlerts = lazy(() => import("./pages/MarketPriceAlerts"));
+const FarmInventory = lazy(() => import("./pages/FarmInventory"));
+const CarbonScore = lazy(() => import("./pages/CarbonScore"));
+const PostHarvestGuide = lazy(() => import("./pages/PostHarvestGuide"));
+const AfricanMarkets = lazy(() => import("./pages/AfricanMarkets"));
+const KnowledgeGraphExplorer = lazy(() => import("./pages/KnowledgeGraphExplorer"));
+const Settings = lazy(() => import("./pages/Settings"));
+const UssdSimulator = lazy(() => import("./pages/UssdSimulator"));
+const Analysis = lazy(() => import("./pages/Analysis"));
+const Campaigns = lazy(() => import("./pages/Campaigns"));
+const AIChat = lazy(() => import("./pages/AIChat"));
 import { SettingsProvider } from "./hooks/useSettings";
 import MobileNav from "./components/MobileNav";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
@@ -52,6 +55,36 @@ import { useInteractionTracker } from "./hooks/useInteractionTracker";
 import ErrorBoundary from "./components/ErrorBoundary";
 
 const queryClient = new QueryClient();
+
+// Warm the chunks a farmer is most likely to open next, once the browser is idle.
+const prefetchRoutes = () => {
+  void import("./pages/Weather");
+  void import("./pages/Scanner");
+  void import("./pages/Analysis");
+  void import("./pages/AIChat");
+  void import("./pages/Settings");
+};
+
+const RoutePrefetcher = () => {
+  useEffect(() => {
+    const ric = (window as any).requestIdleCallback as
+      | ((cb: () => void, opts?: { timeout: number }) => number)
+      | undefined;
+    if (ric) {
+      const id = ric(prefetchRoutes, { timeout: 3000 });
+      return () => (window as any).cancelIdleCallback?.(id);
+    }
+    const t = setTimeout(prefetchRoutes, 1500);
+    return () => clearTimeout(t);
+  }, []);
+  return null;
+};
+
+const RouteFallback = () => (
+  <div className="flex items-center justify-center min-h-screen bg-background">
+    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary" />
+  </div>
+);
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
@@ -92,6 +125,8 @@ const App = () => (
         <AuthProvider>
           <LanguageProvider>
           <SettingsProvider>
+          <RoutePrefetcher />
+          <Suspense fallback={<RouteFallback />}>
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
@@ -131,6 +166,7 @@ const App = () => (
             <Route path="/about" element={<About />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </Suspense>
           </SettingsProvider>
           </LanguageProvider>
         </AuthProvider>
