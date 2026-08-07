@@ -1,103 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://imveloappsz.vercel.app/</loc>
+    <loc>https://imveloapp.xyz/</loc>
+    <changefreq>weekly</changefreq>
     <priority>1.00</priority>
   </url>
   <url>
-    <loc>https://imveloappsz.vercel.app/auth</loc>
+    <loc>https://imveloapp.xyz/auth</loc>
+    <changefreq>monthly</changefreq>
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://imveloappsz.vercel.app/about</loc>
+    <loc>https://imveloapp.xyz/about</loc>
+    <changefreq>monthly</changefreq>
     <priority>0.80</priority>
   </url>
   <url>
-    <loc>https://imveloappsz.vercel.app/contact</loc>
-    <priority>0.80</priority>
-  </url>
-  <url>
-    <loc>https://imveloappsz.vercel.app/privacy-policy</loc>
-    <priority>0.80</priority>
-  </url>
-  <url>
-    <loc>https://imveloappsz.vercel.app/terms-of-service</loc>
-    <priority>0.80</priority>
-  </url>
-  <url>
-    <loc>https://imveloappsz.vercel.app/settings</loc>
-    <priority>0.50</priority>
-  </url>
-  <url>
-    <loc>https://imveloappsz.vercel.app/upgrade</loc>
+    <loc>https://imveloapp.xyz/contact</loc>
+    <changefreq>monthly</changefreq>
     <priority>0.70</priority>
   </url>
   <url>
-    <loc>https://imveloappsz.vercel.app/profile</loc>
-    <priority>0.60</priority>
+    <loc>https://imveloapp.xyz/privacy-policy</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.40</priority>
   </url>
   <url>
-    <loc>https://imveloappsz.vercel.app/farm-activities</loc>
-    <priority>0.60</priority>
-  </url>
-  <url>
-    <loc>https://imveloappsz.vercel.app/ledger</loc>
-    <priority>0.60</priority>
-  </url>
-  <url>
-    <loc>https://imveloappsz.vercel.app/weather</loc>
-    <priority>0.60</priority>
-  </url>
-  <url>
-    <loc>https://imveloappsz.vercel.app/extension-directory</loc>
-    <priority>0.60</priority>
-  </url>
-  <url>
-    <loc>https://imveloappsz.vercel.app/price-alerts</loc>
-    <priority>0.55</priority>
-  </url>
-  <url>
-    <loc>https://imveloappsz.vercel.app/african-markets</loc>
-    <priority>0.55</priority>
-  </url>
-  <url>
-    <loc>https://imveloappsz.vercel.app/climate-risk</loc>
-    <priority>0.55</priority>
-  </url>
-  <url>
-    <loc>https://imveloappsz.vercel.app/crop-monitoring</loc>
-    <priority>0.55</priority>
-  </url>
-  <url>
-    <loc>https://imveloappsz.vercel.app/smart-irrigation</loc>
-    <priority>0.55</priority>
-  </url>
-  <url>
-    <loc>https://imveloappsz.vercel.app/livestock</loc>
-    <priority>0.55</priority>
-  </url>
-  <url>
-    <loc>https://imveloappsz.vercel.app/crop-rotation</loc>
-    <priority>0.55</priority>
-  </url>
-  <url>
-    <loc>https://imveloappsz.vercel.app/fertilizer</loc>
-    <priority>0.55</priority>
-  </url>
-  <url>
-    <loc>https://imveloappsz.vercel.app/harvest-tracker</loc>
-    <priority>0.55</priority>
-  </url>
-  <url>
-    <loc>https://imveloappsz.vercel.app/carbon-score</loc>
-    <priority>0.55</priority>
-  </url>
-  <url>
-    <loc>https://imveloappsz.vercel.app/post-harvest</loc>
-    <priority>0.55</priority>
-  </url>
-  <url>
-    <loc>https://imveloappsz.vercel.app/knowledge-graph</loc>
-    <priority>0.55</priority>
+    <loc>https://imveloapp.xyz/terms-of-service</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.40</priority>
   </url>
 </urlset>
