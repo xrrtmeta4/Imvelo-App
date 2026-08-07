@@ -95,6 +95,7 @@ serve(async (req) => {
         ok: true,
         endpoints: {
           "GET /summary": "aggregate counts + live KPIs",
+          "GET /events?apiKey=<key>&interval=3000": "Server-Sent Events live stream (no polling by client)",
           "GET /stream?since=ISO&limit=n": "unified realtime activity stream (poll with cursor)",
           "GET /activity?limit=n": "recent activity feed",
           "GET /pest-stats?days=30": "pest scan analytics",
