@@ -1,4 +1,4 @@
-Sitemap: https://imveloappsz.vercel.app/sitemap.xml
+Sitemap: https://imveloapp.xyz/sitemap.xml
 
 User-agent: Googlebot
 Allow: /
