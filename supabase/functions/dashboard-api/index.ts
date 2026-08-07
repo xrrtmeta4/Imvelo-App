@@ -161,12 +161,12 @@ serve(async (req) => {
       });
     }
 
-    // --- Unified realtime stream (cursor based polling) ---
-    if (segment === "stream" || segment === "activity") {
+    // Shared collector used by both the polling endpoint and the SSE stream
+    async function collectEvents(sinceIso: string | null, max: number) {
       const results = await Promise.all(
         STREAM_SOURCES.map(async (s) => {
-          let q = supabase.from(s.table).select("*").order("created_at", { ascending: false }).limit(limit);
-          if (since) q = q.gt("created_at", since);
+          let q = supabase.from(s.table).select("*").order("created_at", { ascending: false }).limit(max);
+          if (sinceIso) q = q.gt("created_at", sinceIso);
           const { data, error } = await q;
           if (error) return [];
           return (data ?? []).map((r: any) => ({
@@ -179,8 +179,76 @@ serve(async (req) => {
           }));
         }),
       );
-      let merged = results.flat().sort((a, b) => (a.created_at < b.created_at ? 1 : -1)).slice(0, limit);
-      merged = await attachProfiles(merged, "user_id");
+      const merged = results.flat().sort((a, b) => (a.created_at < b.created_at ? 1 : -1)).slice(0, max);
+      return await attachProfiles(merged, "user_id");
+    }
+
+    // --- Server-Sent Events: push new activity to the dashboard with no client polling ---
+    if (segment === "events" || segment === "sse") {
+      const interval = Math.min(Math.max(Number(url.searchParams.get("interval") ?? 3000), 1000), 30000);
+      // EventSource cannot set headers, so Last-Event-ID / ?since carries the cursor
+      let cursor =
+        req.headers.get("last-event-id") ||
+        since ||
+        new Date(Date.now() - 5 * 60_000).toISOString();
+
+      const encoder = new TextEncoder();
+      let timer: number | undefined;
+      let heartbeat: number | undefined;
+
+      const body = new ReadableStream({
+        start(controller) {
+          const send = (event: string, data: unknown, id?: string) => {
+            let chunk = `event: ${event}\n`;
+            if (id) chunk += `id: ${id}\n`;
+            chunk += `data: ${JSON.stringify(data)}\n\n`;
+            controller.enqueue(encoder.encode(chunk));
+          };
+
+          send("open", { ok: true, cursor, interval, server_time: new Date().toISOString() });
+
+          const tick = async () => {
+            try {
+              const events = await collectEvents(cursor, limit);
+              if (events.length) {
+                // events are newest-first; advance cursor to the newest timestamp
+                cursor = (events[0] as any).created_at ?? cursor;
+                for (const ev of [...events].reverse()) {
+                  send(ev.type === "pest_scan" ? "pest_scan" : "activity", ev, ev.created_at);
+                }
+                send("cursor", { cursor });
+              }
+            } catch (e) {
+              send("error", { message: e instanceof Error ? e.message : "stream error" });
+            }
+          };
+
+          timer = setInterval(tick, interval);
+          heartbeat = setInterval(() => {
+            controller.enqueue(encoder.encode(`: ping ${Date.now()}\n\n`));
+          }, 15000);
+          tick();
+        },
+        cancel() {
+          if (timer) clearInterval(timer);
+          if (heartbeat) clearInterval(heartbeat);
+        },
+      });
+
+      return new Response(body, {
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "text/event-stream; charset=utf-8",
+          "Cache-Control": "no-cache, no-transform",
+          Connection: "keep-alive",
+          "X-Accel-Buffering": "no",
+        },
+      });
+    }
+
+    // --- Unified realtime stream (cursor based polling) ---
+    if (segment === "stream" || segment === "activity") {
+      const merged = await collectEvents(since, limit);
       return json({
         ok: true,
         count: merged.length,
