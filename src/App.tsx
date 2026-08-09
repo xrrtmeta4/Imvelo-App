@@ -46,6 +46,9 @@ const UssdSimulator = lazy(() => import("./pages/UssdSimulator"));
 const Analysis = lazy(() => import("./pages/Analysis"));
 const Campaigns = lazy(() => import("./pages/Campaigns"));
 const AIChat = lazy(() => import("./pages/AIChat"));
+const ScannerFeature = lazy(() => import("./pages/features/ScannerFeature"));
+const WeatherFeature = lazy(() => import("./pages/features/WeatherFeature"));
+const AnalysisFeature = lazy(() => import("./pages/features/AnalysisFeature"));
 import { SettingsProvider } from "./hooks/useSettings";
 import MobileNav from "./components/MobileNav";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
@@ -164,6 +167,9 @@ const App = () => (
             <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/about" element={<About />} />
+            <Route path="/features/scanner" element={<ScannerFeature />} />
+            <Route path="/features/weather" element={<WeatherFeature />} />
+            <Route path="/features/analysis" element={<AnalysisFeature />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           </Suspense>
