@@ -3,6 +3,7 @@ import { ArrowLeft, CloudLightning, Droplets, Leaf } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/hooks/useLanguage';
+import UpgradeNudge from '@/components/UpgradeNudge';
 
 const Analysis = () => {
   const navigate = useNavigate();
@@ -58,6 +59,7 @@ const Analysis = () => {
       </header>
 
       <main className="max-w-screen-sm mx-auto px-4 py-6 space-y-4">
+        <UpgradeNudge />
         {tools.map((tool) => (
           <Card
             key={tool.path}
