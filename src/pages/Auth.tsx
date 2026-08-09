@@ -12,6 +12,7 @@ import { z } from 'zod';
 import { Separator } from '@/components/ui/separator';
 import { useLanguage } from '@/hooks/useLanguage';
 import SEO from '@/components/SEO';
+import authBg from '@/assets/auth-field.jpg.asset.json';
 
 const signupSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -198,7 +199,14 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-primary to-primary/80 p-4">
+    <div className="relative min-h-screen flex flex-col items-center justify-center p-4">
+      <img
+        src={authBg.url}
+        alt="Farmer inspecting a maize field at sunset"
+        className="absolute inset-0 w-full h-full object-cover"
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/80 to-background/95" />
+      <div className="relative w-full flex flex-col items-center">
       <SEO
         title={`${getTitle()} - Imvelo`}
         description="Sign in or create an Imvelo account to access AI pest scanning, weather alerts, and farm management tools for African farmers."
