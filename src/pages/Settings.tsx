@@ -1,4 +1,4 @@
-import { ArrowLeft, Type, Wifi, Sun, Minus, Plus, User, ChevronRight, Megaphone } from 'lucide-react';
+import { ArrowLeft, Type, Wifi, Sun, Minus, Plus, User, ChevronRight, Megaphone, Volume2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useSettings } from '@/hooks/useSettings';
@@ -16,7 +16,7 @@ const Settings = () => {
   const { t } = useLanguage();
   const { user } = useAuth();
   const isAdmin = user?.email?.toLowerCase() === ADMIN_EMAIL;
-  const { fontSize, setFontSize, dataSaver, setDataSaver, brightness, setBrightness } = useSettings();
+  const { fontSize, setFontSize, dataSaver, setDataSaver, brightness, setBrightness, talkBack, setTalkBack } = useSettings();
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -76,6 +76,24 @@ const Settings = () => {
           </CardHeader>
           <CardContent>
             <LanguageSwitcher />
+          </CardContent>
+        </Card>
+
+        {/* TalkBack — screen reader for visually impaired users */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Volume2 className="w-4 h-4" />
+              TalkBack (screen reader)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm text-muted-foreground">
+                Reads buttons, headings and text aloud when you tap them. Built for visually impaired farmers.
+              </p>
+              <Switch checked={talkBack} onCheckedChange={setTalkBack} aria-label="Toggle TalkBack screen reader" />
+            </div>
           </CardContent>
         </Card>
 

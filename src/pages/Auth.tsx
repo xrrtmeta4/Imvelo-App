@@ -213,7 +213,7 @@ const Auth = () => {
         path="/auth"
       />
       <main className="w-full max-w-md flex flex-col items-center">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md bg-card/95 backdrop-blur-sm shadow-2xl">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-4 rounded-full shadow-lg">
@@ -401,12 +401,13 @@ const Auth = () => {
       </Card>
 
       <div className="mt-6 flex flex-wrap justify-center gap-4 text-sm">
-        <Link to="/about" className="text-primary-foreground hover:underline underline">{t('aboutUs')}</Link>
-        <Link to="/contact" className="text-primary-foreground hover:underline underline">{t('contact')}</Link>
-        <Link to="/privacy-policy" className="text-primary-foreground hover:underline underline">{t('privacyPolicy')}</Link>
-        <Link to="/terms-of-service" className="text-primary-foreground hover:underline underline">{t('termsOfService')}</Link>
+        <Link to="/about" className="text-foreground font-medium hover:underline underline">{t('aboutUs')}</Link>
+        <Link to="/contact" className="text-foreground font-medium hover:underline underline">{t('contact')}</Link>
+        <Link to="/privacy-policy" className="text-foreground font-medium hover:underline underline">{t('privacyPolicy')}</Link>
+        <Link to="/terms-of-service" className="text-foreground font-medium hover:underline underline">{t('termsOfService')}</Link>
       </div>
       </main>
+      </div>
     </div>
   );
 };
