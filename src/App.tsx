@@ -129,6 +129,7 @@ const App = () => (
           <LanguageProvider>
           <SettingsProvider>
           <RoutePrefetcher />
+          <TalkBack />
           <Suspense fallback={<RouteFallback />}>
           <Routes>
             <Route path="/auth" element={<Auth />} />
