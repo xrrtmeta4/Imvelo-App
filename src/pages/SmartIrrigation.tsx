@@ -11,11 +11,12 @@ import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation } from '@/hooks/useLocation';
 import { useUsageLimits } from '@/hooks/useUsageLimits';
+import PremiumGate from '@/components/PremiumGate';
 
 const cropOptions = ['Maize', 'Beans', 'Vegetables', 'Sugarcane', 'Cotton', 'Groundnuts', 'Sweet Potatoes', 'Citrus', 'Sorghum'];
 const soilOptions = ['Clay', 'Sandy', 'Loam', 'Silt', 'Clay Loam', 'Sandy Loam'];
 
-const SmartIrrigation = () => {
+const SmartIrrigationContent = () => {
   const { user } = useAuth();
   const { getLocation } = useLocation();
   const [loading, setLoading] = useState(false);
@@ -363,5 +364,11 @@ const SmartIrrigation = () => {
     </div>
   );
 };
+
+const SmartIrrigation = () => (
+  <PremiumGate feature="Smart Irrigation Planner" requiredPlan="premium">
+    <SmartIrrigationContent />
+  </PremiumGate>
+);
 
 export default SmartIrrigation;
