@@ -15,20 +15,20 @@ export const PLANS = {
   free: {
     name: 'Free',
     price: 0,
-    weeklyDetections: 4,
-    dailyChats: 5,
+    weeklyDetections: 2,
+    dailyChats: 3,
     maxLedgerEntries: 20,
     maxSprayEntries: 10,
-    features: ['4 pest/disease scans per week', '5 AI chat messages per day', 'Basic weather info', '3-day weather outlook', 'Best practices library', 'Extension directory', 'Spray calendar (10 entries)', 'Digital ledger (20 entries)', 'Crop rotation planner', 'Fertilizer calculator', 'Market price ticker', 'Community knowledge graph'],
+    features: ['2 pest/disease scans per week', '3 Chloe AI chats per day', 'Basic weather info', '3-day weather outlook', 'Digital ledger (20 entries)', 'Spray calendar (10 entries)', 'Extension directory', 'Crop rotation planner', 'Fertilizer calculator', 'Market price ticker', 'Community knowledge graph'],
   },
   starter: {
     name: 'Starter',
     price: 0,
-    weeklyDetections: 4,
-    dailyChats: 5,
+    weeklyDetections: 2,
+    dailyChats: 3,
     maxLedgerEntries: 20,
     maxSprayEntries: 10,
-    features: ['4 pest/disease scans per week', '5 AI chat messages per day', 'Basic weather info', '3-day weather outlook', 'Best practices library', 'Extension directory', 'Spray calendar (10 entries)', 'Digital ledger (20 entries)', 'Crop rotation planner', 'Fertilizer calculator', 'Market price ticker', 'Community knowledge graph'],
+    features: ['2 pest/disease scans per week', '3 Chloe AI chats per day', 'Basic weather info', '3-day weather outlook', 'Digital ledger (20 entries)', 'Spray calendar (10 entries)', 'Extension directory', 'Crop rotation planner', 'Fertilizer calculator', 'Market price ticker', 'Community knowledge graph'],
   },
   premium: {
     name: 'Premium',
@@ -37,7 +37,7 @@ export const PLANS = {
     dailyChats: Infinity,
     maxLedgerEntries: Infinity,
     maxSprayEntries: Infinity,
-    features: ['Unlimited scans', 'Unlimited AI chat', '7-day weather forecast', 'Farming tips', 'Unlimited spray scheduling', 'Unlimited digital ledger', 'Produce estimation', 'Crop monitoring (phenotype)', 'Advanced climate resilience tools', 'Livestock manager', 'Crop rotation planner', 'Fertilizer calculator', 'Harvest tracker', 'Market price alerts', 'Farm inventory', 'Carbon score', 'Post-harvest guide', 'Priority support'],
+    features: ['Unlimited scans', 'Unlimited Chloe AI chat', 'AI financial advisory', 'Climate volatility engine', 'Smart irrigation planner', '7-day weather forecast', 'Farming tips', 'Unlimited spray scheduling', 'Unlimited digital ledger', 'Produce estimation', 'Crop monitoring (phenotype)', 'Livestock manager', 'Harvest tracker', 'Market price alerts', 'Farm inventory', 'Carbon score', 'Post-harvest guide', 'Priority support'],
   },
 };
 
@@ -174,14 +174,16 @@ export const useUsageLimits = () => {
   const getRemainingChats = () => planConfig.dailyChats === Infinity ? Infinity : Math.max(0, planConfig.dailyChats - usage.chatCount);
 
   const isPremium = currentPlan !== 'free';
-  const hasFeature = (feature: 'spray' | 'ledger' | 'cropMonitor' | 'climateRisk' | 'forecast' | 'farmingTips') => {
+  const hasFeature = (feature: 'spray' | 'ledger' | 'cropMonitor' | 'climateRisk' | 'irrigation' | 'aiAdvisory' | 'forecast' | 'farmingTips') => {
     switch (feature) {
       case 'spray':
       case 'ledger':
         return true; // Available to all plans with entry limits
       case 'cropMonitor':
+        return true;
       case 'climateRisk':
-        return true; // Available to all plans
+      case 'irrigation':
+      case 'aiAdvisory':
       case 'forecast':
       case 'farmingTips':
         return currentPlan === 'premium';

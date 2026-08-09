@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Bug, Stethoscope, Wheat, Mountain, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import UpgradeNudge from '@/components/UpgradeNudge';
 
 const Scanner = () => {
   const { user } = useAuth();
@@ -61,6 +62,7 @@ const Scanner = () => {
       </header>
 
       <div className="max-w-screen-sm mx-auto px-4 py-6 space-y-6">
+        <UpgradeNudge />
         <Tabs defaultValue="pest" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="pest" className="flex items-center gap-1">

@@ -50,6 +50,7 @@ const ScannerFeature = lazy(() => import("./pages/features/ScannerFeature"));
 const WeatherFeature = lazy(() => import("./pages/features/WeatherFeature"));
 const AnalysisFeature = lazy(() => import("./pages/features/AnalysisFeature"));
 import { SettingsProvider } from "./hooks/useSettings";
+import TalkBack from "./components/TalkBack";
 import MobileNav from "./components/MobileNav";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import SubscriptionPopup from "./components/SubscriptionPopup";
@@ -129,6 +130,7 @@ const App = () => (
           <LanguageProvider>
           <SettingsProvider>
           <RoutePrefetcher />
+          <TalkBack />
           <Suspense fallback={<RouteFallback />}>
           <Routes>
             <Route path="/auth" element={<Auth />} />

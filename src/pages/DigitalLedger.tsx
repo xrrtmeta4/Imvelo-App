@@ -78,7 +78,7 @@ const paymentMethods = ['Cash', 'Bank Transfer', 'Mobile Money', 'Check', 'Credi
 const DigitalLedgerContent = () => {
   const { user } = useAuth();
   const { selectedCurrency, setCurrency, formatAmount } = useCurrency();
-  const { canAddLedgerEntry, getMaxLedgerEntries, currentPlan } = useUsageLimits();
+  const { canAddLedgerEntry, getMaxLedgerEntries, currentPlan, hasFeature } = useUsageLimits();
   const navigate = useNavigate();
   const [entries, setEntries] = useState<LedgerEntry[]>([]);
   const [budgets, setBudgets] = useState<BudgetLimit[]>([]);
@@ -896,7 +896,13 @@ const DigitalLedgerContent = () => {
             </Tabs>
           </CardHeader>
           <CardContent>
-            {activeTab === 'advisor' ? (
+            {activeTab === 'advisor' && !hasFeature('aiAdvisory') ? (
+              <div className="text-center py-10 space-y-4">
+                <p className="text-sm font-semibold text-foreground">AI Financial Advisory is a Premium feature</p>
+                <p className="text-xs text-muted-foreground">Your ledger stays free — upgrade to unlock Chloe's financial advisory, climate volatility and smart irrigation.</p>
+                <Button onClick={() => navigate('/upgrade')} className="gap-2">Upgrade to Premium</Button>
+              </div>
+            ) : activeTab === 'advisor' ? (
               <FinancialAdvisor 
                 entries={entries.map(e => ({
                   entry_date: e.entry_date,

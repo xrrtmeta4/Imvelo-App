@@ -7,6 +7,8 @@ interface SettingsContextType {
   setDataSaver: (enabled: boolean) => void;
   brightness: number;
   setBrightness: (level: number) => void;
+  talkBack: boolean;
+  setTalkBack: (enabled: boolean) => void;
 }
 
 const SettingsContext = createContext<SettingsContextType>({
@@ -16,6 +18,8 @@ const SettingsContext = createContext<SettingsContextType>({
   setDataSaver: () => {},
   brightness: 100,
   setBrightness: () => {},
+  talkBack: false,
+  setTalkBack: () => {},
 });
 
 export const SettingsProvider = ({ children }: { children: ReactNode }) => {
@@ -30,6 +34,13 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     const saved = localStorage.getItem('imvelo_brightness');
     return saved ? parseInt(saved, 10) : 100;
   });
+  const [talkBack, setTalkBackState] = useState(() => {
+    return localStorage.getItem('imvelo_talkback') === 'true';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('imvelo_talkback', String(talkBack));
+  }, [talkBack]);
 
   useEffect(() => {
     document.documentElement.style.fontSize = `${fontSize}px`;
@@ -48,9 +59,10 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const setFontSize = (size: number) => setFontSizeState(Math.max(12, Math.min(24, size)));
   const setDataSaver = (enabled: boolean) => setDataSaverState(enabled);
   const setBrightness = (level: number) => setBrightnessState(Math.max(30, Math.min(100, level)));
+  const setTalkBack = (enabled: boolean) => setTalkBackState(enabled);
 
   return (
-    <SettingsContext.Provider value={{ fontSize, setFontSize, dataSaver, setDataSaver, brightness, setBrightness }}>
+    <SettingsContext.Provider value={{ fontSize, setFontSize, dataSaver, setDataSaver, brightness, setBrightness, talkBack, setTalkBack }}>
       {children}
     </SettingsContext.Provider>
   );

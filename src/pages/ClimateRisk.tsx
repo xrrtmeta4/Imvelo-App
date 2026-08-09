@@ -10,6 +10,7 @@ import {
   Tooltip as RTooltip, Legend, Area, ComposedChart, RadialBarChart, RadialBar,
 } from 'recharts';
 import { useUsageLimits } from '@/hooks/useUsageLimits';
+import PremiumGate from '@/components/PremiumGate';
  import { supabase } from '@/lib/supabase';
  import { toast } from 'sonner';
  import { useAuth } from '@/hooks/useAuth';
@@ -723,4 +724,10 @@ import { useUsageLimits } from '@/hooks/useUsageLimits';
    );
  };
  
-export default ClimateRiskContent;
+const ClimateRisk = () => (
+  <PremiumGate feature="Climate Volatility Engine" requiredPlan="premium">
+    <ClimateRiskContent />
+  </PremiumGate>
+);
+
+export default ClimateRisk;
