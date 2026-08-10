@@ -161,9 +161,18 @@ export default function AIChat() {
         body: {
           messages: newMsgs.map(m => ({ role: m.role, content: m.content })),
           preferredLanguage,
+          countAsChat: true,
         },
       });
-      if (error) throw error;
+      if (error) {
+        const detail = await error?.context?.text?.().catch(() => '') ?? '';
+        if (/limit|429/i.test(detail) || error.message?.includes('429')) {
+          toast.error("You've used all your free Chloe chats for today. Upgrade for unlimited.");
+          setState('idle');
+          return;
+        }
+        throw error;
+      }
       const reply: Msg = { role: 'assistant', content: data.response };
       setMessages(prev => [...prev, reply]);
       incrementChat();

@@ -928,6 +928,30 @@ export type Database = {
         }
         Relationships: []
       }
+      usage_counters: {
+        Row: {
+          count: number
+          kind: string
+          period_key: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          count?: number
+          kind: string
+          period_key: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          count?: number
+          kind?: string
+          period_key?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ussd_crop_reports: {
         Row: {
           created_at: string
@@ -1049,6 +1073,10 @@ export type Database = {
       }
     }
     Functions: {
+      consume_usage: {
+        Args: { _kind: string; _limit: number; _user_id: string }
+        Returns: Json
+      }
       get_my_profile_pii: {
         Args: never
         Returns: {

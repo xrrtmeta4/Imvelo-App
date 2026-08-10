@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.80.0";
+import { consumeUsage, limitResponse } from "../_shared/usage.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,8 +13,14 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, preferredLanguage = 'en' } = await req.json();
+    const { messages, preferredLanguage = 'en', countAsChat = false } = await req.json();
     console.log('AI Assistant request:', messages, 'Language:', preferredLanguage);
+
+    // Server-side free-tier enforcement: 3 Chloe chats per day
+    if (countAsChat) {
+      const usage = await consumeUsage(req, 'chat', 3);
+      if (!usage.allowed) return limitResponse('chat', usage, corsHeaders);
+    }
 
     const LOVABLE_API_KEY_LOV = Deno.env.get('LOVABLE_API_KEY');
     const GEMINI_KEY = Deno.env.get('Gemini');
