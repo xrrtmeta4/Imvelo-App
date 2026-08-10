@@ -52,7 +52,14 @@ const PestScanner = () => {
           body: { imageUrl: publicUrl, quantum: quantumMode && isPremium }
         });
 
-      if (identifyError) throw identifyError;
+      if (identifyError) {
+        const detail = await (identifyError as any)?.context?.text?.().catch(() => '') ?? '';
+        if (/scans for this week|limit_reached/i.test(detail)) {
+          toast.error("You've used all your free scans this week. Upgrade to Premium for unlimited scans.");
+          return;
+        }
+        throw identifyError;
+      }
       if (identifyData?.error) throw new Error(identifyData.error);
       if (!identifyData?.pest_name) throw new Error('The AI could not read this image. Try a clearer close-up in good light.');
 
