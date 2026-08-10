@@ -63,10 +63,17 @@ const AIChatbot = () => {
     try {
       const apiMessages = [...messages, userMessage].map(m => ({ role: m.role, content: m.content }));
       const { data, error } = await supabase.functions.invoke('ai-assistant', {
-        body: { messages: apiMessages, preferredLanguage }
+        body: { messages: apiMessages, preferredLanguage, countAsChat: true }
       });
 
-      if (error) throw error;
+      if (error) {
+        const detail = await error?.context?.text?.().catch(() => '') ?? '';
+        if (/limit|429/i.test(detail) || error.message?.includes('429')) {
+          toast.error("Daily chat limit reached. Upgrade for unlimited conversations!");
+          return;
+        }
+        throw error;
+      }
 
       setMessages(prev => [...prev, { 
         role: 'assistant', 
