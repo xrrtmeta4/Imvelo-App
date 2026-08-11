@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { generateResultPdf } from '@/lib/generateResultPdf';
 import { useUsageLimits } from '@/hooks/useUsageLimits';
+import { showLimitReached } from '@/lib/limitPrompt';
 
 const AnimalDiseaseScanner = () => {
   const { user } = useAuth();
@@ -22,7 +23,7 @@ const AnimalDiseaseScanner = () => {
     if (!e.target.files || !e.target.files[0] || !user) return;
     
     if (!canUseDetection()) {
-      toast.error('Daily limit reached. Upgrade for unlimited detections!');
+      showLimitReached('scan');
       return;
     }
     

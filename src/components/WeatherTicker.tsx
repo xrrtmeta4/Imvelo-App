@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useCurrency } from '@/hooks/useCurrency';
@@ -41,8 +41,9 @@ const formatPrice = (price: number) => {
 const MarketTicker = () => {
   const [prices, setPrices] = useState<CommodityPrice[]>(FALLBACK);
   const [, setLastUpdated] = useState<string>("");
-  const [index, setIndex] = useState(0);
   const { selectedCurrency } = useCurrency();
+  const trackRef = useRef<HTMLDivElement>(null);
+  const offsetRef = useRef(0);
 
   const fetchPrices = useCallback(async () => {
     try {
@@ -61,30 +62,45 @@ const MarketTicker = () => {
 
   useEffect(() => {
     fetchPrices();
-    const interval = setInterval(() => {
-      fetchPrices();
-    }, 10 * 60 * 1000);
+    const interval = setInterval(fetchPrices, 10 * 60 * 1000);
     return () => clearInterval(interval);
   }, [fetchPrices]);
 
-  const displayPrices = prices;
-
+  // Continuous scroll driven by rAF (no CSS keyframes — avoids the paint
+  // artifacts the old marquee produced on mobile browsers).
   useEffect(() => {
-    if (displayPrices.length === 0) return;
-    const id = setInterval(() => {
-      setIndex((i) => (i + 1) % displayPrices.length);
-    }, 3000);
-    return () => clearInterval(id);
-  }, [displayPrices.length]);
+    const track = trackRef.current;
+    if (!track) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-  const visible = displayPrices.slice(index, index + 3).concat(
-    displayPrices.slice(0, Math.max(0, index + 3 - displayPrices.length))
-  );
+    let raf = 0;
+    let last = performance.now();
+    const SPEED = 45; // px per second
+
+    const step = (now: number) => {
+      const dt = Math.min(now - last, 64) / 1000;
+      last = now;
+      const half = track.scrollWidth / 2;
+      if (half > 0) {
+        offsetRef.current = (offsetRef.current + SPEED * dt) % half;
+        track.style.transform = `translate3d(${-offsetRef.current}px,0,0)`;
+      }
+      raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [prices.length]);
+
+  const loop = [...prices, ...prices];
 
   return (
-    <div className="bg-primary/10 border-b border-primary/20 py-2 px-3">
-      <div className="flex items-center gap-4 overflow-x-auto scrollbar-none">
-        {visible.map((commodity, i) => (
+    <div className="bg-primary/10 border-b border-primary/20 py-2 overflow-hidden">
+      <div
+        ref={trackRef}
+        className="flex items-center gap-6 w-max will-change-transform"
+        style={{ contain: 'layout paint' }}
+      >
+        {loop.map((commodity, i) => (
           <div key={`${commodity.name}-${i}`} className="flex items-center gap-1.5 text-sm shrink-0">
             <span className="font-medium text-foreground">{commodity.name}</span>
             <span className="text-foreground">{selectedCurrency.symbol}{formatPrice(commodity.price)}</span>

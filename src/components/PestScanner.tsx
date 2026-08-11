@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { generateResultPdf } from '@/lib/generateResultPdf';
 import { useUsageLimits } from '@/hooks/useUsageLimits';
+import { showLimitReached } from '@/lib/limitPrompt';
 
 const PestScanner = () => {
   const { user } = useAuth();
@@ -23,7 +24,7 @@ const PestScanner = () => {
     if (!e.target.files || !e.target.files[0] || !user) return;
     
     if (!canUseDetection()) {
-      toast.error('Daily limit reached. Upgrade for unlimited detections!');
+      showLimitReached('scan');
       return;
     }
     
@@ -55,7 +56,7 @@ const PestScanner = () => {
       if (identifyError) {
         const detail = await (identifyError as any)?.context?.text?.().catch(() => '') ?? '';
         if (/scans for this week|limit_reached/i.test(detail)) {
-          toast.error("You've used all your free scans this week. Upgrade to Premium for unlimited scans.");
+          showLimitReached('scan');
           return;
         }
         throw identifyError;

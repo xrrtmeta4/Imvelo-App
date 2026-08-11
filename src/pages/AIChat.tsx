@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { showLimitReached } from '@/lib/limitPrompt';
 import { useAuth } from '@/hooks/useAuth';
 import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { ArrowLeft, Send, Mic, MicOff, Sparkles, Trash2, Crown, ThumbsUp, ThumbsDown } from 'lucide-react';
@@ -148,7 +149,7 @@ export default function AIChat() {
     const content = (text ?? input).trim();
     if (!content) return;
     if (!canUseChat()) {
-      toast.error('Daily chat limit reached. Upgrade for unlimited conversations!');
+      showLimitReached('chat');
       return;
     }
     const userMsg: Msg = { role: 'user', content };
@@ -167,7 +168,7 @@ export default function AIChat() {
       if (error) {
         const detail = await error?.context?.text?.().catch(() => '') ?? '';
         if (/limit|429/i.test(detail) || error.message?.includes('429')) {
-          toast.error("You've used all your free Chloe chats for today. Upgrade for unlimited.");
+          showLimitReached('chat');
           setState('idle');
           return;
         }
