@@ -1,8 +1,5 @@
-// Re-export the auto-generated Supabase client.
-// Hardcoded fallbacks for URL + publishable key guarantee the client
-// initializes even if Vite env injection fails for some reason
-// (publishable/anon keys are safe to ship in client code).
 import { createClient } from '@supabase/supabase-js';
+import { checkSupabaseHealth } from '@/lib/database';
 
 const FALLBACK_URL = 'https://ufoketygwxdlusngppef.supabase.co';
 const FALLBACK_KEY =
@@ -19,3 +16,15 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
   },
 });
+
+export async function getActiveClient() {
+  const healthy = await checkSupabaseHealth();
+  if (!healthy) {
+    const { getDb } = await import('@/lib/database');
+    const db = await getDb();
+    if (db && typeof db === 'object' && 'query' in db) {
+      return { isPostgres: true as const, db: db as any };
+    }
+  }
+  return { isPostgres: false as const, db: supabase };
+}

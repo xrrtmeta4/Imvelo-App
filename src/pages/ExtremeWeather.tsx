@@ -1,5 +1,7 @@
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sun, CloudRain, Wind, Snowflake, Flame, Droplets, Sprout, Shield, AlertTriangle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { AlertTriangle, Sun, CloudRain, Wind, Snowflake, Flame, Droplets, Sprout, Shield } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 
 const weatherTypes = [
