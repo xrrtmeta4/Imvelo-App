@@ -20,7 +20,7 @@ const OfficerDashboard = lazy(() => import("./pages/OfficerDashboard"));
 const PlantingGuide = lazy(() => import("./pages/PlantingGuide"));
 const SoilManagement = lazy(() => import("./pages/SoilManagement"));
 const WaterConservation = lazy(() => import("./pages/WaterConservation"));
-const ExtensionDirectory = lazy(() => import("./pages/ExtensionDirectory"));
+const ExtremeWeather = lazy(() => import("./pages/ExtremeWeather"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const Contact = lazy(() => import("./pages/Contact"));
@@ -46,7 +46,6 @@ const UssdSimulator = lazy(() => import("./pages/UssdSimulator"));
 const Analysis = lazy(() => import("./pages/Analysis"));
 const Campaigns = lazy(() => import("./pages/Campaigns"));
 const AIChat = lazy(() => import("./pages/AIChat"));
-const ExtremeWeather = lazy(() => import("./pages/ExtremeWeather"));
 const ScannerFeature = lazy(() => import("./pages/features/ScannerFeature"));
 const WeatherFeature = lazy(() => import("./pages/features/WeatherFeature"));
 const AnalysisFeature = lazy(() => import("./pages/features/AnalysisFeature"));
@@ -145,7 +144,7 @@ const App = () => (
             <Route path="/planting-guide" element={<ProtectedRoute><PlantingGuide /></ProtectedRoute>} />
             <Route path="/soil-management" element={<ProtectedRoute><SoilManagement /></ProtectedRoute>} />
             <Route path="/water-conservation" element={<ProtectedRoute><WaterConservation /></ProtectedRoute>} />
-            <Route path="/extension-directory" element={<ProtectedRoute><ExtensionDirectory /></ProtectedRoute>} />
+            <Route path="/extension-directory" element={<ProtectedRoute><ExtremeWeather /></ProtectedRoute>} />
             <Route path="/pesticide-calendar" element={<ProtectedRoute><PesticideCalendar /></ProtectedRoute>} />
             <Route path="/crop-monitoring" element={<ProtectedRoute><CropMonitoring /></ProtectedRoute>} />
             <Route path="/climate-risk" element={<ProtectedRoute><ClimateRisk /></ProtectedRoute>} />

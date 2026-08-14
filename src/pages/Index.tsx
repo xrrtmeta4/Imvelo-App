@@ -123,15 +123,15 @@ const Index = () => {
           >
             <div className="flex items-start gap-3">
               <div className="p-2 rounded-lg bg-primary/15">
-                <Users className="w-5 h-5 text-primary" />
+                <AlertTriangle className="w-5 h-5 text-primary" />
               </div>
               <div className="flex-1">
-                <p className="font-semibold text-sm text-foreground">Extension Services</p>
+                <p className="font-semibold text-sm text-foreground">Extreme Weather Protection</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Contacts for agricultural extension officers across every African country.
+                  Learn how to protect your crops and livestock from droughts, floods, heatwaves, and storms.
                 </p>
                 <span className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-primary">
-                  <Phone className="w-3 h-3" /> Find an officer →
+                  Learn more →
                 </span>
               </div>
             </div>

@@ -212,15 +212,18 @@ export const useUsageLimits = () => {
 
       const { data, error } = await supabase.functions.invoke('create-checkout', { body });
 
-      if (error) throw error;
+      if (error) {
+        const msg = typeof error === 'string' ? error : (error as any)?.message || 'Checkout failed';
+        throw new Error(msg);
+      }
       if (data?.checkout_url) {
         window.location.href = data.checkout_url;
       } else {
         throw new Error('No checkout URL returned');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Checkout error:', err);
-      toast.error('Failed to start checkout. Please try again.');
+      toast.error(err?.message || 'Failed to start checkout. Please try again.');
     }
   };
 
