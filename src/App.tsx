@@ -46,6 +46,7 @@ const UssdSimulator = lazy(() => import("./pages/UssdSimulator"));
 const Analysis = lazy(() => import("./pages/Analysis"));
 const Campaigns = lazy(() => import("./pages/Campaigns"));
 const AIChat = lazy(() => import("./pages/AIChat"));
+const ExtremeWeather = lazy(() => import("./pages/ExtremeWeather"));
 const ScannerFeature = lazy(() => import("./pages/features/ScannerFeature"));
 const WeatherFeature = lazy(() => import("./pages/features/WeatherFeature"));
 const AnalysisFeature = lazy(() => import("./pages/features/AnalysisFeature"));
@@ -165,6 +166,7 @@ const App = () => (
             <Route path="/analysis" element={<ProtectedRoute><Analysis /></ProtectedRoute>} />
             <Route path="/campaigns" element={<ProtectedRoute><Campaigns /></ProtectedRoute>} />
             <Route path="/ai-chat" element={<ProtectedRoute><AIChat /></ProtectedRoute>} />
+            <Route path="/extreme-weather" element={<ProtectedRoute><ExtremeWeather /></ProtectedRoute>} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/contact" element={<Contact />} />

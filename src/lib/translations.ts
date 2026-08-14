@@ -159,6 +159,21 @@ const en: Record<string, string> = {
   farmActivities: 'Farm Activities', addActivity: 'Add Activity',
   activityType: 'Activity Type', activityDate: 'Activity Date',
 
+  // Extreme Weather
+  extremeWeather: 'Extreme Weather Protection',
+  extremeWeatherSubtitle: 'How to protect your crops and livestock',
+  whyThisMatters: 'Why this matters',
+  extremeWeatherDesc: 'Extreme weather can destroy crops and harm livestock in hours. Preparing early helps you reduce losses, protect your animals, and recover faster after droughts, floods, heatwaves, cold spells, and storms.',
+  drought: 'Drought', flooding: 'Flooding', heatwave: 'Heatwave', coldSpell: 'Cold Spell / Frost', strongWinds: 'Strong Winds / Storms',
+  crops: 'Crops', livestock: 'Livestock',
+  generalPreparedness: 'General Preparedness Tips',
+  whatHappensNext: 'What happens next?',
+  redirectToCheckout: 'You will be redirected to our secure Dodo Payments checkout.',
+  choosePaymentMethod: 'Choose your preferred payment method from 100+ options worldwide.',
+  premiumActivated: 'After successful payment, premium access is activated immediately.',
+  processing: 'Processing...',
+  payNow: 'Pay now',
+
   // General
   loading: 'Loading...', error: 'Error', success: 'Success', cancel: 'Cancel',
   confirm: 'Confirm', delete: 'Delete', edit: 'Edit', close: 'Close',
