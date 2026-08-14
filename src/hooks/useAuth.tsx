@@ -21,6 +21,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     let initialized = false;
+    let getSessionDone = false;
     let active = true;
 
     // Set up auth state listener FIRST
@@ -28,11 +29,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       (event, session) => {
         if (!active) return;
 
-        // Only an explicit sign-out may clear the session. Any other null
-        // session (transient boot value, failed refresh retry, background tab
-        // wake-up) is ignored so the user is never bounced to /auth randomly.
         if (!session) {
-          if (event === 'SIGNED_OUT') {
+          if (event === 'SIGNED_OUT' && getSessionDone) {
             initialized = true;
             setSession(null);
             setUser(null);
@@ -51,12 +49,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!active) return;
+      getSessionDone = true;
       initialized = true;
-      setSession((prev) => prev ?? session);
-      setUser((prev) => prev ?? session?.user ?? null);
+      if (session) {
+        setSession(session);
+        setUser(session.user ?? null);
+      }
       setLoading(false);
     }).catch(() => {
       if (!active) return;
+      getSessionDone = true;
       initialized = true;
       setLoading(false);
     });
