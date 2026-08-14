@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { MessageCircle, Send, X, Crown, ThumbsUp, ThumbsDown, Brain, Trash2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { showLimitReached } from '@/lib/limitPrompt';
 import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -51,7 +52,7 @@ const AIChatbot = () => {
     if (!input.trim()) return;
 
     if (!canUseChat()) {
-      toast.error('Daily chat limit reached. Upgrade for unlimited conversations!');
+      showLimitReached('chat');
       return;
     }
 
@@ -63,10 +64,17 @@ const AIChatbot = () => {
     try {
       const apiMessages = [...messages, userMessage].map(m => ({ role: m.role, content: m.content }));
       const { data, error } = await supabase.functions.invoke('ai-assistant', {
-        body: { messages: apiMessages, preferredLanguage }
+        body: { messages: apiMessages, preferredLanguage, countAsChat: true }
       });
 
-      if (error) throw error;
+      if (error) {
+        const detail = await error?.context?.text?.().catch(() => '') ?? '';
+        if (/limit|429/i.test(detail) || error.message?.includes('429')) {
+          showLimitReached('chat');
+          return;
+        }
+        throw error;
+      }
 
       setMessages(prev => [...prev, { 
         role: 'assistant', 

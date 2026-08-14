@@ -1,8 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useCurrency } from '@/hooks/useCurrency';
-import { convertFromUSD } from '@/lib/fxRates';
 
 interface CommodityPrice {
   name: string;
@@ -13,16 +12,12 @@ interface CommodityPrice {
 }
 
 const FALLBACK: CommodityPrice[] = [
-  { name: "Maize", price: 215.5, currency: "USD", change: 1.8, unit: "/ton" },
-  { name: "Wheat", price: 248.3, currency: "USD", change: -0.6, unit: "/ton" },
-  { name: "Soybeans", price: 382.4, currency: "USD", change: 2.1, unit: "/ton" },
-  { name: "Rice", price: 518.0, currency: "USD", change: 0.3, unit: "/ton" },
-  { name: "Sugar", price: 0.224, currency: "USD", change: -1.2, unit: "/lb" },
-  { name: "Coffee", price: 4.82, currency: "USD", change: 3.4, unit: "/lb" },
-  { name: "Cotton", price: 0.72, currency: "USD", change: -0.4, unit: "/lb" },
-  { name: "Cattle", price: 198.5, currency: "USD", change: 0.9, unit: "/cwt" },
-  { name: "Palm Oil", price: 892.0, currency: "USD", change: -1.7, unit: "/ton" },
-  { name: "Cocoa", price: 8420, currency: "USD", change: 5.2, unit: "/ton" },
+  { name: "Cabbage", price: 6.5, currency: "SZL", change: 0, unit: "/kg" },
+  { name: "Tomato", price: 14.0, currency: "SZL", change: 0, unit: "/kg" },
+  { name: "Potato", price: 9.0, currency: "SZL", change: 0, unit: "/kg" },
+  { name: "Onion", price: 11.0, currency: "SZL", change: 0, unit: "/kg" },
+  { name: "Green Pepper", price: 16.0, currency: "SZL", change: 0, unit: "/kg" },
+  { name: "Carrot", price: 8.5, currency: "SZL", change: 0, unit: "/kg" },
 ];
 
 const getChangeIcon = (change: number) => {
@@ -45,10 +40,10 @@ const formatPrice = (price: number) => {
 
 const MarketTicker = () => {
   const [prices, setPrices] = useState<CommodityPrice[]>(FALLBACK);
-  const [usingFallback, setUsingFallback] = useState(true);
   const [, setLastUpdated] = useState<string>("");
-  const [index, setIndex] = useState(0);
   const { selectedCurrency } = useCurrency();
+  const trackRef = useRef<HTMLDivElement>(null);
+  const offsetRef = useRef(0);
 
   const fetchPrices = useCallback(async () => {
     try {
@@ -58,51 +53,66 @@ const MarketTicker = () => {
       if (!error && data?.prices?.length) {
         setPrices(data.prices);
         setLastUpdated(data.updated_at);
-        setUsingFallback(Boolean(data.fallback));
         return;
       }
     } catch {
       // Keep fallback prices
     }
-    setUsingFallback(true);
   }, [selectedCurrency]);
 
   useEffect(() => {
     fetchPrices();
-    const interval = setInterval(() => {
-      fetchPrices();
-    }, 10 * 60 * 1000);
+    const interval = setInterval(fetchPrices, 10 * 60 * 1000);
     return () => clearInterval(interval);
   }, [fetchPrices]);
 
-  const displayPrices = usingFallback
-    ? prices.map((p) => ({ ...p, price: convertFromUSD(p.price, selectedCurrency.code) }))
-    : prices;
-
+  // Continuous scroll driven by rAF (no CSS keyframes — avoids the paint
+  // artifacts the old marquee produced on mobile browsers).
   useEffect(() => {
-    if (displayPrices.length === 0) return;
-    const id = setInterval(() => {
-      setIndex((i) => (i + 1) % displayPrices.length);
-    }, 3000);
-    return () => clearInterval(id);
-  }, [displayPrices.length]);
+    const track = trackRef.current;
+    if (!track) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-  const visible = displayPrices.slice(index, index + 3).concat(
-    displayPrices.slice(0, Math.max(0, index + 3 - displayPrices.length))
-  );
+    let raf = 0;
+    let last = performance.now();
+    const SPEED = 45; // px per second
+
+    const step = (now: number) => {
+      const dt = Math.min(now - last, 64) / 1000;
+      last = now;
+      const half = track.scrollWidth / 2;
+      if (half > 0) {
+        offsetRef.current = (offsetRef.current + SPEED * dt) % half;
+        track.style.transform = `translate3d(${-offsetRef.current}px,0,0)`;
+      }
+      raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [prices.length]);
+
+  const loop = [...prices, ...prices];
 
   return (
-    <div className="bg-primary/10 border-b border-primary/20 py-2 px-3">
-      <div className="flex items-center gap-4 overflow-x-auto scrollbar-none">
-        {visible.map((commodity, i) => (
+    <div className="bg-primary/10 border-b border-primary/20 py-2 overflow-hidden">
+      <div
+        ref={trackRef}
+        className="flex items-center gap-6 w-max will-change-transform"
+        style={{ contain: 'layout paint' }}
+      >
+        {loop.map((commodity, i) => (
           <div key={`${commodity.name}-${i}`} className="flex items-center gap-1.5 text-sm shrink-0">
             <span className="font-medium text-foreground">{commodity.name}</span>
             <span className="text-foreground">{selectedCurrency.symbol}{formatPrice(commodity.price)}</span>
             <span className="text-xs text-muted-foreground">{commodity.unit}</span>
-            {getChangeIcon(commodity.change)}
-            <span className={`text-xs font-medium ${getChangeColor(commodity.change)}`}>
-              {commodity.change > 0 ? "+" : ""}{commodity.change.toFixed(1)}%
-            </span>
+            {commodity.change !== 0 && (
+              <>
+                {getChangeIcon(commodity.change)}
+                <span className={`text-xs font-medium ${getChangeColor(commodity.change)}`}>
+                  {commodity.change > 0 ? "+" : ""}{commodity.change.toFixed(1)}%
+                </span>
+              </>
+            )}
           </div>
         ))}
       </div>

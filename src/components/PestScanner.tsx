@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { generateResultPdf } from '@/lib/generateResultPdf';
 import { useUsageLimits } from '@/hooks/useUsageLimits';
+import { showLimitReached } from '@/lib/limitPrompt';
 
 const PestScanner = () => {
   const { user } = useAuth();
@@ -23,7 +24,7 @@ const PestScanner = () => {
     if (!e.target.files || !e.target.files[0] || !user) return;
     
     if (!canUseDetection()) {
-      toast.error('Daily limit reached. Upgrade for unlimited detections!');
+      showLimitReached('scan');
       return;
     }
     
@@ -52,7 +53,14 @@ const PestScanner = () => {
           body: { imageUrl: publicUrl, quantum: quantumMode && isPremium }
         });
 
-      if (identifyError) throw identifyError;
+      if (identifyError) {
+        const detail = await (identifyError as any)?.context?.text?.().catch(() => '') ?? '';
+        if (/scans for this week|limit_reached/i.test(detail)) {
+          showLimitReached('scan');
+          return;
+        }
+        throw identifyError;
+      }
       if (identifyData?.error) throw new Error(identifyData.error);
       if (!identifyData?.pest_name) throw new Error('The AI could not read this image. Try a clearer close-up in good light.');
 
