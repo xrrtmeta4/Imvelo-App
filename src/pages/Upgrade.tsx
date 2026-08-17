@@ -12,6 +12,7 @@ import { openDodoOverlay } from '@/lib/dodoCheckout';
 
 const PREMIUM_PRODUCT_ID = 'pdt_0NYZaqcOARihEXXOPIdmC';
 const PREMIUM_PRICE = 2.0;
+const DIRECT_CHECKOUT_URL = `https://checkout.dodopayments.com/buy/${PREMIUM_PRODUCT_ID}?quantity=1`;
 
 const FEATURES = [
   'Unlimited pest & disease scans',
@@ -29,7 +30,6 @@ const Upgrade = () => {
   const { isPremium, refreshPremiumStatus } = useUsageLimits();
   const [loading, setLoading] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
-  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   const success = searchParams.get('success');
 
@@ -52,47 +52,37 @@ const Upgrade = () => {
 
   const handleUpgrade = useCallback(async () => {
     setLoading(true);
-    setCheckoutError(null);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user?.email) {
         throw new Error('Please sign in to upgrade');
       }
 
-      console.log('[Upgrade] Creating checkout session for user:', user.email);
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: {
-          product_id: PREMIUM_PRODUCT_ID,
-          customer_email: user.email,
-          customer_name: user.user_metadata?.full_name || userName || 'Customer',
-          redirect_url: window.location.origin + '/upgrade?success=true',
-          payment_methods: ['credit', 'debit', 'apple_pay', 'google_pay'],
-        },
-      });
+      let checkoutUrl = DIRECT_CHECKOUT_URL;
 
-      console.log('[Upgrade] Edge function response:', { data, error });
+      try {
+        const { data, error } = await supabase.functions.invoke('create-checkout', {
+          body: {
+            product_id: PREMIUM_PRODUCT_ID,
+            customer_email: user.email,
+            customer_name: user.user_metadata?.full_name || userName || 'Customer',
+            redirect_url: window.location.origin + '/upgrade?success=true',
+            payment_methods: ['credit', 'debit', 'apple_pay', 'google_pay'],
+          },
+        });
 
-      const edgeError = (data as any)?.error || (error as any)?.message || (error as any)?.details;
-      if (edgeError) {
-        console.warn('[Upgrade] Edge function error:', edgeError);
-        setCheckoutError('Payment gateway is temporarily unavailable. Please try again or contact support.');
-        setLoading(false);
-        return;
+        const edgeError = (data as any)?.error || (error as any)?.message || (error as any)?.details;
+        if (!edgeError && data?.checkout_url) {
+          checkoutUrl = data.checkout_url;
+        }
+      } catch (err) {
+        console.warn('[Upgrade] Edge function unavailable, using direct checkout:', err);
       }
 
-      const checkoutUrl = data?.checkout_url;
-      if (!checkoutUrl) {
-        console.warn('[Upgrade] No checkout URL returned');
-        setCheckoutError('Payment session could not be created. Please try again or contact support.');
-        setLoading(false);
-        return;
-      }
-
-      console.log('[Upgrade] Opening Dodo overlay with URL:', checkoutUrl);
       await openDodoOverlay(checkoutUrl);
     } catch (err: any) {
       console.error('[Upgrade] Checkout error:', err);
-      setCheckoutError(err?.message || 'Failed to start checkout. Please try again.');
+      toast.error(err?.message || 'Failed to start checkout. Please try again.');
       setLoading(false);
     }
   }, [userName]);
@@ -138,22 +128,6 @@ const Upgrade = () => {
               <p className="text-sm font-medium text-green-700 dark:text-green-400">
                 Payment successful! Your premium access is being activated.
               </p>
-            </CardContent>
-          </Card>
-        )}
-
-        {checkoutError && (
-          <Card className="border-destructive bg-destructive/5">
-            <CardContent className="p-4 text-center">
-              <p className="text-sm font-medium text-destructive">{checkoutError}</p>
-              <Button
-                variant="outline"
-                size="sm"
-                className="mt-2"
-                onClick={() => setCheckoutError(null)}
-              >
-                Try again
-              </Button>
             </CardContent>
           </Card>
         )}
