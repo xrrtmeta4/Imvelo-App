@@ -6,6 +6,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useUsageLimits } from '@/hooks/useUsageLimits';
+import { useAuth } from '@/hooks/useAuth';
 import PaymentLogos from '@/components/PaymentLogos';
 import { openDodoOverlay } from '@/lib/dodoCheckout';
 
@@ -28,17 +29,19 @@ const Upgrade = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { isPremium, refreshPremiumStatus } = useUsageLimits();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
 
   const success = searchParams.get('success');
 
   useEffect(() => {
-    const email = localStorage.getItem('imvelo_user_email');
-    const name = localStorage.getItem('imvelo_user_name');
-    if (name) setUserName(name.split(' ')[0]);
-    else if (email) setUserName(email.split('@')[0]);
-  }, []);
+    if (user?.user_metadata?.full_name) {
+      setUserName(user.user_metadata.full_name.split(' ')[0]);
+    } else if (user?.email) {
+      setUserName(user.email.split('@')[0]);
+    }
+  }, [user]);
 
   useEffect(() => {
     if (success === 'true') {
@@ -50,10 +53,12 @@ const Upgrade = () => {
   const handleUpgrade = useCallback(async () => {
     setLoading(true);
     try {
-      const customerEmail = localStorage.getItem('imvelo_user_email');
+      const customerEmail = user?.email;
       if (!customerEmail) {
         throw new Error('Please sign in to upgrade');
       }
+
+      const customerName = user?.user_metadata?.full_name || userName || 'Customer';
 
       let checkoutUrl = DIRECT_CHECKOUT_URL;
 
@@ -69,7 +74,7 @@ const Upgrade = () => {
             amount: PREMIUM_PRICE,
             currency: 'USD',
             customer_email: customerEmail,
-            customer_name: userName || customerEmail,
+            customer_name: customerName,
             payment_methods: ['credit', 'debit', 'apple_pay', 'google_pay'],
             success_url: window.location.origin + '/upgrade?success=true',
             cancel_url: window.location.origin + '/upgrade',
@@ -90,7 +95,7 @@ const Upgrade = () => {
       toast.error(err?.message || 'Failed to start checkout. Please try again.');
       setLoading(false);
     }
-  }, [userName]);
+  }, [user, userName]);
 
   if (isPremium) {
     return (
@@ -173,7 +178,7 @@ const Upgrade = () => {
         <Button
           onClick={handleUpgrade}
           disabled={loading}
-          className="w-full gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-md"
+          className="w-full gap-2 bg-green-600 hover:bg-green-700 text-white border-green-600 backdrop-blur-md"
           size="lg"
         >
           {loading ? (

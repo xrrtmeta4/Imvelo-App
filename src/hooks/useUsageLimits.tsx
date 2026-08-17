@@ -204,8 +204,13 @@ export const useUsageLimits = () => {
     let checkoutUrl = `https://checkout.dodopayments.com/buy/${productId}?quantity=1`;
 
     try {
-      const customerEmail = user?.email || localStorage.getItem('imvelo_user_email');
-      const customerName = user?.user_metadata?.full_name || localStorage.getItem('imvelo_user_name') || 'Customer';
+      const customerEmail = user?.email;
+      const customerName = user?.user_metadata?.full_name || 'Customer';
+
+      if (!customerEmail) {
+        toast.error('Please sign in to upgrade');
+        return;
+      }
 
       const response = await fetch(`${API_BASE}/api/payments/checkout`, {
         method: 'POST',
