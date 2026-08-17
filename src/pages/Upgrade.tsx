@@ -89,7 +89,7 @@ const Upgrade = () => {
         console.warn('[Upgrade] Backend unavailable, using direct checkout:', err);
       }
 
-      await openDodoOverlay(checkoutUrl);
+      await openDodoOverlay(checkoutUrl, () => setLoading(false));
     } catch (err: any) {
       console.error('[Upgrade] Checkout error:', err);
       toast.error(err?.message || 'Failed to start checkout. Please try again.');

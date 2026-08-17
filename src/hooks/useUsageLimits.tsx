@@ -3,8 +3,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-
 export type PlanTier = 'free' | 'starter' | 'premium';
 
 export const PRODUCT_IDS: Record<PlanTier, string> = {
@@ -18,6 +16,7 @@ export const PLANS = {
     name: 'Free',
     price: 0,
     weeklyDetections: 2,
+    dailyDetections: 0,
     dailyChats: 3,
     maxLedgerEntries: 20,
     maxSprayEntries: 10,
@@ -27,6 +26,7 @@ export const PLANS = {
     name: 'Starter',
     price: 0,
     weeklyDetections: 2,
+    dailyDetections: 0,
     dailyChats: 3,
     maxLedgerEntries: 20,
     maxSprayEntries: 10,
@@ -35,11 +35,12 @@ export const PLANS = {
   premium: {
     name: 'Premium',
     price: 2,
-    weeklyDetections: Infinity,
-    dailyChats: Infinity,
+    weeklyDetections: 0,
+    dailyDetections: 1,
+    dailyChats: 2,
     maxLedgerEntries: Infinity,
     maxSprayEntries: Infinity,
-    features: ['Unlimited scans', 'Unlimited Chloe AI chat', 'AI financial advisory', 'Climate volatility engine', 'Smart irrigation planner', '7-day weather forecast', 'Farming tips', 'Unlimited spray scheduling', 'Unlimited digital ledger', 'Produce estimation', 'Crop monitoring (phenotype)', 'Livestock manager', 'Harvest tracker', 'Market price alerts', 'Farm inventory', 'Carbon score', 'Post-harvest guide', 'Priority support'],
+    features: ['1 scan per day', '2 AI chats per day', 'AI financial advisory', 'Climate volatility engine', 'Smart irrigation planner', '7-day weather forecast', 'Farming tips', 'Unlimited spray scheduling', 'Unlimited digital ledger', 'Produce estimation', 'Crop monitoring (phenotype)', 'Livestock manager', 'Harvest tracker', 'Market price alerts', 'Farm inventory', 'Carbon score', 'Post-harvest guide', 'Priority support'],
   },
 };
 
@@ -144,15 +145,21 @@ export const useUsageLimits = () => {
 
   const planConfig = PLANS[currentPlan];
 
-  const canUseDetection = () => usage.detectionCount < planConfig.weeklyDetections;
+  const canUseDetection = () => {
+    if (planConfig.dailyDetections > 0) {
+      return usage.detectionCount < planConfig.dailyDetections;
+    }
+    return usage.detectionCount < planConfig.weeklyDetections;
+  };
+
   const canUseChat = () => usage.chatCount < planConfig.dailyChats;
+
   const canAddLedgerEntry = (currentCount: number) => currentCount < planConfig.maxLedgerEntries;
   const canAddSprayEntry = (currentCount: number) => currentCount < planConfig.maxSprayEntries;
   const getMaxLedgerEntries = () => planConfig.maxLedgerEntries;
   const getMaxSprayEntries = () => planConfig.maxSprayEntries;
 
   const incrementDetection = () => {
-    if (planConfig.weeklyDetections === Infinity) return;
     const newUsage = {
       ...usage,
       detectionCount: usage.detectionCount + 1,
@@ -172,7 +179,13 @@ export const useUsageLimits = () => {
     saveUsage(newUsage);
   };
 
-  const getRemainingDetections = () => planConfig.weeklyDetections === Infinity ? Infinity : Math.max(0, planConfig.weeklyDetections - usage.detectionCount);
+  const getRemainingDetections = () => {
+    if (planConfig.dailyDetections > 0) {
+      return Math.max(0, planConfig.dailyDetections - usage.detectionCount);
+    }
+    return planConfig.weeklyDetections === Infinity ? Infinity : Math.max(0, planConfig.weeklyDetections - usage.detectionCount);
+  };
+
   const getRemainingChats = () => planConfig.dailyChats === Infinity ? Infinity : Math.max(0, planConfig.dailyChats - usage.chatCount);
 
   const isPremium = currentPlan !== 'free';
@@ -180,7 +193,7 @@ export const useUsageLimits = () => {
     switch (feature) {
       case 'spray':
       case 'ledger':
-        return true; // Available to all plans with entry limits
+        return true;
       case 'cropMonitor':
         return true;
       case 'climateRisk':
@@ -201,18 +214,16 @@ export const useUsageLimits = () => {
     const productId = PRODUCT_IDS[targetPlan];
     if (!productId) return;
 
-    let checkoutUrl = `https://checkout.dodopayments.com/buy/${productId}?quantity=1`;
+    const customerEmail = user?.email;
+    if (!customerEmail) {
+      toast.error('Please sign in to upgrade');
+      return;
+    }
+
+    const checkoutUrl = `https://checkout.dodopayments.com/buy/${productId}?quantity=1`;
 
     try {
-      const customerEmail = user?.email;
-      const customerName = user?.user_metadata?.full_name || 'Customer';
-
-      if (!customerEmail) {
-        toast.error('Please sign in to upgrade');
-        return;
-      }
-
-      const response = await fetch(`${API_BASE}/api/payments/checkout`, {
+      const response = await fetch('/api/payments/checkout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -223,7 +234,7 @@ export const useUsageLimits = () => {
           amount: 2.0,
           currency: 'USD',
           customer_email: customerEmail,
-          customer_name: customerName,
+          customer_name: user?.user_metadata?.full_name || 'Customer',
           payment_methods: paymentMethods,
           success_url: window.location.origin + '/upgrade?success=true',
           cancel_url: window.location.origin + '/upgrade',
@@ -232,14 +243,14 @@ export const useUsageLimits = () => {
 
       const data = await response.json();
       if (response.ok && data?.checkout_url) {
-        checkoutUrl = data.checkout_url;
+        window.location.href = data.checkout_url;
+        return;
       }
     } catch (err) {
       console.warn('[openUpgrade] Backend unavailable, using direct checkout:', err);
     }
 
-    const { openDodoOverlay } = await import('@/lib/dodoCheckout');
-    await openDodoOverlay(checkoutUrl);
+    window.location.href = checkoutUrl;
   };
 
   const getNextPlan = (): PlanTier => {

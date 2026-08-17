@@ -80,7 +80,7 @@ export const getDodoMode = (): DodoCheckoutMode => {
   return 'live';
 };
 
-export const openDodoOverlay = async (checkoutUrl: string) => {
+export const openDodoOverlay = async (checkoutUrl: string, onOpened?: () => void) => {
   const mode = getDodoMode();
   const ready = await loadDodoSdk();
 
@@ -93,6 +93,7 @@ export const openDodoOverlay = async (checkoutUrl: string) => {
     if (!popup) {
       window.location.href = checkoutUrl;
     }
+    onOpened?.();
     return;
   }
 
@@ -127,6 +128,7 @@ export const openDodoOverlay = async (checkoutUrl: string) => {
         showSecurityBadge: true,
       },
     });
+    onOpened?.();
   } catch (error) {
     console.error('[dodoCheckout] Failed to open overlay:', error);
     const popup = window.open(
@@ -137,5 +139,6 @@ export const openDodoOverlay = async (checkoutUrl: string) => {
     if (!popup) {
       window.location.href = checkoutUrl;
     }
+    onOpened?.();
   }
 };
