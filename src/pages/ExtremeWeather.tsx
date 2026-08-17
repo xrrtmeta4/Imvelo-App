@@ -535,78 +535,74 @@ const ExtremeWeather = () => {
     const courseData = COURSES.find(c => c.id === courseId);
     if (!courseData || !user) return;
 
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const margin = 20;
-    const contentWidth = pageWidth - margin * 2;
-
     try {
-      const logoImg = new Image();
-      logoImg.crossOrigin = 'anonymous';
-      logoImg.src = '/imvelo-logo.png';
-    } catch {
-      // ignore logo errors
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 20;
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(22);
+      doc.setTextColor(34, 139, 34);
+      doc.text('Imvelo', pageWidth / 2, 38, { align: 'center' });
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      doc.setTextColor(80, 80, 80);
+      doc.text("Farmer's Best Friend", pageWidth / 2, 46, { align: 'center' });
+
+      doc.setDrawColor(34, 139, 34);
+      doc.setLineWidth(0.6);
+      doc.line(margin, 52, pageWidth - margin, 52);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(18);
+      doc.setTextColor(0, 0, 0);
+      doc.text('Certificate of Completion', pageWidth / 2, 66, { align: 'center' });
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      doc.setTextColor(60, 60, 60);
+      doc.text('This is to certify that', pageWidth / 2, 80, { align: 'center' });
+
+      const userName = user.user_metadata?.full_name || user.email || 'Student';
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(15);
+      doc.setTextColor(34, 139, 34);
+      doc.text(userName, pageWidth / 2, 92, { align: 'center' });
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      doc.setTextColor(60, 60, 60);
+      doc.text('has successfully completed the course', pageWidth / 2, 105, { align: 'center' });
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(13);
+      doc.setTextColor(0, 0, 0);
+      doc.text(t(courseData.titleKey), pageWidth / 2, 118, { align: 'center' });
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      doc.text(`Date: ${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}`, pageWidth / 2, 135, { align: 'center' });
+      doc.text('Course Fee: E200 SZL', pageWidth / 2, 143, { align: 'center' });
+
+      doc.setDrawColor(34, 139, 34);
+      doc.setLineWidth(0.4);
+      doc.line(margin, 152, pageWidth - margin, 152);
+
+      doc.setFont('helvetica', 'italic');
+      doc.setFontSize(9);
+      doc.setTextColor(80, 80, 80);
+      doc.text("Imvelo - Farmer's Best Friend", pageWidth / 2, 162, { align: 'center' });
+      doc.text('Email: imveloapps@gmail.com | Phone: +268 7921 5621', pageWidth / 2, 169, { align: 'center' });
+      doc.text('Mbabane, Eswatini', pageWidth / 2, 176, { align: 'center' });
+
+      doc.save(`imvelo-certificate-${courseId}-${Date.now()}.pdf`);
+      toast.success('Certificate downloaded!');
+    } catch (err) {
+      console.error('Certificate generation error:', err);
+      toast.error('Failed to generate certificate. Please try again.');
     }
-
-    doc.setFont('times', 'bold');
-    doc.setFontSize(24);
-    doc.setTextColor(34, 139, 34);
-    doc.text('Imvelo', pageWidth / 2, 40, { align: 'center' });
-
-    doc.setFont('times', 'italic');
-    doc.setFontSize(12);
-    doc.setTextColor(80, 80, 80);
-    doc.text("Farmer's Best Friend", pageWidth / 2, 50, { align: 'center' });
-
-    doc.setDrawColor(34, 139, 34);
-    doc.setLineWidth(0.5);
-    doc.line(margin, 58, pageWidth - margin, 58);
-
-    doc.setFont('times', 'bold');
-    doc.setFontSize(20);
-    doc.setTextColor(0, 0, 0);
-    doc.text('Certificate of Completion', pageWidth / 2, 75, { align: 'center' });
-
-    doc.setFont('times', 'normal');
-    doc.setFontSize(12);
-    doc.setTextColor(60, 60, 60);
-    doc.text('This is to certify that', pageWidth / 2, 90, { align: 'center' });
-
-    const userName = user.user_metadata?.full_name || user.email || 'Student';
-    doc.setFont('times', 'bold');
-    doc.setFontSize(16);
-    doc.setTextColor(34, 139, 34);
-    doc.text(userName, pageWidth / 2, 102, { align: 'center' });
-
-    doc.setFont('times', 'normal');
-    doc.setFontSize(12);
-    doc.setTextColor(60, 60, 60);
-    doc.text('has successfully completed the course', pageWidth / 2, 115, { align: 'center' });
-
-    doc.setFont('times', 'bold');
-    doc.setFontSize(14);
-    doc.setTextColor(0, 0, 0);
-    doc.text(t(courseData.titleKey), pageWidth / 2, 128, { align: 'center' });
-
-    doc.setFont('times', 'normal');
-    doc.setFontSize(11);
-    doc.setTextColor(100, 100, 100);
-    doc.text(`Date: ${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}`, pageWidth / 2, 145, { align: 'center' });
-    doc.text('Course Fee: E200 SZL', pageWidth / 2, 155, { align: 'center' });
-
-    doc.setDrawColor(34, 139, 34);
-    doc.setLineWidth(0.5);
-    doc.line(margin, 165, pageWidth - margin, 165);
-
-    doc.setFont('times', 'italic');
-    doc.setFontSize(10);
-    doc.setTextColor(80, 80, 80);
-    doc.text("Imvelo - Farmer's Best Friend", pageWidth / 2, 175, { align: 'center' });
-    doc.text('Email: imveloapps@gmail.com | Phone: +268 7921 5621', pageWidth / 2, 182, { align: 'center' });
-    doc.text('Mbabane, Eswatini', pageWidth / 2, 189, { align: 'center' });
-
-    doc.save(`imvelo-certificate-${courseId}-${Date.now()}.pdf`);
-    toast.success('Certificate downloaded!');
   };
 
   if (activeCourse && course) {

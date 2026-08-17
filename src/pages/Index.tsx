@@ -7,7 +7,7 @@ import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/lib/supabase';
-import { Sprout, Crown, Store, Users, Phone, Sparkles, AlertTriangle } from 'lucide-react';
+import { Sprout, Crown, Store, Users, Phone, Sparkles, AlertTriangle, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -132,6 +132,26 @@ const Index = () => {
                 </p>
                 <span className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-primary">
                   Learn more →
+                </span>
+              </div>
+            </div>
+          </button>
+
+          <button
+            onClick={() => navigate('/agri-school')}
+            className="w-full text-left rounded-xl border border-border bg-card p-4 hover:bg-accent/50 transition-colors"
+          >
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-primary/15">
+                <BookOpen className="w-5 h-5 text-primary" />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-sm text-foreground">Imvelo AgriSchool</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Free farming courses. Pay only for certificates.
+                </p>
+                <span className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-primary">
+                  Explore courses →
                 </span>
               </div>
             </div>

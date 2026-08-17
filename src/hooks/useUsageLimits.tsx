@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { safeJsonParse } from '@/lib/safeJson';
 
 export type PlanTier = 'free' | 'starter' | 'premium';
 
@@ -102,27 +103,30 @@ export const useUsageLimits = () => {
   const loadUsage = useCallback(() => {
     if (!user) return;
     const stored = localStorage.getItem(getStorageKey(user.id));
-    if (stored) {
-      const data: UsageData = JSON.parse(stored);
-      const currentWeek = getWeekStart();
-      const today = getTodayDate();
-      let needsUpdate = false;
+    const data = safeJsonParse<UsageData>(stored, {
+      detectionCount: 0,
+      chatCount: 0,
+      lastResetDate: getTodayDate(),
+      weekResetDate: getWeekStart(),
+    });
+    const currentWeek = getWeekStart();
+    const today = getTodayDate();
+    let needsUpdate = false;
 
-      if (data.weekResetDate !== currentWeek) {
-        data.detectionCount = 0;
-        data.weekResetDate = currentWeek;
-        needsUpdate = true;
-      }
-      if (data.lastResetDate !== today) {
-        data.chatCount = 0;
-        data.lastResetDate = today;
-        needsUpdate = true;
-      }
-      if (needsUpdate) {
-        localStorage.setItem(getStorageKey(user.id), JSON.stringify(data));
-      }
-      setUsage(data);
+    if (data.weekResetDate !== currentWeek) {
+      data.detectionCount = 0;
+      data.weekResetDate = currentWeek;
+      needsUpdate = true;
     }
+    if (data.lastResetDate !== today) {
+      data.chatCount = 0;
+      data.lastResetDate = today;
+      needsUpdate = true;
+    }
+    if (needsUpdate) {
+      localStorage.setItem(getStorageKey(user.id), JSON.stringify(data));
+    }
+    setUsage(data);
   }, [user]);
 
   useEffect(() => {

@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { translations } from '@/lib/translations';
+import { safeJsonParse } from '@/lib/safeJson';
 
 interface LanguageContextType {
   lang: string;
@@ -22,10 +23,7 @@ const TIMERS: Record<string, number> = {};
 export const LanguageProvider = ({ children }: { children: React.ReactNode }) => {
   const [lang, setLangState] = useState(() => localStorage.getItem('imvelo_lang') || 'en');
   const [cache, setCache] = useState<Record<string, string>>(() => {
-    try {
-      const stored = localStorage.getItem(CACHE_KEY(localStorage.getItem('imvelo_lang') || 'en'));
-      return stored ? JSON.parse(stored) : {};
-    } catch { return {}; }
+    return safeJsonParse(localStorage.getItem(CACHE_KEY(localStorage.getItem('imvelo_lang') || 'en')), {});
   });
   const { user } = useAuth();
 
@@ -45,10 +43,7 @@ export const LanguageProvider = ({ children }: { children: React.ReactNode }) =>
   }, [user]);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(CACHE_KEY(lang));
-      setCache(stored ? JSON.parse(stored) : {});
-    } catch { setCache({}); }
+    setCache(safeJsonParse(localStorage.getItem(CACHE_KEY(lang)), {}));
   }, [lang]);
 
   const setLang = (newLang: string) => {
@@ -66,7 +61,7 @@ export const LanguageProvider = ({ children }: { children: React.ReactNode }) =>
         body: { texts, targetLang },
       });
       if (data?.translations) {
-        const existing = JSON.parse(localStorage.getItem(CACHE_KEY(targetLang)) || '{}');
+        const existing = safeJsonParse(localStorage.getItem(CACHE_KEY(targetLang)), {});
         const updated = { ...existing, ...data.translations };
         localStorage.setItem(CACHE_KEY(targetLang), JSON.stringify(updated));
         if (targetLang === lang) setCache(updated);

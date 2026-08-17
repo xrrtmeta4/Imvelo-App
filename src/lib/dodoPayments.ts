@@ -49,7 +49,12 @@ export async function createDodoCheckout(params: DodoCheckoutParams): Promise<Do
     }),
   });
 
-  const data = await response.json();
+  let data: any = {};
+  try {
+    data = await response.json();
+  } catch {
+    // ignore non-JSON responses
+  }
 
   if (!response.ok || !data?.checkout_url) {
     throw new Error(data?.error || 'Failed to create checkout session');
