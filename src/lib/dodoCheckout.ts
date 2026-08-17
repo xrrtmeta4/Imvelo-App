@@ -21,6 +21,11 @@ declare global {
 
 const DODO_SCRIPT_ID = 'dodo-checkout-sdk';
 
+const CDN_URLS = [
+  'https://cdn.jsdelivr.net/npm/dodopayments-checkout@latest/dist/index.js',
+  'https://unpkg.com/dodopayments-checkout@latest/dist/index.js',
+];
+
 export const loadDodoSdk = (): Promise<boolean> => {
   return new Promise((resolve) => {
     if (typeof window === 'undefined') {
@@ -29,6 +34,7 @@ export const loadDodoSdk = (): Promise<boolean> => {
     }
 
     if (window.DodoPaymentsCheckout?.DodoPayments) {
+      console.log('[dodoCheckout] SDK already loaded');
       resolve(true);
       return;
     }
@@ -36,19 +42,42 @@ export const loadDodoSdk = (): Promise<boolean> => {
     if (document.getElementById(DODO_SCRIPT_ID)) {
       const existing = document.getElementById(DODO_SCRIPT_ID) as HTMLScriptElement | null;
       if (existing) {
-        existing.addEventListener('load', () => resolve(!!window.DodoPaymentsCheckout?.DodoPayments));
-        existing.addEventListener('error', () => resolve(false));
+        console.log('[dodoCheckout] SDK script already in DOM, waiting for load...');
+        const onLoad = () => resolve(!!window.DodoPaymentsCheckout?.DodoPayments);
+        const onError = () => resolve(false);
+        existing.addEventListener('load', onLoad);
+        existing.addEventListener('error', onError);
       }
       return;
     }
 
-    const script = document.createElement('script');
-    script.id = DODO_SCRIPT_ID;
-    script.src = 'https://cdn.jsdelivr.net/npm/dodopayments-checkout@latest/dist/index.js';
-    script.async = true;
-    script.onload = () => resolve(!!window.DodoPaymentsCheckout?.DodoPayments);
-    script.onerror = () => resolve(false);
-    document.body.appendChild(script);
+    let attempts = 0;
+
+    const tryLoad = (url: string) => {
+      console.log(`[dodoCheckout] Attempting to load SDK from: ${url}`);
+      const script = document.createElement('script');
+      script.id = DODO_SCRIPT_ID;
+      script.src = url;
+      script.async = true;
+      script.onload = () => {
+        console.log(`[dodoCheckout] SDK script loaded from: ${url}`);
+        resolve(!!window.DodoPaymentsCheckout?.DodoPayments);
+      };
+      script.onerror = () => {
+        console.warn(`[dodoCheckout] Failed to load SDK from: ${url}`);
+        attempts++;
+        if (attempts < CDN_URLS.length) {
+          console.log(`[dodoCheckout] Trying next CDN...`);
+          tryLoad(CDN_URLS[attempts]);
+        } else {
+          console.error('[dodoCheckout] All CDN attempts failed');
+          resolve(false);
+        }
+      };
+      document.body.appendChild(script);
+    };
+
+    tryLoad(CDN_URLS[attempts]);
   });
 };
 
@@ -61,30 +90,46 @@ export const getDodoMode = (): DodoCheckoutMode => {
 };
 
 export const openDodoOverlay = async (checkoutUrl: string) => {
+  console.log('[dodoCheckout] Opening Dodo overlay with URL:', checkoutUrl);
   const mode = getDodoMode();
+  console.log('[dodoCheckout] Dodo mode:', mode);
+
   const ready = await loadDodoSdk();
+  console.log('[dodoCheckout] SDK ready:', ready);
 
   if (!ready || !window.DodoPaymentsCheckout?.DodoPayments) {
-    window.location.href = checkoutUrl;
-    return;
+    console.error('[dodoCheckout] SDK not available, cannot open overlay checkout');
+    throw new Error('Payment SDK not loaded. Please check your internet connection and try again.');
   }
 
-  window.DodoPaymentsCheckout.DodoPayments.Initialize({
-    mode,
-    displayType: 'overlay',
-    onEvent: (event) => {
-      if (event.event_type === 'checkout.closed' || event.event_type === 'checkout.redirect') {
-        const url = new URL(window.location.href);
-        url.searchParams.set('success', 'true');
-        window.location.href = url.toString();
-      }
-      if (event.event_type === 'checkout.error') {
-        console.error('Dodo checkout error:', event.data);
-      }
-    },
-  });
-
   try {
+    console.log('[dodoCheckout] Initializing Dodo Payments SDK...');
+    window.DodoPaymentsCheckout.DodoPayments.Initialize({
+      mode,
+      displayType: 'overlay',
+      onEvent: (event) => {
+        console.log('[dodoCheckout] Event:', event.event_type, event.data || '');
+        if (event.event_type === 'checkout.closed') {
+          console.log('[dodoCheckout] Checkout closed by user');
+        }
+        if (event.event_type === 'checkout.redirect') {
+          const redirectTo = event.data?.message?.redirect_to || event.data?.redirect_to;
+          if (redirectTo) {
+            console.log('[dodoCheckout] Redirecting to:', redirectTo);
+            window.location.href = redirectTo;
+          } else {
+            const url = new URL(window.location.href);
+            url.searchParams.set('success', 'true');
+            window.location.href = url.toString();
+          }
+        }
+        if (event.event_type === 'checkout.error') {
+          console.error('[dodoCheckout] Checkout error:', event.data);
+        }
+      },
+    });
+
+    console.log('[dodoCheckout] Opening checkout overlay...');
     await window.DodoPaymentsCheckout.DodoPayments.Checkout.open({
       checkoutUrl,
       options: {
@@ -92,8 +137,9 @@ export const openDodoOverlay = async (checkoutUrl: string) => {
         showSecurityBadge: true,
       },
     });
+    console.log('[dodoCheckout] Checkout overlay opened successfully');
   } catch (error) {
-    console.error('Failed to open Dodo overlay checkout:', error);
-    window.location.href = checkoutUrl;
+    console.error('[dodoCheckout] Failed to open overlay:', error);
+    throw error;
   }
 };

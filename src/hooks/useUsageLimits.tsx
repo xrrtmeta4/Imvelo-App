@@ -214,16 +214,22 @@ export const useUsageLimits = () => {
 
       const edgeError = (data as any)?.error || (error as any)?.message || (error as any)?.details;
       if (edgeError) {
-        console.warn('Edge function error, falling back to direct checkout:', edgeError);
-        window.location.href = `https://checkout.dodopayments.com/buy/${productId}?quantity=1`;
+        console.warn('[openUpgrade] Edge function error:', edgeError);
+        toast.error('Payment gateway is temporarily unavailable. Please try again or contact support.');
         return;
       }
 
-      const checkoutUrl = data?.checkout_url || `https://checkout.dodopayments.com/buy/${productId}?quantity=1`;
+      const checkoutUrl = data?.checkout_url;
+      if (!checkoutUrl) {
+        console.warn('[openUpgrade] No checkout URL returned');
+        toast.error('Payment session could not be created. Please try again or contact support.');
+        return;
+      }
+
       const { openDodoOverlay } = await import('@/lib/dodoCheckout');
       await openDodoOverlay(checkoutUrl);
     } catch (err: any) {
-      console.error('Checkout error:', err);
+      console.error('[openUpgrade] Checkout error:', err);
       toast.error(err?.message || 'Failed to start checkout. Please try again.');
     }
   };

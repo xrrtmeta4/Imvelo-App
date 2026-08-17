@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { useUsageLimits } from '@/hooks/useUsageLimits';
 import PaymentLogos from '@/components/PaymentLogos';
+import { openDodoOverlay } from '@/lib/dodoCheckout';
 
 const PREMIUM_PRODUCT_ID = 'pdt_0NYZaqcOARihEXXOPIdmC';
 const PREMIUM_PRICE = 2.0;
@@ -21,107 +22,6 @@ const FEATURES = [
   'Priority support',
 ];
 
-type DodoCheckoutMode = 'test' | 'live';
-
-declare global {
-  interface Window {
-    DodoPaymentsCheckout?: {
-      DodoPayments: {
-        Initialize: (opts: {
-          mode: DodoCheckoutMode;
-          displayType?: 'overlay' | 'inline';
-          onEvent: (event: { event_type: string; data?: any }) => void;
-        }) => void;
-        Checkout: {
-          open: (opts: { checkoutUrl: string; options?: { showTimer?: boolean; showSecurityBadge?: boolean } }) => Promise<void> | void;
-          close: () => void;
-          isOpen: () => boolean;
-        };
-      };
-    };
-  }
-}
-
-const DODO_SCRIPT_ID = 'dodo-checkout-sdk';
-
-const loadDodoSdk = (): Promise<boolean> => {
-  return new Promise((resolve) => {
-    if (typeof window === 'undefined') {
-      resolve(false);
-      return;
-    }
-
-    if (window.DodoPaymentsCheckout?.DodoPayments) {
-      resolve(true);
-      return;
-    }
-
-    if (document.getElementById(DODO_SCRIPT_ID)) {
-      const existing = document.getElementById(DODO_SCRIPT_ID) as HTMLScriptElement | null;
-      if (existing) {
-        existing.addEventListener('load', () => resolve(!!window.DodoPaymentsCheckout?.DodoPayments));
-        existing.addEventListener('error', () => resolve(false));
-      }
-      return;
-    }
-
-    const script = document.createElement('script');
-    script.id = DODO_SCRIPT_ID;
-    script.src = 'https://cdn.jsdelivr.net/npm/dodopayments-checkout@latest/dist/index.js';
-    script.async = true;
-    script.onload = () => resolve(!!window.DodoPaymentsCheckout?.DodoPayments);
-    script.onerror = () => resolve(false);
-    document.body.appendChild(script);
-  });
-};
-
-const getDodoMode = (): DodoCheckoutMode => {
-  if (typeof window === 'undefined') return 'live';
-  const params = new URLSearchParams(window.location.search);
-  const qs = params.get('dodo_mode');
-  if (qs === 'test') return 'test';
-  return 'live';
-};
-
-const openDodoOverlay = async (checkoutUrl: string) => {
-  const mode = getDodoMode();
-  const ready = await loadDodoSdk();
-
-  if (!ready || !window.DodoPaymentsCheckout?.DodoPayments) {
-    window.location.href = checkoutUrl;
-    return;
-  }
-
-  window.DodoPaymentsCheckout.DodoPayments.Initialize({
-    mode,
-    displayType: 'overlay',
-    onEvent: (event) => {
-      if (event.event_type === 'checkout.closed' || event.event_type === 'checkout.redirect') {
-        const url = new URL(window.location.href);
-        url.searchParams.set('success', 'true');
-        window.location.href = url.toString();
-      }
-      if (event.event_type === 'checkout.error') {
-        console.error('Dodo checkout error:', event.data);
-        toast.error(event.data?.message || 'Payment failed. Please try again.');
-      }
-    },
-  });
-
-  try {
-    await window.DodoPaymentsCheckout.DodoPayments.Checkout.open({
-      checkoutUrl,
-      options: {
-        showTimer: true,
-        showSecurityBadge: true,
-      },
-    });
-  } catch (error) {
-    console.error('Failed to open Dodo overlay checkout:', error);
-    window.location.href = checkoutUrl;
-  }
-};
-
 const Upgrade = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
@@ -129,6 +29,7 @@ const Upgrade = () => {
   const { isPremium, refreshPremiumStatus } = useUsageLimits();
   const [loading, setLoading] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   const success = searchParams.get('success');
 
@@ -151,12 +52,14 @@ const Upgrade = () => {
 
   const handleUpgrade = useCallback(async () => {
     setLoading(true);
+    setCheckoutError(null);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user?.email) {
         throw new Error('Please sign in to upgrade');
       }
 
+      console.log('[Upgrade] Creating checkout session for user:', user.email);
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: {
           product_id: PREMIUM_PRODUCT_ID,
@@ -167,18 +70,29 @@ const Upgrade = () => {
         },
       });
 
+      console.log('[Upgrade] Edge function response:', { data, error });
+
       const edgeError = (data as any)?.error || (error as any)?.message || (error as any)?.details;
       if (edgeError) {
-        console.warn('Edge function error, falling back to direct checkout:', edgeError);
-        window.location.href = `https://checkout.dodopayments.com/buy/${PREMIUM_PRODUCT_ID}?quantity=1`;
+        console.warn('[Upgrade] Edge function error:', edgeError);
+        setCheckoutError('Payment gateway is temporarily unavailable. Please try again or contact support.');
+        setLoading(false);
         return;
       }
 
-      const checkoutUrl = data?.checkout_url || `https://checkout.dodopayments.com/buy/${PREMIUM_PRODUCT_ID}?quantity=1`;
+      const checkoutUrl = data?.checkout_url;
+      if (!checkoutUrl) {
+        console.warn('[Upgrade] No checkout URL returned');
+        setCheckoutError('Payment session could not be created. Please try again or contact support.');
+        setLoading(false);
+        return;
+      }
+
+      console.log('[Upgrade] Opening Dodo overlay with URL:', checkoutUrl);
       await openDodoOverlay(checkoutUrl);
     } catch (err: any) {
-      console.error('Checkout error:', err);
-      toast.error(err?.message || 'Failed to start checkout. Please try again.');
+      console.error('[Upgrade] Checkout error:', err);
+      setCheckoutError(err?.message || 'Failed to start checkout. Please try again.');
       setLoading(false);
     }
   }, [userName]);
@@ -224,6 +138,22 @@ const Upgrade = () => {
               <p className="text-sm font-medium text-green-700 dark:text-green-400">
                 Payment successful! Your premium access is being activated.
               </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {checkoutError && (
+          <Card className="border-destructive bg-destructive/5">
+            <CardContent className="p-4 text-center">
+              <p className="text-sm font-medium text-destructive">{checkoutError}</p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-2"
+                onClick={() => setCheckoutError(null)}
+              >
+                Try again
+              </Button>
             </CardContent>
           </Card>
         )}
