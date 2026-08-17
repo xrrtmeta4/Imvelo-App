@@ -12,8 +12,8 @@ serve(async (req) => {
 
   try {
     const apiKey = Deno.env.get('DODO_PAYMENTS_API_KEY');
-    const dodoEnvironment = (Deno.env.get('DODO_ENVIRONMENT') || 'live_mode').toLowerCase();
-    const isTestMode = dodoEnvironment === 'test_mode';
+    const dodoEnvironment = (Deno.env.get('DODO_PAYMENTS_ENV') || 'live').toLowerCase();
+    const isTestMode = dodoEnvironment === 'test';
     const apiBase = isTestMode ? 'https://test.dodopayments.com' : 'https://live.dodopayments.com';
 
     if (!apiKey) {
