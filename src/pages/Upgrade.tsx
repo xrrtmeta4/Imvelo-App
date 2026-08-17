@@ -10,6 +10,7 @@ import { useUsageLimits } from '@/hooks/useUsageLimits';
 import PaymentLogos from '@/components/PaymentLogos';
 
 const PREMIUM_PRODUCT_ID = 'pdt_0NYZaqcOARihEXXOPIdmC';
+const PREMIUM_PRICE = 2.0;
 const DIRECT_CHECKOUT_URL = `https://checkout.dodopayments.com/buy/${PREMIUM_PRODUCT_ID}?quantity=1`;
 
 const FEATURES = [
