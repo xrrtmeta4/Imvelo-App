@@ -199,6 +199,8 @@ export const useUsageLimits = () => {
     const productId = PRODUCT_IDS[targetPlan];
     if (!productId) return;
 
+    let checkoutUrl = `https://checkout.dodopayments.com/buy/${productId}?quantity=1`;
+
     try {
       const body: Record<string, unknown> = {
         product_id: productId,
@@ -213,25 +215,15 @@ export const useUsageLimits = () => {
       const { data, error } = await supabase.functions.invoke('create-checkout', { body });
 
       const edgeError = (data as any)?.error || (error as any)?.message || (error as any)?.details;
-      if (edgeError) {
-        console.warn('[openUpgrade] Edge function error:', edgeError);
-        toast.error('Payment gateway is temporarily unavailable. Please try again or contact support.');
-        return;
+      if (!edgeError && data?.checkout_url) {
+        checkoutUrl = data.checkout_url;
       }
-
-      const checkoutUrl = data?.checkout_url;
-      if (!checkoutUrl) {
-        console.warn('[openUpgrade] No checkout URL returned');
-        toast.error('Payment session could not be created. Please try again or contact support.');
-        return;
-      }
-
-      const { openDodoOverlay } = await import('@/lib/dodoCheckout');
-      await openDodoOverlay(checkoutUrl);
-    } catch (err: any) {
-      console.error('[openUpgrade] Checkout error:', err);
-      toast.error(err?.message || 'Failed to start checkout. Please try again.');
+    } catch (err) {
+      console.warn('[openUpgrade] Edge function unavailable, using direct checkout:', err);
     }
+
+    const { openDodoOverlay } = await import('@/lib/dodoCheckout');
+    await openDodoOverlay(checkoutUrl);
   };
 
   const getNextPlan = (): PlanTier => {
