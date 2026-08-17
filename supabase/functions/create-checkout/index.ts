@@ -12,6 +12,10 @@ serve(async (req) => {
 
   try {
     const apiKey = Deno.env.get('DODO_PAYMENTS_API_KEY');
+    const dodoEnvironment = (Deno.env.get('DODO_ENVIRONMENT') || 'live_mode').toLowerCase();
+    const isTestMode = dodoEnvironment === 'test_mode';
+    const apiBase = isTestMode ? 'https://test.dodopayments.com' : 'https://live.dodopayments.com';
+
     if (!apiKey) {
       console.error('Missing DODO_PAYMENTS_API_KEY secret');
       return new Response(JSON.stringify({ error: 'DODO_PAYMENTS_API_KEY not configured on server' }), {
@@ -69,9 +73,9 @@ serve(async (req) => {
     if (customer_email) body.customer = { email: customer_email, name: customer_name || undefined };
     if (redirect_url) body.return_url = redirect_url;
 
-    console.log('Creating Dodo checkout for product:', product_id, 'methods:', methods.length);
+    console.log('Creating Dodo checkout for product:', product_id, 'methods:', methods.length, 'env:', dodoEnvironment);
 
-    const response = await fetch('https://live.dodopayments.com/checkouts', {
+    const response = await fetch(`${apiBase}/checkouts`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
