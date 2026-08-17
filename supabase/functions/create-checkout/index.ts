@@ -22,11 +22,10 @@ serve(async (req) => {
       throw new Error('product_id is required');
     }
 
-    // All payment methods supported by Dodo Payments (using exact API enum values)
+    // All payment methods supported by Dodo Payments (complete list from API docs)
     const allPaymentMethods = [
       'credit', 'debit',
       'apple_pay', 'google_pay', 'amazon_pay', 'samsung_pay',
-      'upi_collect', 'upi_intent',
       'cashapp', 'venmo', 'paypal', 'paze',
       'klarna', 'affirm', 'afterpay_clearpay', 'alma', 'atome', 'billie', 'zip',
       'ali_pay', 'ali_pay_hk', 'we_chat_pay', 'dana', 'gcash', 'kakao_pay', 'touch_n_go', 'momo', 'go_pay', 'naver_pay',
@@ -35,6 +34,8 @@ serve(async (req) => {
       'online_banking_poland', 'online_banking_slovakia',
       'boleto', 'oxxo', 'pix', 'prompt_pay', 'swish', 'trustly', 'vipps', 'mb_way',
       'revolut_pay', 'open_banking_uk',
+      'crypto_currency',
+      'satispay', 'payco',
     ];
 
     // Use specific methods if provided, otherwise all
