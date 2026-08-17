@@ -20,11 +20,10 @@ export const paymentRoutes = async (app: any) => {
       }
 
       const defaultMethods = [
-        'credit', 'debit', 'apple_pay', 'google_pay', 'amazon_pay',
-        'cashapp', 'klarna', 'afterpay_clearpay', 'sepa', 'pix',
-        'crypto_currency', 'we_chat_pay', 'upi_collect', 'ideal',
-        'bancontact_card', 'eps', 'multibanco', 'blik', 'revolut_pay',
-        'billie', 'satispay'
+        'credit',
+        'debit',
+        'apple_pay',
+        'google_pay',
       ];
 
       const methods = (Array.isArray(payment_methods) && payment_methods.length > 0)

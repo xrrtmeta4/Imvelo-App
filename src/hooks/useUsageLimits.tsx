@@ -234,7 +234,7 @@ export const useUsageLimits = () => {
           currency: 'SZL',
           customer_email: customerEmail,
           customer_name: user?.user_metadata?.full_name || 'Customer',
-          payment_methods: paymentMethods || ['credit', 'debit', 'apple_pay', 'google_pay', 'amazon_pay', 'cashapp', 'klarna', 'afterpay_clearpay', 'sepa', 'pix', 'crypto_currency', 'we_chat_pay', 'upi_collect', 'ideal', 'bancontact_card', 'eps', 'multibanco', 'blik', 'revolut_pay', 'billie', 'satispay'],
+          payment_methods: paymentMethods || ['credit', 'debit', 'apple_pay', 'google_pay'],
           success_url: window.location.origin + '/upgrade?success=true',
           cancel_url: window.location.origin + '/upgrade',
         }),

@@ -24,7 +24,7 @@ export async function createDodoCheckout(params: DodoCheckoutParams): Promise<Do
     currency,
     customerEmail,
     customerName,
-    paymentMethods = ['credit', 'debit', 'apple_pay', 'google_pay', 'amazon_pay', 'cashapp', 'klarna', 'afterpay_clearpay', 'sepa', 'pix', 'crypto_currency', 'we_chat_pay', 'upi_collect', 'ideal', 'bancontact_card', 'eps', 'multibanco', 'blik', 'revolut_pay', 'billie', 'satispay'],
+    paymentMethods = ['credit', 'debit', 'apple_pay', 'google_pay'],
     successUrl,
     cancelUrl,
     metadata,
