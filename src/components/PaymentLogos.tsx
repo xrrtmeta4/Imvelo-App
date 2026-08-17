@@ -4,27 +4,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 const PAYMENT_CATEGORIES = [
   {
     key: 'cardsWallets',
-    methods: ['Credit Cards', 'Debit Cards', 'Apple Pay', 'Google Pay', 'Amazon Pay', 'Samsung Pay', 'Cash App Pay', 'Venmo', 'PayPal', 'Paze'],
-  },
-  {
-    key: 'bnpl',
-    methods: ['Klarna', 'Afterpay / Clearpay', 'Affirm', 'Alma', 'Atome', 'Billie', 'Zip'],
-  },
-  {
-    key: 'mobileWallets',
-    methods: ['Alipay', 'Alipay HK', 'WeChat Pay', 'DANA', 'GCash', 'Kakao Pay', 'Touch \'n Go', 'Momo', 'GoPay', 'Naver Pay'],
-  },
-  {
-    key: 'bankTransfers',
-    methods: ['ACH Direct Debit', 'SEPA Direct Debit', 'iDEAL', 'Bancontact', 'EPS', 'Multibanco', 'BLIK', 'Giropay', 'Przelewy24', 'SOFORT', 'Pix', 'PromptPay', 'Swish', 'Trustly', 'VIpps', 'MB Way', 'Boleto', 'OXXO'],
-  },
-  {
-    key: 'regionalMethods',
-    methods: ['Online Banking (FPX)', 'Online Banking (Thailand)', 'Online Banking (Czech)', 'Online Banking (Finland)', 'Online Banking (Poland)', 'Online Banking (Slovakia)', 'Open Banking UK'],
-  },
-  {
-    key: 'crypto',
-    methods: ['Stablecoins (USDC, USDT)'],
+    methods: ['Credit Cards', 'Debit Cards', 'Apple Pay', 'Google Pay'],
   },
 ];
 

@@ -45,25 +45,18 @@ serve(async (req) => {
       });
     }
 
-    // All payment methods supported by Dodo Payments (complete list from API docs)
-    const allPaymentMethods = [
-      'credit', 'debit',
-      'apple_pay', 'google_pay', 'amazon_pay', 'samsung_pay',
-      'cashapp', 'venmo', 'paypal', 'paze',
-      'klarna', 'affirm', 'afterpay_clearpay', 'alma', 'atome', 'billie', 'zip',
-      'ali_pay', 'ali_pay_hk', 'we_chat_pay', 'dana', 'gcash', 'kakao_pay', 'touch_n_go', 'momo', 'go_pay', 'naver_pay',
-      'ach', 'multibanco', 'eps', 'bancontact_card', 'blik', 'giropay', 'ideal', 'przelewy24', 'sofort', 'sepa',
-      'online_banking_fpx', 'online_banking_thailand', 'online_banking_czech_republic', 'online_banking_finland',
-      'online_banking_poland', 'online_banking_slovakia',
-      'boleto', 'oxxo', 'pix', 'prompt_pay', 'swish', 'trustly', 'vipps', 'mb_way',
-      'revolut_pay', 'open_banking_uk',
-      'crypto_currency',
-      'satispay', 'payco',
+    // Use globally supported payment methods by default.
+    // Cards and Apple/Google Pay work in most countries.
+    const defaultGlobalMethods = [
+      'credit',
+      'debit',
+      'apple_pay',
+      'google_pay',
     ];
 
     const methods = (Array.isArray(payment_methods) && payment_methods.length > 0)
       ? payment_methods
-      : allPaymentMethods;
+      : defaultGlobalMethods;
 
     const body: Record<string, unknown> = {
       product_cart: [{ product_id, quantity: 1 }],

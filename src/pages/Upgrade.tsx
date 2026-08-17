@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Crown, Check, Loader2, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,7 +11,6 @@ import PaymentLogos from '@/components/PaymentLogos';
 
 const PREMIUM_PRODUCT_ID = 'pdt_0NYZaqcOARihEXXOPIdmC';
 const PREMIUM_PRICE = 2.0;
-const DIRECT_CHECKOUT_URL = `https://checkout.dodopayments.com/buy/${PREMIUM_PRODUCT_ID}?quantity=1`;
 
 const FEATURES = [
   'Unlimited pest & disease scans',
@@ -21,6 +20,107 @@ const FEATURES = [
   'Full 7-day weather forecast',
   'Priority support',
 ];
+
+type DodoCheckoutMode = 'test' | 'live';
+
+declare global {
+  interface Window {
+    DodoPaymentsCheckout?: {
+      DodoPayments: {
+        Initialize: (opts: {
+          mode: DodoCheckoutMode;
+          displayType?: 'overlay' | 'inline';
+          onEvent: (event: { event_type: string; data?: any }) => void;
+        }) => void;
+        Checkout: {
+          open: (opts: { checkoutUrl: string; options?: { showTimer?: boolean; showSecurityBadge?: boolean } }) => Promise<void> | void;
+          close: () => void;
+          isOpen: () => boolean;
+        };
+      };
+    };
+  }
+}
+
+const DODO_SCRIPT_ID = 'dodo-checkout-sdk';
+
+const loadDodoSdk = (): Promise<boolean> => {
+  return new Promise((resolve) => {
+    if (typeof window === 'undefined') {
+      resolve(false);
+      return;
+    }
+
+    if (window.DodoPaymentsCheckout?.DodoPayments) {
+      resolve(true);
+      return;
+    }
+
+    if (document.getElementById(DODO_SCRIPT_ID)) {
+      const existing = document.getElementById(DODO_SCRIPT_ID) as HTMLScriptElement | null;
+      if (existing) {
+        existing.addEventListener('load', () => resolve(!!window.DodoPaymentsCheckout?.DodoPayments));
+        existing.addEventListener('error', () => resolve(false));
+      }
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.id = DODO_SCRIPT_ID;
+    script.src = 'https://cdn.jsdelivr.net/npm/dodopayments-checkout@latest/dist/index.js';
+    script.async = true;
+    script.onload = () => resolve(!!window.DodoPaymentsCheckout?.DodoPayments);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
+
+const getDodoMode = (): DodoCheckoutMode => {
+  if (typeof window === 'undefined') return 'live';
+  const params = new URLSearchParams(window.location.search);
+  const qs = params.get('dodo_mode');
+  if (qs === 'test') return 'test';
+  return 'live';
+};
+
+const openDodoOverlay = async (checkoutUrl: string) => {
+  const mode = getDodoMode();
+  const ready = await loadDodoSdk();
+
+  if (!ready || !window.DodoPaymentsCheckout?.DodoPayments) {
+    window.location.href = checkoutUrl;
+    return;
+  }
+
+  window.DodoPaymentsCheckout.DodoPayments.Initialize({
+    mode,
+    displayType: 'overlay',
+    onEvent: (event) => {
+      if (event.event_type === 'checkout.closed' || event.event_type === 'checkout.redirect') {
+        const url = new URL(window.location.href);
+        url.searchParams.set('success', 'true');
+        window.location.href = url.toString();
+      }
+      if (event.event_type === 'checkout.error') {
+        console.error('Dodo checkout error:', event.data);
+        toast.error(event.data?.message || 'Payment failed. Please try again.');
+      }
+    },
+  });
+
+  try {
+    await window.DodoPaymentsCheckout.DodoPayments.Checkout.open({
+      checkoutUrl,
+      options: {
+        showTimer: true,
+        showSecurityBadge: true,
+      },
+    });
+  } catch (error) {
+    console.error('Failed to open Dodo overlay checkout:', error);
+    window.location.href = checkoutUrl;
+  }
+};
 
 const Upgrade = () => {
   const { t } = useLanguage();
@@ -49,7 +149,7 @@ const Upgrade = () => {
     }
   }, [success, refreshPremiumStatus]);
 
-  const handleUpgrade = async () => {
+  const handleUpgrade = useCallback(async () => {
     setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -63,28 +163,25 @@ const Upgrade = () => {
           customer_email: user.email,
           customer_name: user.user_metadata?.full_name || userName || 'Customer',
           redirect_url: window.location.origin + '/upgrade?success=true',
+          payment_methods: ['credit', 'debit', 'apple_pay', 'google_pay'],
         },
       });
 
       const edgeError = (data as any)?.error || (error as any)?.message || (error as any)?.details;
       if (edgeError) {
         console.warn('Edge function error, falling back to direct checkout:', edgeError);
-        window.location.href = DIRECT_CHECKOUT_URL;
+        window.location.href = `https://checkout.dodopayments.com/buy/${PREMIUM_PRODUCT_ID}?quantity=1`;
         return;
       }
 
-      if (data?.checkout_url) {
-        window.location.href = data.checkout_url;
-      } else {
-        console.warn('No checkout URL returned, falling back to direct checkout');
-        window.location.href = DIRECT_CHECKOUT_URL;
-      }
+      const checkoutUrl = data?.checkout_url || `https://checkout.dodopayments.com/buy/${PREMIUM_PRODUCT_ID}?quantity=1`;
+      await openDodoOverlay(checkoutUrl);
     } catch (err: any) {
       console.error('Checkout error:', err);
       toast.error(err?.message || 'Failed to start checkout. Please try again.');
       setLoading(false);
     }
-  };
+  }, [userName]);
 
   if (isPremium) {
     return (

@@ -219,11 +219,9 @@ export const useUsageLimits = () => {
         return;
       }
 
-      if (data?.checkout_url) {
-        window.location.href = data.checkout_url;
-      } else {
-        window.location.href = `https://checkout.dodopayments.com/buy/${productId}?quantity=1`;
-      }
+      const checkoutUrl = data?.checkout_url || `https://checkout.dodopayments.com/buy/${productId}?quantity=1`;
+      const { openDodoOverlay } = await import('@/lib/dodoCheckout');
+      await openDodoOverlay(checkoutUrl);
     } catch (err: any) {
       console.error('Checkout error:', err);
       toast.error(err?.message || 'Failed to start checkout. Please try again.');
