@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { ArrowLeft, PlayCircle, FileText, Award, MessageCircle, Lock, CheckCircle2, Loader2, Users, BookOpen, GraduationCap, Download, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, PlayCircle, FileText, Award, MessageCircle, CheckCircle2, Loader2, Users, BookOpen, GraduationCap, Download, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useAuth } from '@/hooks/useAuth';
