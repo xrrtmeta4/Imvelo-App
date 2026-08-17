@@ -293,7 +293,7 @@ const Profile = () => {
               )}
               <div className="flex justify-between items-center text-sm">
                 <span className="text-muted-foreground">Price</span>
-                <span className="font-semibold">${PLANS[currentPlan].price.toFixed(2)}/mo</span>
+                 <span className="font-semibold">E{PLANS[currentPlan].price.toFixed(2)}/mo</span>
               </div>
 
               <div className="pt-3 space-y-2 border-t border-border">

@@ -1,4 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { consumeUsage, limitResponse } from "../_shared/usage.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,7 +14,8 @@ serve(async (req) => {
 
   try {
     const { imageUrl } = await req.json();
-    console.log('Identifying animal disease from image:', imageUrl);
+    const usage = await consumeUsage(req, 'scan', 2);
+    if (!usage.allowed) return limitResponse('scan', usage, corsHeaders);
 
     const LOVABLE_API_KEY_LOV = Deno.env.get('LOVABLE_API_KEY');
     const GEMINI_KEY = Deno.env.get('Gemini');

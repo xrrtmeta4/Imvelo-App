@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { generateResultPdf } from '@/lib/generateResultPdf';
 import { useUsageLimits } from '@/hooks/useUsageLimits';
+import { showLimitReached } from '@/lib/limitPrompt';
 import ScanningOverlay from './ScanningOverlay';
 
 const SoilScanner = () => {
@@ -50,6 +51,7 @@ const SoilScanner = () => {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       if (!data?.soilType) throw new Error('Soil analysis failed. Try a closer, well-lit soil photo.');
+
       setResult(data);
       incrementDetection();
       toast.success('Soil analysis complete!');
@@ -78,10 +80,17 @@ const SoilScanner = () => {
     } catch (error: any) {
       console.error('Error:', error);
       const msg = error?.context?.body || error?.message || '';
-      if (/rate|429|quota/i.test(msg)) toast.error('AI is busy right now. Please retry in a moment.');
-      else if (/network|failed to fetch|offline/i.test(msg)) toast.error('Network issue — check your connection.');
-      else if (/storage|upload|bucket/i.test(msg)) toast.error('Upload failed — try a smaller or clearer photo.');
-      else toast.error(`Analysis failed: ${msg?.slice(0, 100) || 'Please try again with a clearer photo.'}`);
+      if (/scans for this week|limit_reached/i.test(msg)) {
+        showLimitReached('scan');
+      } else if (/rate|429|quota/i.test(msg)) {
+        toast.error('AI is busy right now. Please retry in a moment.');
+      } else if (/network|failed to fetch|offline/i.test(msg)) {
+        toast.error('Network issue — check your connection.');
+      } else if (/storage|upload|bucket/i.test(msg)) {
+        toast.error('Upload failed — try a smaller or clearer photo.');
+      } else {
+        toast.error(`Analysis failed: ${msg?.slice(0, 100) || 'Please try again with a clearer photo.'}`);
+      }
     } finally {
       setLoading(false);
       setTimeout(() => { URL.revokeObjectURL(localPreview); setPreviewUrl(null); }, 400);

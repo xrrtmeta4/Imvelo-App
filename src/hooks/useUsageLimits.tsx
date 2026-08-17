@@ -34,7 +34,7 @@ export const PLANS = {
   },
   premium: {
     name: 'Premium',
-    price: 2,
+    price: 37,
     weeklyDetections: 0,
     dailyDetections: 1,
     dailyChats: 2,
@@ -71,7 +71,6 @@ export const useUsageLimits = () => {
   });
   const [currentPlan, setCurrentPlan] = useState<PlanTier>('free');
   const [loadingPremium, setLoadingPremium] = useState(true);
-  const [trialDaysLeft, setTrialDaysLeft] = useState<number | null>(null);
 
   const checkPremiumStatus = useCallback(async () => {
     if (!user) {
@@ -82,7 +81,7 @@ export const useUsageLimits = () => {
     try {
       const { data, error } = await supabase
         .from('premium_subscriptions')
-        .select('status, expires_at, payment_reference, plan')
+        .select('status, expires_at, plan')
         .eq('user_id', user.id)
         .maybeSingle();
 
@@ -91,10 +90,6 @@ export const useUsageLimits = () => {
           let plan: string = (data as any).plan || 'starter';
           if (plan === 'pro' || plan === 'enterprise') plan = 'premium';
           setCurrentPlan(plan as PlanTier);
-          if (data.payment_reference === 'free_trial' && data.expires_at) {
-            const daysLeft = Math.ceil((new Date(data.expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-            setTrialDaysLeft(Math.max(0, daysLeft));
-          }
         }
       }
     } catch (error) {
@@ -207,7 +202,7 @@ export const useUsageLimits = () => {
     }
   };
 
-  const getFormattedPrice = () => `$${planConfig.price.toFixed(2)}`;
+  const getFormattedPrice = () => `E${planConfig.price.toFixed(2)}`;
 
   const openUpgrade = async (planOrEvent?: PlanTier | React.MouseEvent, paymentMethods?: string[]) => {
     const targetPlan = (typeof planOrEvent === 'string' ? planOrEvent : undefined) || getNextPlan();
@@ -231,8 +226,8 @@ export const useUsageLimits = () => {
         body: JSON.stringify({
           product_id: productId,
           product_name: targetPlan,
-          amount: 2.0,
-          currency: 'USD',
+          amount: 37,
+          currency: 'SZL',
           customer_email: customerEmail,
           customer_name: user?.user_metadata?.full_name || 'Customer',
           payment_methods: paymentMethods,
@@ -277,7 +272,6 @@ export const useUsageLimits = () => {
     currentPlan,
     hasFeature,
     loadingPremium,
-    trialDaysLeft,
     getFormattedPrice,
     PLANS,
   };

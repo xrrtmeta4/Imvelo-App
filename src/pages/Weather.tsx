@@ -204,7 +204,7 @@ const Weather = () => {
                   </p>
                   <Button onClick={() => openUpgrade('premium')} className="gap-2">
                     <Crown className="w-4 h-4" />
-                    Upgrade to Premium - $6.00/mo
+                     Upgrade to Premium - E37.00/mo
                   </Button>
                 </CardContent>
               </Card>

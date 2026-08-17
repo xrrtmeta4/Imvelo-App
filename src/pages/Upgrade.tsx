@@ -12,7 +12,7 @@ import { openDodoOverlay } from '@/lib/dodoCheckout';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 const PREMIUM_PRODUCT_ID = 'pdt_0NYZaqcOARihEXXOPIdmC';
-const PREMIUM_PRICE = 2.0;
+const PREMIUM_PRICE = 37;
 const DIRECT_CHECKOUT_URL = `https://checkout.dodopayments.com/buy/${PREMIUM_PRODUCT_ID}?quantity=1`;
 
 const FEATURES = [
@@ -71,8 +71,8 @@ const Upgrade = () => {
           body: JSON.stringify({
             product_id: PREMIUM_PRODUCT_ID,
             product_name: 'Premium Plan',
-            amount: PREMIUM_PRICE,
-            currency: 'USD',
+            amount: 37,
+            currency: 'SZL',
             customer_email: customerEmail,
             customer_name: customerName,
             payment_methods: ['credit', 'debit', 'apple_pay', 'google_pay'],
@@ -158,7 +158,7 @@ const Upgrade = () => {
                 Premium Plan
               </span>
               <span className="text-lg font-bold text-white">
-                ${PREMIUM_PRICE.toFixed(2)}
+                E{PREMIUM_PRICE.toFixed(2)}
                 <span className="text-sm font-normal text-white/80">{t('perMonth')}</span>
               </span>
             </CardTitle>
