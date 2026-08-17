@@ -85,7 +85,14 @@ export const openDodoOverlay = async (checkoutUrl: string) => {
   const ready = await loadDodoSdk();
 
   if (!ready || !window.DodoPaymentsCheckout?.DodoPayments) {
-    window.location.href = checkoutUrl;
+    const popup = window.open(
+      checkoutUrl,
+      'dodo-checkout',
+      'width=500,height=700,scrollbars=yes,resizable=yes,location=no,menubar=no'
+    );
+    if (!popup) {
+      window.location.href = checkoutUrl;
+    }
     return;
   }
 
@@ -122,6 +129,13 @@ export const openDodoOverlay = async (checkoutUrl: string) => {
     });
   } catch (error) {
     console.error('[dodoCheckout] Failed to open overlay:', error);
-    window.location.href = checkoutUrl;
+    const popup = window.open(
+      checkoutUrl,
+      'dodo-checkout',
+      'width=500,height=700,scrollbars=yes,resizable=yes,location=no,menubar=no'
+    );
+    if (!popup) {
+      window.location.href = checkoutUrl;
+    }
   }
 };
