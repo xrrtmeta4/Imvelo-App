@@ -3,6 +3,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 export type PlanTier = 'free' | 'starter' | 'premium';
 
 export const PRODUCT_IDS: Record<PlanTier, string> = {
@@ -202,24 +204,33 @@ export const useUsageLimits = () => {
     let checkoutUrl = `https://checkout.dodopayments.com/buy/${productId}?quantity=1`;
 
     try {
-      const body: Record<string, unknown> = {
-        product_id: productId,
-        customer_email: user?.email,
-        customer_name: user?.user_metadata?.full_name,
-        redirect_url: window.location.origin + '/upgrade?success=true',
-      };
-      if (paymentMethods && paymentMethods.length > 0) {
-        body.payment_methods = paymentMethods;
-      }
+      const customerEmail = user?.email || localStorage.getItem('imvelo_user_email');
+      const customerName = user?.user_metadata?.full_name || localStorage.getItem('imvelo_user_name') || 'Customer';
 
-      const { data, error } = await supabase.functions.invoke('create-checkout', { body });
+      const response = await fetch(`${API_BASE}/api/payments/checkout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          product_id: productId,
+          product_name: targetPlan,
+          amount: 2.0,
+          currency: 'USD',
+          customer_email: customerEmail,
+          customer_name: customerName,
+          payment_methods: paymentMethods,
+          success_url: window.location.origin + '/upgrade?success=true',
+          cancel_url: window.location.origin + '/upgrade',
+        }),
+      });
 
-      const edgeError = (data as any)?.error || (error as any)?.message || (error as any)?.details;
-      if (!edgeError && data?.checkout_url) {
+      const data = await response.json();
+      if (response.ok && data?.checkout_url) {
         checkoutUrl = data.checkout_url;
       }
     } catch (err) {
-      console.warn('[openUpgrade] Edge function unavailable, using direct checkout:', err);
+      console.warn('[openUpgrade] Backend unavailable, using direct checkout:', err);
     }
 
     const { openDodoOverlay } = await import('@/lib/dodoCheckout');

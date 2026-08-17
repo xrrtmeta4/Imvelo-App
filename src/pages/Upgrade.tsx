@@ -5,11 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { supabase } from '@/lib/supabase';
 import { useUsageLimits } from '@/hooks/useUsageLimits';
 import PaymentLogos from '@/components/PaymentLogos';
 import { openDodoOverlay } from '@/lib/dodoCheckout';
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 const PREMIUM_PRODUCT_ID = 'pdt_0NYZaqcOARihEXXOPIdmC';
 const PREMIUM_PRICE = 2.0;
 const DIRECT_CHECKOUT_URL = `https://checkout.dodopayments.com/buy/${PREMIUM_PRODUCT_ID}?quantity=1`;
@@ -34,13 +34,10 @@ const Upgrade = () => {
   const success = searchParams.get('success');
 
   useEffect(() => {
-    const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user?.user_metadata?.full_name) {
-        setUserName(user.user_metadata.full_name.split(' ')[0]);
-      }
-    };
-    fetchUser();
+    const email = localStorage.getItem('imvelo_user_email');
+    const name = localStorage.getItem('imvelo_user_name');
+    if (name) setUserName(name.split(' ')[0]);
+    else if (email) setUserName(email.split('@')[0]);
   }, []);
 
   useEffect(() => {
@@ -53,30 +50,38 @@ const Upgrade = () => {
   const handleUpgrade = useCallback(async () => {
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user?.email) {
+      const customerEmail = localStorage.getItem('imvelo_user_email');
+      if (!customerEmail) {
         throw new Error('Please sign in to upgrade');
       }
 
       let checkoutUrl = DIRECT_CHECKOUT_URL;
 
       try {
-        const { data, error } = await supabase.functions.invoke('create-checkout', {
-          body: {
-            product_id: PREMIUM_PRODUCT_ID,
-            customer_email: user.email,
-            customer_name: user.user_metadata?.full_name || userName || 'Customer',
-            redirect_url: window.location.origin + '/upgrade?success=true',
-            payment_methods: ['credit', 'debit', 'apple_pay', 'google_pay'],
+        const response = await fetch(`${API_BASE}/api/payments/checkout`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
           },
+          body: JSON.stringify({
+            product_id: PREMIUM_PRODUCT_ID,
+            product_name: 'Premium Plan',
+            amount: PREMIUM_PRICE,
+            currency: 'USD',
+            customer_email: customerEmail,
+            customer_name: userName || customerEmail,
+            payment_methods: ['credit', 'debit', 'apple_pay', 'google_pay'],
+            success_url: window.location.origin + '/upgrade?success=true',
+            cancel_url: window.location.origin + '/upgrade',
+          }),
         });
 
-        const edgeError = (data as any)?.error || (error as any)?.message || (error as any)?.details;
-        if (!edgeError && data?.checkout_url) {
+        const data = await response.json();
+        if (response.ok && data?.checkout_url) {
           checkoutUrl = data.checkout_url;
         }
       } catch (err) {
-        console.warn('[Upgrade] Edge function unavailable, using direct checkout:', err);
+        console.warn('[Upgrade] Backend unavailable, using direct checkout:', err);
       }
 
       await openDodoOverlay(checkoutUrl);
