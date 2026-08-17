@@ -212,14 +212,17 @@ export const useUsageLimits = () => {
 
       const { data, error } = await supabase.functions.invoke('create-checkout', { body });
 
-      if (error) {
-        const msg = typeof error === 'string' ? error : (error as any)?.message || 'Checkout failed';
-        throw new Error(msg);
+      const edgeError = (data as any)?.error || (error as any)?.message || (error as any)?.details;
+      if (edgeError) {
+        console.warn('Edge function error, falling back to direct checkout:', edgeError);
+        window.location.href = `https://checkout.dodopayments.com/buy/${productId}?quantity=1`;
+        return;
       }
+
       if (data?.checkout_url) {
         window.location.href = data.checkout_url;
       } else {
-        throw new Error('No checkout URL returned');
+        window.location.href = `https://checkout.dodopayments.com/buy/${productId}?quantity=1`;
       }
     } catch (err: any) {
       console.error('Checkout error:', err);

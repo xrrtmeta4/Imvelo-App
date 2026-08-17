@@ -9,7 +9,8 @@ import { supabase } from '@/lib/supabase';
 import { useUsageLimits } from '@/hooks/useUsageLimits';
 import PaymentLogos from '@/components/PaymentLogos';
 
-const PREMIUM_PRICE = 2.0;
+const PREMIUM_PRODUCT_ID = 'pdt_0NYZaqcOARihEXXOPIdmC';
+const DIRECT_CHECKOUT_URL = `https://checkout.dodopayments.com/buy/${PREMIUM_PRODUCT_ID}?quantity=1`;
 
 const FEATURES = [
   'Unlimited pest & disease scans',
@@ -57,7 +58,7 @@ const Upgrade = () => {
 
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: {
-          product_id: 'pdt_0NYZaqcOARihEXXOPIdmC',
+          product_id: PREMIUM_PRODUCT_ID,
           customer_email: user.email,
           customer_name: user.user_metadata?.full_name || userName || 'Customer',
           redirect_url: window.location.origin + '/upgrade?success=true',
@@ -66,13 +67,16 @@ const Upgrade = () => {
 
       const edgeError = (data as any)?.error || (error as any)?.message || (error as any)?.details;
       if (edgeError) {
-        throw new Error(typeof edgeError === 'string' ? edgeError : JSON.stringify(edgeError));
+        console.warn('Edge function error, falling back to direct checkout:', edgeError);
+        window.location.href = DIRECT_CHECKOUT_URL;
+        return;
       }
 
       if (data?.checkout_url) {
         window.location.href = data.checkout_url;
       } else {
-        throw new Error('No checkout URL returned');
+        console.warn('No checkout URL returned, falling back to direct checkout');
+        window.location.href = DIRECT_CHECKOUT_URL;
       }
     } catch (err: any) {
       console.error('Checkout error:', err);
