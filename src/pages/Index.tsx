@@ -118,26 +118,6 @@ const Index = () => {
 
         <div className="grid gap-5">
           <button
-            onClick={() => navigate('/extension-directory')}
-            className="w-full text-left rounded-xl border border-border bg-card p-4 hover:bg-accent/50 transition-colors"
-          >
-            <div className="flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-primary/15">
-                <AlertTriangle className="w-5 h-5 text-primary" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-sm text-foreground">Extreme Weather Protection</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Learn how to protect your crops and livestock from droughts, floods, heatwaves, and storms.
-                </p>
-                <span className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-primary">
-                  Learn more →
-                </span>
-              </div>
-            </div>
-          </button>
-
-          <button
             onClick={() => navigate('/agri-school')}
             className="w-full text-left rounded-xl border border-border bg-card p-4 hover:bg-accent/50 transition-colors"
           >

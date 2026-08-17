@@ -219,8 +219,6 @@ export const useUsageLimits = () => {
       return;
     }
 
-    const checkoutUrl = `https://checkout.dodopayments.com/buy/${productId}?quantity=1`;
-
     try {
       const response = await fetch('/api/payments/checkout', {
         method: 'POST',
@@ -234,22 +232,22 @@ export const useUsageLimits = () => {
           currency: 'SZL',
           customer_email: customerEmail,
           customer_name: user?.user_metadata?.full_name || 'Customer',
-          payment_methods: paymentMethods || ['credit', 'debit', 'apple_pay', 'google_pay'],
           success_url: window.location.origin + '/upgrade?success=true',
           cancel_url: window.location.origin + '/upgrade',
         }),
       });
 
       const data = await response.json();
-      if (response.ok && data?.checkout_url) {
-        window.location.href = data.checkout_url;
-        return;
+      if (!response.ok || !data?.checkout_url) {
+        throw new Error(data?.error || 'Payment gateway is unavailable. Please try again later.');
       }
-    } catch (err) {
-      console.warn('[openUpgrade] Backend unavailable, using direct checkout:', err);
-    }
 
-    window.location.href = checkoutUrl;
+      const { openDodoOverlay } = await import('@/lib/dodoCheckout');
+      await openDodoOverlay(data.checkout_url);
+    } catch (err: any) {
+      console.error('[openUpgrade] Checkout error:', err);
+      toast.error(err?.message || 'Failed to start checkout. Please try again.');
+    }
   };
 
   const getNextPlan = (): PlanTier => {

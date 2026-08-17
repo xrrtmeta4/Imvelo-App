@@ -24,29 +24,34 @@ export async function createDodoCheckout(params: DodoCheckoutParams): Promise<Do
     currency,
     customerEmail,
     customerName,
-    paymentMethods = ['credit', 'debit', 'apple_pay', 'google_pay'],
+    paymentMethods,
     successUrl,
     cancelUrl,
     metadata,
   } = params;
+
+  const body: Record<string, any> = {
+    product_id: productId,
+    product_name: productName,
+    amount,
+    currency,
+    customer_email: customerEmail,
+    customer_name: customerName,
+    success_url: successUrl,
+    cancel_url: cancelUrl,
+    metadata,
+  };
+
+  if (paymentMethods && paymentMethods.length > 0) {
+    body.payment_methods = paymentMethods;
+  }
 
   const response = await fetch('/api/payments/checkout', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      product_id: productId,
-      product_name: productName,
-      amount,
-      currency,
-      customer_email: customerEmail,
-      customer_name: customerName,
-      payment_methods: paymentMethods,
-      success_url: successUrl,
-      cancel_url: cancelUrl,
-      metadata,
-    }),
+    body: JSON.stringify(body),
   });
 
   let data: any = {};

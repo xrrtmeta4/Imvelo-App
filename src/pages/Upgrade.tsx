@@ -10,10 +10,8 @@ import { useAuth } from '@/hooks/useAuth';
 import PaymentLogos from '@/components/PaymentLogos';
 import { openDodoOverlay } from '@/lib/dodoCheckout';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 const PREMIUM_PRODUCT_ID = 'pdt_0NYZaqcOARihEXXOPIdmC';
 const PREMIUM_PRICE = 37;
-const DIRECT_CHECKOUT_URL = `https://checkout.dodopayments.com/buy/${PREMIUM_PRODUCT_ID}?quantity=1`;
 
 const FEATURES = [
   'Unlimited pest & disease scans',
@@ -60,36 +58,29 @@ const Upgrade = () => {
 
       const customerName = user?.user_metadata?.full_name || userName || 'Customer';
 
-      let checkoutUrl = DIRECT_CHECKOUT_URL;
-
-      try {
-        const response = await fetch(`${API_BASE}/api/payments/checkout`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            product_id: PREMIUM_PRODUCT_ID,
-            product_name: 'Premium Plan',
-            amount: 37,
-            currency: 'SZL',
-            customer_email: customerEmail,
-            customer_name: customerName,
-            payment_methods: ['credit', 'debit', 'apple_pay', 'google_pay'],
+      const response = await fetch('/api/payments/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          product_id: PREMIUM_PRODUCT_ID,
+          product_name: 'Premium Plan',
+          amount: 37,
+          currency: 'SZL',
+          customer_email: customerEmail,
+          customer_name: customerName,
             success_url: window.location.origin + '/upgrade?success=true',
             cancel_url: window.location.origin + '/upgrade',
           }),
-        });
+      });
 
-        const data = await response.json();
-        if (response.ok && data?.checkout_url) {
-          checkoutUrl = data.checkout_url;
-        }
-      } catch (err) {
-        console.warn('[Upgrade] Backend unavailable, using direct checkout:', err);
+      const data = await response.json();
+      if (!response.ok || !data?.checkout_url) {
+        throw new Error(data?.error || 'Payment gateway is unavailable. Please try again later.');
       }
 
-      await openDodoOverlay(checkoutUrl, () => setLoading(false));
+      await openDodoOverlay(data.checkout_url, () => setLoading(false));
     } catch (err: any) {
       console.error('[Upgrade] Checkout error:', err);
       toast.error(err?.message || 'Failed to start checkout. Please try again.');

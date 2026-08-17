@@ -20,7 +20,6 @@ const OfficerDashboard = lazy(() => import("./pages/OfficerDashboard"));
 const PlantingGuide = lazy(() => import("./pages/PlantingGuide"));
 const SoilManagement = lazy(() => import("./pages/SoilManagement"));
 const WaterConservation = lazy(() => import("./pages/WaterConservation"));
-const ExtremeWeather = lazy(() => import("./pages/ExtremeWeather"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const Contact = lazy(() => import("./pages/Contact"));
@@ -145,7 +144,6 @@ const App = () => (
             <Route path="/planting-guide" element={<ProtectedRoute><PlantingGuide /></ProtectedRoute>} />
             <Route path="/soil-management" element={<ProtectedRoute><SoilManagement /></ProtectedRoute>} />
             <Route path="/water-conservation" element={<ProtectedRoute><WaterConservation /></ProtectedRoute>} />
-            <Route path="/extension-directory" element={<ProtectedRoute><ExtremeWeather /></ProtectedRoute>} />
             <Route path="/pesticide-calendar" element={<ProtectedRoute><PesticideCalendar /></ProtectedRoute>} />
             <Route path="/crop-monitoring" element={<ProtectedRoute><CropMonitoring /></ProtectedRoute>} />
             <Route path="/climate-risk" element={<ProtectedRoute><ClimateRisk /></ProtectedRoute>} />
@@ -166,7 +164,6 @@ const App = () => (
             <Route path="/analysis" element={<ProtectedRoute><Analysis /></ProtectedRoute>} />
             <Route path="/campaigns" element={<ProtectedRoute><Campaigns /></ProtectedRoute>} />
             <Route path="/ai-chat" element={<ProtectedRoute><AIChat /></ProtectedRoute>} />
-            <Route path="/extreme-weather" element={<ProtectedRoute><ExtremeWeather /></ProtectedRoute>} />
             <Route path="/agri-school" element={<ProtectedRoute><AgriSchool /></ProtectedRoute>} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
