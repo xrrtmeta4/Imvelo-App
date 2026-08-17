@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Cloud, CloudRain, Sun, Thermometer, Wind, Droplets, Loader2, Crown, Lock } from 'lucide-react';
+import { Cloud, CloudRain, Sun, Thermometer, Wind, Droplets, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation } from '@/hooks/useLocation';
@@ -14,7 +14,7 @@ const CACHE_DURATION = 5 * 60 * 1000;
 
 const Weather = () => {
   const { user } = useAuth();
-  const { hasFeature, openUpgrade, currentPlan } = useUsageLimits();
+  const { hasFeature } = useUsageLimits();
   const { getLocation } = useLocation();
   const { t } = useLanguage();
   const [weather, setWeather] = useState<any>(null);
@@ -142,7 +142,6 @@ const Weather = () => {
               </CardContent>
             </Card>
 
-            {hasFeature('forecast') ? (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -190,25 +189,6 @@ const Weather = () => {
                   ))}
                 </CardContent>
               </Card>
-            ) : (
-              <Card className="border-primary/30">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Lock className="w-5 h-5 text-muted-foreground" />
-                    {t('sevenDayForecast')}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="text-center space-y-4 py-6">
-                  <p className="text-sm text-muted-foreground">
-                    {t('upgradeForForecast')}
-                  </p>
-                  <Button onClick={() => openUpgrade('premium')} className="gap-2">
-                    <Crown className="w-4 h-4" />
-                     Upgrade to Premium - E37.00/mo
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
 
             {hasFeature('farmingTips') && (
               <Card className="bg-muted/50">
