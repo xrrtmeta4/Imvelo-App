@@ -1,11 +1,12 @@
 {
-  "name": "vite_react_shadcn_ts",
-  "private": true,
+  "name": "imvelo-app",
   "version": "0.0.0",
+  "private": true,
   "type": "module",
+  "packageManager": "npm@11.9.0",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "tsc && vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
