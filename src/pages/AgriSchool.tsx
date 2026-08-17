@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { ArrowLeft, PlayCircle, FileText, Award, MessageCircle, CheckCircle2, Loader2, Users, BookOpen, GraduationCap, Download, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, PlayCircle, FileText, Award, CheckCircle2, Loader2, BookOpen, GraduationCap, Download, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useAuth } from '@/hooks/useAuth';
@@ -8,7 +8,6 @@ import { openDodoCheckout } from '@/lib/dodoPayments';
 import { jsPDF } from 'jspdf';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { safeJsonParse } from '@/lib/safeJson';
 
 const CERTIFICATE_PRICE = 50;
@@ -40,14 +39,6 @@ interface Course {
   level: string;
   modules: CourseModule[];
   quiz: QuizQuestion[];
-}
-
-interface Comment {
-  id: string;
-  userId: string;
-  userName: string;
-  text: string;
-  createdAt: string;
 }
 
 const COURSES: Course[] = [
@@ -640,8 +631,6 @@ const COURSES: Course[] = [
   },
 ];
 
-const COMMUNITY_STORAGE_KEY = (courseId: string, userId: string) => `imvelo_agrischool_comments_${courseId}_${userId}`;
-
 const AgriSchool = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
@@ -654,9 +643,6 @@ const AgriSchool = () => {
   const [loading, setLoading] = useState(false);
   const [enrolledCourses, setEnrolledCourses] = useState<Set<string>>(new Set());
   const [completedCourses, setCompletedCourses] = useState<Set<string>>(new Set());
-  const [showCommunity, setShowCommunity] = useState(false);
-  const [communityComments, setCommunityComments] = useState<Record<string, Comment[]>>({});
-  const [newComment, setNewComment] = useState('');
 
   const course = useMemo(() => COURSES.find(c => c.id === selectedCourseId), [selectedCourseId]);
 
@@ -666,14 +652,6 @@ const AgriSchool = () => {
     const data = safeJsonParse<{ enrolled: string[]; completed: string[] }>(stored, { enrolled: [], completed: [] });
     setEnrolledCourses(new Set(data.enrolled || []));
     setCompletedCourses(new Set(data.completed || []));
-
-    const comments: Record<string, Comment[]> = {};
-    COURSES.forEach(c => {
-      const key = COMMUNITY_STORAGE_KEY(c.id, user.id);
-      const raw = localStorage.getItem(key);
-      comments[c.id] = safeJsonParse<Comment[]>(raw, []);
-    });
-    setCommunityComments(comments);
   }, [user]);
 
   const saveProgress = (enrolled: Set<string>, completed: Set<string>) => {
@@ -682,12 +660,6 @@ const AgriSchool = () => {
       enrolled: Array.from(enrolled),
       completed: Array.from(completed),
     }));
-  };
-
-  const saveComments = (courseId: string, comments: Comment[]) => {
-    if (!user) return;
-    localStorage.setItem(COMMUNITY_STORAGE_KEY(courseId, user.id), JSON.stringify(comments));
-    setCommunityComments(prev => ({ ...prev, [courseId]: comments }));
   };
 
   const handleEnroll = async (courseId: string) => {
@@ -868,26 +840,10 @@ const AgriSchool = () => {
     }
   };
 
-  const handlePostComment = () => {
-    if (!course || !user || !newComment.trim()) return;
-    const comment: Comment = {
-      id: Date.now().toString(),
-      userId: user.id,
-      userName: user.user_metadata?.full_name || user.email || 'Anonymous',
-      text: newComment.trim(),
-      createdAt: new Date().toISOString(),
-    };
-    const updated = [...(communityComments[course.id] || []), comment];
-    saveComments(course.id, updated);
-    setNewComment('');
-    toast.success('Comment posted!');
-  };
-
   if (selectedCourseId && course) {
     const isEnrolled = enrolledCourses.has(course.id);
     const isCompleted = completedCourses.has(course.id);
     const passed = quizSubmitted && quizAnswers.reduce((count, q, i) => count + (quizAnswers[i] === q.correctIndex ? 1 : 0), 0) >= course.quiz.length * 0.7;
-    const comments = communityComments[course.id] || [];
 
     if (!isEnrolled) {
       return (
@@ -972,48 +928,7 @@ const AgriSchool = () => {
                 <CheckCircle2 className="w-4 h-4" />
                 {t('takeQuiz')} ({course.quiz.length} {t('quizQuestions').toLowerCase()})
               </Button>
-              <Button variant="ghost" onClick={() => setShowCommunity(!showCommunity)} className="flex-1 gap-2">
-                <MessageCircle className="w-4 h-4" />
-                {t('community')}
-              </Button>
             </div>
-            {showCommunity && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <MessageCircle className="w-5 h-5 text-primary" />
-                    {t('community')}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {comments.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-4">{t('noDiscussions')}</p>
-                  ) : (
-                    <div className="space-y-3">
-                      {comments.map(comment => (
-                        <div key={comment.id} className="p-3 rounded-lg bg-accent/50 space-y-1">
-                          <p className="text-sm font-medium text-foreground">{comment.userName}</p>
-                          <p className="text-sm text-muted-foreground">{comment.text}</p>
-                          <p className="text-xs text-muted-foreground">{new Date(comment.createdAt).toLocaleDateString()}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {user && (
-                    <div className="flex gap-2">
-                      <Input
-                        value={newComment}
-                        onChange={e => setNewComment(e.target.value)}
-                        placeholder={t('writeComment')}
-                        className="flex-1"
-                        onKeyDown={e => e.key === 'Enter' && handlePostComment()}
-                      />
-                      <Button onClick={handlePostComment} size="sm">{t('postComment')}</Button>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
           </div>
         </div>
       );
@@ -1172,20 +1087,8 @@ const AgriSchool = () => {
                 </CardContent>
               </Card>
             );
-          })}
+          }          )}
         </div>
-
-        <Card className="bg-primary/5 border-primary/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Users className="w-5 h-5 text-primary" />
-              {t('community')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">{t('communityDesc')}</p>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

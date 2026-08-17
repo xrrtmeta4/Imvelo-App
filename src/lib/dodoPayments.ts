@@ -46,13 +46,19 @@ export async function createDodoCheckout(params: DodoCheckoutParams): Promise<Do
     body.payment_methods = paymentMethods;
   }
 
-  const response = await fetch('/api/payments/checkout', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
-  });
+  let response: Response;
+  try {
+    response = await fetch('/api/payments/checkout', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+  } catch (err) {
+    console.error('[dodoPayments] Checkout network error:', err);
+    throw new Error('Payment gateway is unreachable. Make sure the backend server is running and try again.');
+  }
 
   let data: any = {};
   try {
@@ -61,8 +67,13 @@ export async function createDodoCheckout(params: DodoCheckoutParams): Promise<Do
     // ignore non-JSON responses
   }
 
-  if (!response.ok || !data?.checkout_url) {
-    throw new Error(data?.error || 'Failed to create checkout session');
+  if (!response.ok) {
+    const detail = data?.error || data?.message || data?.detail || `Server error ${response.status}`;
+    throw new Error(`Payment setup failed: ${detail}`);
+  }
+
+  if (!data?.checkout_url) {
+    throw new Error(data?.error || 'Payment gateway did not return a checkout link.');
   }
 
   return {
