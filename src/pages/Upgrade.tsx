@@ -94,16 +94,26 @@ const Upgrade = () => {
 
   if (isPremium) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <div className="max-w-screen-sm mx-auto text-center space-y-4">
-          <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-            <Crown className="w-8 h-8 text-primary" />
+      <div
+        className="min-h-screen flex items-center justify-center p-4"
+        style={{
+          backgroundImage: "url('/african-farmers-farm-working_875825-177512.avif')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      >
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
+
+        <div className="relative z-10 max-w-screen-sm mx-auto text-center space-y-4">
+          <div className="mx-auto w-16 h-16 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20">
+            <Crown className="w-8 h-8 text-yellow-400" />
           </div>
-          <h1 className="text-2xl font-bold">You&apos;re on Premium!</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="text-2xl font-bold text-white">You&apos;re on Premium!</h1>
+          <p className="text-sm text-white/80">
             Enjoy unlimited access to all farming tools.
           </p>
-          <Button onClick={() => navigate('/')} variant="outline">
+          <Button onClick={() => navigate('/')} variant="outline" className="border-white/20 bg-white/10 text-white hover:bg-white/20">
             <ChevronLeft className="w-4 h-4 mr-1" />
             {t('backToApp')}
           </Button>
@@ -113,22 +123,20 @@ const Upgrade = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground py-6 px-4">
-        <div className="max-w-screen-sm mx-auto flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-white/10">
-            <Crown className="w-6 h-6" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold">{t('upgradeTo')} Premium</h1>
-            <p className="text-sm text-white/80 mt-0.5">{t('unlockTools')}</p>
-          </div>
-        </div>
-      </header>
+    <div
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{
+        backgroundImage: "url('/african-farmers-farm-working_875825-177512.avif')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
 
-      <div className="max-w-screen-sm mx-auto px-4 py-6 space-y-6">
+      <div className="relative z-10 w-full max-w-screen-sm mx-auto">
         {success === 'true' && (
-          <Card className="border-green-500 bg-green-50 dark:bg-green-950/20">
+          <Card className="mb-6 border-green-500/50 bg-green-500/10 backdrop-blur-md">
             <CardContent className="p-4 text-center">
               <p className="text-sm font-medium text-green-700 dark:text-green-400">
                 Payment successful! Your premium access is being activated.
@@ -137,24 +145,24 @@ const Upgrade = () => {
           </Card>
         )}
 
-        <Card className="border-primary/30 bg-primary/5">
+        <Card className="mb-6 border-white/20 bg-white/10 backdrop-blur-xl shadow-2xl">
           <CardHeader>
-            <CardTitle className="flex items-center justify-between text-base">
+            <CardTitle className="flex items-center justify-between text-base text-white">
               <span className="flex items-center gap-2">
-                <Crown className="w-5 h-5 text-primary" />
+                <Crown className="w-5 h-5 text-yellow-400" />
                 Premium Plan
               </span>
-              <span className="text-lg font-bold">
+              <span className="text-lg font-bold text-white">
                 ${PREMIUM_PRICE.toFixed(2)}
-                <span className="text-sm font-normal text-muted-foreground">{t('perMonth')}</span>
+                <span className="text-sm font-normal text-white/80">{t('perMonth')}</span>
               </span>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <ul className="space-y-2">
               {FEATURES.map((feature, idx) => (
-                <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <Check className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                <li key={idx} className="flex items-start gap-2 text-sm text-white/90">
+                  <Check className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
                   <span>{feature}</span>
                 </li>
               ))}
@@ -165,7 +173,7 @@ const Upgrade = () => {
         <Button
           onClick={handleUpgrade}
           disabled={loading}
-          className="w-full gap-2"
+          className="w-full gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-md"
           size="lg"
         >
           {loading ? (
@@ -182,17 +190,21 @@ const Upgrade = () => {
         </Button>
 
         {loading && (
-          <p className="text-xs text-center text-muted-foreground">
+          <p className="text-xs text-center text-white/70 mt-2">
             {t('clickToContinue')}
           </p>
         )}
 
-        <PaymentLogos />
+        <Card className="mt-6 border-white/20 bg-white/10 backdrop-blur-xl shadow-2xl">
+          <CardContent className="p-4">
+            <PaymentLogos />
+          </CardContent>
+        </Card>
 
         <Button
           onClick={() => navigate(-1)}
           variant="ghost"
-          className="w-full text-muted-foreground"
+          className="w-full text-white/70 hover:text-white hover:bg-white/10 mt-4"
         >
           <ChevronLeft className="w-4 h-4 mr-1" />
           {t('backToApp')}
