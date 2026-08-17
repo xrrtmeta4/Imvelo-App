@@ -64,9 +64,9 @@ const Upgrade = () => {
         },
       });
 
-      if (error) {
-        const msg = typeof error === 'string' ? error : (error as any)?.message || 'Checkout failed';
-        throw new Error(msg);
+      const edgeError = (data as any)?.error || (error as any)?.message || (error as any)?.details;
+      if (edgeError) {
+        throw new Error(typeof edgeError === 'string' ? edgeError : JSON.stringify(edgeError));
       }
 
       if (data?.checkout_url) {

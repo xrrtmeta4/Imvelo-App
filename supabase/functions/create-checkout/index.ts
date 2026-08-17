@@ -13,13 +13,32 @@ serve(async (req) => {
   try {
     const apiKey = Deno.env.get('DODO_PAYMENTS_API_KEY');
     if (!apiKey) {
-      throw new Error('DODO_PAYMENTS_API_KEY not configured');
+      console.error('Missing DODO_PAYMENTS_API_KEY secret');
+      return new Response(JSON.stringify({ error: 'DODO_PAYMENTS_API_KEY not configured on server' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    const { product_id, customer_email, customer_name, redirect_url, payment_methods } = await req.json();
+    let payload: Record<string, unknown>;
+    try {
+      payload = await req.json();
+    } catch (e) {
+      console.error('Invalid JSON payload', e);
+      return new Response(JSON.stringify({ error: 'Invalid JSON payload' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const { product_id, customer_email, customer_name, redirect_url, payment_methods } = payload;
 
     if (!product_id) {
-      throw new Error('product_id is required');
+      console.error('Missing product_id in payload');
+      return new Response(JSON.stringify({ error: 'product_id is required' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // All payment methods supported by Dodo Payments (complete list from API docs)
@@ -38,9 +57,8 @@ serve(async (req) => {
       'satispay', 'payco',
     ];
 
-    // Use specific methods if provided, otherwise all
-    const methods = (Array.isArray(payment_methods) && payment_methods.length > 0) 
-      ? payment_methods 
+    const methods = (Array.isArray(payment_methods) && payment_methods.length > 0)
+      ? payment_methods
       : allPaymentMethods;
 
     const body: Record<string, unknown> = {
@@ -49,10 +67,10 @@ serve(async (req) => {
     };
 
     if (customer_email) body.customer = { email: customer_email, name: customer_name || undefined };
-    if (redirect_url) body.payment_link = true;
     if (redirect_url) body.return_url = redirect_url;
 
-    // Use live mode API
+    console.log('Creating Dodo checkout for product:', product_id, 'methods:', methods.length);
+
     const response = await fetch('https://live.dodopayments.com/checkouts', {
       method: 'POST',
       headers: {
@@ -63,10 +81,15 @@ serve(async (req) => {
     });
 
     const data = await response.json();
+    console.log('Dodo response status:', response.status, 'data:', JSON.stringify(data).slice(0, 500));
 
     if (!response.ok) {
-      console.error('Dodo API error:', JSON.stringify(data));
-      throw new Error(data.message || data.error || `API error: ${response.status}`);
+      const errMsg = data.message || data.error || data.detail || JSON.stringify(data) || `API error: ${response.status}`;
+      console.error('Dodo API error:', errMsg);
+      return new Response(JSON.stringify({ error: errMsg }), {
+        status: response.status >= 400 && response.status < 500 ? response.status : 502,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     return new Response(JSON.stringify({
@@ -76,8 +99,8 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error: unknown) {
-    console.error('Checkout error:', error);
-    const msg = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Checkout server error:', error);
+    const msg = error instanceof Error ? error.message : 'Unknown server error';
     return new Response(JSON.stringify({ error: msg }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
