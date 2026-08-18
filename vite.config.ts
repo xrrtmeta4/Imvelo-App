@@ -24,7 +24,5 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  define: {
-    'import.meta.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL || '/api'),
-  },
+  envDir: path.resolve(__dirname, "./server"),
 }));
