@@ -77,7 +77,17 @@ serve(async (req) => {
       body: JSON.stringify(body),
     });
 
-    const data = await response.json();
+    let data: any = {};
+    try {
+      data = await response.json();
+    } catch (jsonError) {
+      console.error('[create-checkout] Failed to parse Dodo response as JSON:', jsonError);
+      return new Response(JSON.stringify({ error: 'Payment gateway returned an invalid response. Please try again later.' }), {
+        status: 502,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     console.log('Dodo response status:', response.status, 'data:', JSON.stringify(data).slice(0, 500));
 
     if (!response.ok) {

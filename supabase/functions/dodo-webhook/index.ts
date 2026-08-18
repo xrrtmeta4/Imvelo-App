@@ -158,7 +158,16 @@ serve(async (req) => {
       });
     }
 
-    const payloadJson = JSON.parse(payload);
+    let payloadJson: any;
+    try {
+      payloadJson = JSON.parse(payload);
+    } catch (parseError) {
+      console.error('Invalid JSON payload in webhook:', parseError);
+      return new Response(JSON.stringify({ error: 'Invalid JSON payload' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400
+      });
+    }
     console.log('Dodo Payment webhook received:', JSON.stringify(payloadJson, null, 2));
 
     // Map product IDs to plan tiers
