@@ -24,7 +24,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     let getSessionDone = false;
     let active = true;
 
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (!active) return;
@@ -46,7 +45,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     );
 
-    // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!active) return;
       getSessionDone = true;
@@ -56,15 +54,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(session.user ?? null);
       }
       setLoading(false);
-    }).catch(() => {
+    }).catch((err) => {
+      console.error('Failed to get session:', err);
       if (!active) return;
       getSessionDone = true;
       initialized = true;
       setLoading(false);
     });
 
-    // When the app returns from the background (mobile/PWA), re-hydrate the
-    // session instead of letting a stale null state redirect to /auth.
     const onVisible = () => {
       if (document.visibilityState !== 'visible') return;
       supabase.auth.getSession().then(({ data: { session } }) => {
@@ -72,7 +69,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setSession(session);
         setUser(session.user ?? null);
         setLoading(false);
-      }).catch(() => undefined);
+      }).catch((err) => {
+        console.error('Failed to refresh session on visibility change:', err);
+      });
     };
     document.addEventListener('visibilitychange', onVisible);
 
