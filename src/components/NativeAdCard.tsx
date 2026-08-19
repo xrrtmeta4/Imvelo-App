@@ -39,10 +39,10 @@ export default function NativeAdCard() {
       if (loaded) {
         setAsset(loaded);
         setState('ready');
-        setDebug(null);
+        setDebug(res.usedTestAd ? '[using TEST ad unit]' : null);
       } else {
         setState('error');
-        setDebug(error);
+        setDebug(res.error);
       }
     })();
 
@@ -102,18 +102,16 @@ export default function NativeAdCard() {
   if (state === 'error') {
     return (
       <Card className="my-3 border border-border/40 bg-muted/20">
-        <CardContent className="py-2.5 flex items-center justify-between gap-2">
-          <span className="text-xs text-muted-foreground">
+        <CardContent className="py-3 flex items-center justify-between gap-2">
+          <span className="text-xs text-muted-foreground break-all">
             {debug ?? 'Ad not loaded. Tap to retry.'}
           </span>
-          {debug && import.meta.env.MODE === 'development' && (
-            <button
-              onClick={() => window.location.reload()}
-              className="underline text-xs text-primary"
-            >
-              retry
-            </button>
-          )}
+          <button
+            onClick={handleRetry}
+            className="ml-2 underline text-xs text-primary shrink-0"
+          >
+            retry
+          </button>
         </CardContent>
       </Card>
     );
