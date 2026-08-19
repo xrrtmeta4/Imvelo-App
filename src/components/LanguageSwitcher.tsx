@@ -33,6 +33,7 @@ const LANGUAGES = [
   { code: 'so', label: 'Soomaali', flag: '🇸🇴' },
   { code: 'nso', label: 'Sepedi', flag: '🇿🇦' },
   { code: 'tw', label: 'Twi', flag: '🇬🇭' },
+  { code: 'zh', label: '中文', flag: '🇨🇳' },
 ];
 
 const LanguageSwitcher = () => {

@@ -234,37 +234,13 @@ const PushNotificationManager = () => {
     toast.success(`${key.replace('_', ' ')} notifications ${preferences[key] ? 'disabled' : 'enabled'}`);
   };
 
-  // Listen for real-time alerts
+  // Listen for pest outbreak alerts only (weather-alert toasts are handled once
+  // by useNotifications to avoid duplicate notifications per event).
   useEffect(() => {
     if (!user || permission !== 'granted') return;
 
-    // Subscribe to weather alerts
-    const weatherChannel = supabase
-      .channel('push-weather-alerts')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'weather_alerts',
-          filter: `user_id=eq.${user.id}`,
-        },
-        (payload) => {
-          if (preferences.weather_alerts) {
-            const alert = payload.new as any;
-            showNotification(
-              `⚠️ Weather Alert: ${alert.alert_type}`,
-              alert.message,
-              '/favicon.ico'
-            );
-          }
-        }
-      )
-      .subscribe();
-
-    // Subscribe to pest reports (for outbreak detection)
     const pestChannel = supabase
-      .channel('push-pest-alerts')
+      .channel(`push-pest-alerts-${user.id}`)
       .on(
         'postgres_changes',
         {
@@ -274,9 +250,8 @@ const PushNotificationManager = () => {
         },
         (payload) => {
           if (preferences.pest_outbreaks) {
-            const report = payload.new as any;
-            // Only show if it's a high confidence detection nearby
-            if (report.confidence > 80) {
+            const report = payload.new as { confidence?: number; pest_name?: string };
+            if ((report.confidence ?? 0) > 80) {
               showNotification(
                 '🐛 Pest Alert',
                 `${report.pest_name} detected with ${report.confidence}% confidence. Check recommended treatment.`,
@@ -289,7 +264,6 @@ const PushNotificationManager = () => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(weatherChannel);
       supabase.removeChannel(pestChannel);
     };
   }, [user, permission, preferences, showNotification]);

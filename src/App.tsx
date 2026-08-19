@@ -54,6 +54,7 @@ import MobileNav from "./components/MobileNav";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import SubscriptionPopup from "./components/SubscriptionPopup";
 import AppTutorial from "./components/AppTutorial";
+import CookieConsent from "./components/CookieConsent";
 import { useInteractionTracker } from "./hooks/useInteractionTracker";
 import ErrorBoundary from "./components/ErrorBoundary";
 
@@ -120,11 +121,12 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const App = () => (
   <ErrorBoundary>
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <PWAInstallPrompt />
-      <BrowserRouter>
+     <TooltipProvider>
+       <Toaster />
+       <Sonner />
+       <PWAInstallPrompt />
+       <CookieConsent />
+       <BrowserRouter>
         <AuthProvider>
           <LanguageProvider>
           <SettingsProvider>

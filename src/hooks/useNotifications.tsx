@@ -3,18 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
-const getTodayKey = (userId: string) => `imvelo-last-weather-toast-${userId}`;
-const getTodayDate = () => new Date().toISOString().split('T')[0];
-
-const shouldShowWeatherToast = (userId: string) => {
-  if (typeof window === 'undefined') return true;
-  const key = getTodayKey(userId);
-  const today = getTodayDate();
-  const last = window.localStorage.getItem(key);
-  if (last === today) return false;
-  window.localStorage.setItem(key, today);
-  return true;
-};
+const getShownKey = (userId: string, alertId: string) => `imvelo-shown-alert-${userId}-${alertId}`;
 
 export const useNotifications = () => {
   const { user } = useAuth();
@@ -23,7 +12,7 @@ export const useNotifications = () => {
     if (!user) return;
 
     const weatherChannel = supabase
-      .channel('weather-notifications')
+      .channel(`weather-notifications-${user.id}`)
       .on(
         'postgres_changes',
         {
@@ -32,10 +21,18 @@ export const useNotifications = () => {
           table: 'weather_alerts',
           filter: `user_id=eq.${user.id}`
         },
-        (payload: any) => {
-          if (!shouldShowWeatherToast(user.id)) return;
+        (payload: { new: Record<string, unknown> }) => {
+          const alert = payload.new as { id?: string; alert_type?: string; message?: string; severity?: string };
+          const alertId = alert.id || payload.new?.id;
 
-          const alert = payload.new;
+          // Deduplicate: show each alert exactly once per id (real-time can
+          // surface the same INSERT twice while the service worker and this
+          // Realtime channel both process it).
+          if (alertId && typeof window !== 'undefined') {
+            const key = getShownKey(user.id, alertId);
+            if (window.sessionStorage.getItem(key) === '1') return;
+            window.sessionStorage.setItem(key, '1');
+          }
 
           if (alert.alert_type === 'planting_reminder') {
             toast.success('🌱 Sikhumbutso Sekutjala!', {

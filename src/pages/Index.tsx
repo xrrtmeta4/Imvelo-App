@@ -73,7 +73,6 @@ const Index = () => {
               )}
             </div>
             <div className="flex items-center gap-2">
-              <TalkBack aria-label="Read page aloud with talk-back" />
               <NotificationBell />
               <LanguageSwitcher />
             </div>
@@ -85,6 +84,17 @@ const Index = () => {
             <p className="text-white/90 text-base drop-shadow">{t('farmersBestFriend')}</p>
 
             <HeroWeather />
+
+            <div className="mt-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 p-3.5 text-white shadow-xl">
+              <div className="flex items-center gap-3">
+                <TalkBack aria-label="Read this page aloud" />
+                <div className="flex-1">
+                  <p className="font-semibold text-sm">TalkBack Reader</p>
+                  <p className="text-xs text-white/80">Tap to have this page read aloud (weather, tips, and more).</p>
+                </div>
+                <kbd className="text-[10px] text-white/50">Esc</kbd>
+              </div>
+            </div>
 
             {!isPremium && (
               <Button
