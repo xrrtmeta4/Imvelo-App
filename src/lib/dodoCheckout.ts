@@ -121,6 +121,7 @@ export const openDodoOverlay = async (checkoutUrl: string, onOpened?: () => void
       options: {
         showTimer: true,
         showSecurityBadge: true,
+        manualRedirect: true,
       },
     });
     onOpened?.();
