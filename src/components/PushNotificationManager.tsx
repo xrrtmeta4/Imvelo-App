@@ -6,6 +6,10 @@ import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 
+const VAPID_PUBLIC_KEY =
+  (import.meta as any).env?.VITE_PUBLIC_VAPID_KEY ||
+  'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U';
+
 interface NotificationPreferences {
   weather_alerts: boolean;
   pest_outbreaks: boolean;
@@ -114,22 +118,25 @@ const PushNotificationManager = () => {
       let subscription;
       try {
         // Get the VAPID public key from the environment or use the one configured
-        const vapidPublicKey = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U';
+        const vapidPublicKey = VAPID_PUBLIC_KEY;
         
-        subscription = await registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as BufferSource,
-        });
-      } catch (pushError: any) {
-        console.error('Push subscription error:', pushError);
-        if (pushError.message?.includes('applicationServerKey')) {
-          toast.error('Push notification setup error. Please contact support.');
-        } else {
-          toast.error('Failed to subscribe to push notifications');
-        }
-        setIsSubscribing(false);
-        return;
-      }
+         subscription = await registration.pushManager.subscribe({
+           userVisibleOnly: true,
+           applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+         });
+       } catch (pushError: any) {
+         console.error('Push subscription error:', pushError);
+         const msg = String(pushError?.message || '').toLowerCase();
+         if (msg.includes('applicationServerKey')) {
+           toast.error('Push notification key mismatch. Contact support (VAPID).');
+         } else if (msg.includes('denied') || msg.includes('permission')) {
+           toast.error('Notifications blocked. Allow them in your browser settings, then try again.');
+         } else {
+           toast.error(`Failed to subscribe: ${pushError?.message || 'Push service rejected the subscription.'}`);
+         }
+         setIsSubscribing(false);
+         return;
+       }
 
       // Save subscription to database
       const subscriptionJSON = subscription.toJSON();
@@ -155,9 +162,9 @@ const PushNotificationManager = () => {
       
       // Show test notification
       showNotification('Notifications Enabled', 'You will receive weather updates and climate alerts automatically.');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error subscribing to push:', error);
-      toast.error('Failed to enable push notifications. Please try again.');
+      toast.error(error?.message || 'Failed to enable push notifications. Please try again.');
     } finally {
       setIsSubscribing(false);
     }

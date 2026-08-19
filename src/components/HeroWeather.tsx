@@ -76,6 +76,7 @@ const HeroWeather = () => {
       onClick={() => navigate('/weather')}
       aria-label="Open 7-day weather forecast"
       className="mt-4 w-full text-left rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 p-4 text-white shadow-xl hover:bg-white/15 active:scale-[0.99] transition"
+      data-talkback-weather={`${data.temperature} degrees Celsius, ${data.description}. High ${data.today.max} low ${data.today.min}. Humidity ${data.humidity} percent.`}
     >
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">

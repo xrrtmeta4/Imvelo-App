@@ -7,11 +7,12 @@ import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/lib/supabase';
-import { Sprout, Crown, Store, Users, Phone, Sparkles, AlertTriangle, GraduationCap } from 'lucide-react';
+import { Sprout, Crown, Store, Users, Phone, Sparkles, AlertTriangle, GraduationCap, Mic, MicOff, Pause } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import TalkBack from '@/components/TalkBack';
 import heroImage from '@/assets/download (30).jpeg';
 import UpgradeNudge from '@/components/UpgradeNudge';
 
@@ -72,6 +73,7 @@ const Index = () => {
               )}
             </div>
             <div className="flex items-center gap-2">
+              <TalkBack aria-label="Read page aloud with talk-back" />
               <NotificationBell />
               <LanguageSwitcher />
             </div>
