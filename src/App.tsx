@@ -124,9 +124,9 @@ const App = () => (
      <TooltipProvider>
        <Toaster />
        <Sonner />
-       <PWAInstallPrompt />
-       <CookieConsent />
-       <BrowserRouter>
+      <PWAInstallPrompt />
+      <BrowserRouter>
+        <CookieConsent />
         <AuthProvider>
           <LanguageProvider>
           <SettingsProvider>
