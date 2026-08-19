@@ -4,12 +4,13 @@ import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { safeJsonParse } from '@/lib/safeJson';
 
-export type PlanTier = 'free' | 'starter' | 'premium';
+export type PlanTier = 'free' | 'starter' | 'premium' | 'enterprise';
 
 export const PRODUCT_IDS: Record<PlanTier, string> = {
   free: '',
   starter: '',
   premium: 'pdt_0NYZaqcOARihEXXOPIdmC',
+  enterprise: 'pdt_0NYZaqcOARihEXXOPIdmC',
 };
 
 export const PLANS = {
@@ -42,6 +43,16 @@ export const PLANS = {
     maxLedgerEntries: Infinity,
     maxSprayEntries: Infinity,
     features: ['1 scan per day', '2 AI chats per day', 'AI financial advisory', 'Climate volatility engine', 'Smart irrigation planner', '7-day weather forecast', 'Farming tips', 'Unlimited spray scheduling', 'Unlimited digital ledger', 'Produce estimation', 'Crop monitoring (phenotype)', 'Livestock manager', 'Harvest tracker', 'Market price alerts', 'Farm inventory', 'Carbon score', 'Post-harvest guide', 'Priority support'],
+  },
+  enterprise: {
+    name: 'Enterprise',
+    price: 0,
+    weeklyDetections: Infinity,
+    dailyDetections: Infinity,
+    dailyChats: Infinity,
+    maxLedgerEntries: Infinity,
+    maxSprayEntries: Infinity,
+    features: ['Unlimited pest, soil & disease scans', 'Unlimited AI chat messages', 'Unlimited produce estimation', 'Unlimited ledger entries', 'Unlimited spray schedules', 'Full 7-day weather forecast', 'AI financial advisory', 'Climate volatility engine', 'Smart irrigation planner', 'Market price alerts', 'Farm inventory', 'Crop monitoring (phenotype)', 'Livestock manager', 'Harvest tracker', 'Carbon score', 'Post-harvest guide', 'Priority support'],
   },
 };
 
@@ -89,7 +100,7 @@ export const useUsageLimits = () => {
       if (data && data.status === 'active') {
         if (!data.expires_at || new Date(data.expires_at) > new Date()) {
           let plan: string = (data as any).plan || 'starter';
-          if (plan === 'pro' || plan === 'enterprise') plan = 'premium';
+          if (plan === 'pro') plan = 'premium';
           setCurrentPlan(plan as PlanTier);
         }
       }
