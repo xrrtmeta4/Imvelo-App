@@ -28,18 +28,41 @@ export interface ImveloNativeAdPlugin {
 
 const NativeAd = (registerPlugin as any)('ImveloNativeAd') as ImveloNativeAdPlugin | null;
 
-export const isNativeAdAvailable = () => !!NativeAd;
+let availabilityChecked = false;
+let nativeAvailable = false;
+const checkNativeAvailable = async (): Promise<boolean> => {
+  if (availabilityChecked) return nativeAvailable;
+  availabilityChecked = true;
+  if (!NativeAd) return false;
+  try {
+    await NativeAd.loadAd({ adUnitId: 'ca-app-pub-3940256099942544/2247696110' });
+    nativeAvailable = true;
+  } catch {
+    nativeAvailable = false;
+  }
+  return nativeAvailable;
+};
 
-export const loadNativeAd = async (adUnitId = 'ca-app-pub-2820576027993732/5824833394'): Promise<NativeAdAsset | null> => {
+export const isNativeAdAvailable = (): boolean => {
+  if (availabilityChecked) return nativeAvailable;
+  // Optimistic: the proxy exists if Capacitor registered the plugin.
+  // A real probe happens in loadNativeAd.
+  return !!NativeAd;
+};
+
+export interface LoadResult { asset: NativeAdAsset | null; error: string | null }
+
+export const loadNativeAd = async (adUnitId = 'ca-app-pub-2820576027993732/5824833394'): Promise<LoadResult> => {
   if (!NativeAd) {
-    console.debug('[ImveloNativeAd] not available on this platform');
-    return null;
+    return { asset: null, error: '[ImveloNativeAd] not available on this platform' };
   }
   try {
-    return await NativeAd.loadAd({ adUnitId });
+    const asset = await NativeAd.loadAd({ adUnitId });
+    return { asset, error: null };
   } catch (e: any) {
-    console.warn('[ImveloNativeAd] load failed', e?.message ?? e);
-    return null;
+    const msg = e?.message ?? e?.toString?.() ?? 'unknown error';
+    console.warn('[ImveloNativeAd] load failed', e);
+    return { asset: null, error: String(msg) };
   }
 };
 
