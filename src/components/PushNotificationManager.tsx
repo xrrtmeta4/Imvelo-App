@@ -73,7 +73,7 @@ const PushNotificationManager = () => {
     try {
       // Check if notifications are supported
       if (!('Notification' in window)) {
-        toast.error('Notifications are not supported in this browser');
+        toast.error('Notifications are not supported in this browser.', { className: 'bg-destructive text-destructive-foreground' });
         setIsSubscribing(false);
         return;
       }
@@ -83,14 +83,14 @@ const PushNotificationManager = () => {
       setPermission(permissionResult);
 
       if (permissionResult !== 'granted') {
-        toast.error('Notification permission denied. Please enable notifications in your browser settings.');
+        toast.error('Notification permission denied. Allow them in your browser settings, then try again.', { className: 'bg-destructive text-destructive-foreground' });
         setIsSubscribing(false);
         return;
       }
 
       // Check if service workers are supported
       if (!('serviceWorker' in navigator)) {
-        toast.error('Service workers are not supported in this browser');
+        toast.error('Service workers are not supported in this browser.', { className: 'bg-destructive text-destructive-foreground' });
         setIsSubscribing(false);
         return;
       }
@@ -109,7 +109,7 @@ const PushNotificationManager = () => {
 
       // Check if push manager is available
       if (!registration.pushManager) {
-        toast.error('Push notifications are not available in this browser');
+        toast.error('Push notifications are not available in this browser.', { className: 'bg-destructive text-destructive-foreground' });
         setIsSubscribing(false);
         return;
       }
@@ -117,26 +117,37 @@ const PushNotificationManager = () => {
       // Subscribe to push
       let subscription;
       try {
-        // Get the VAPID public key from the environment or use the one configured
         const vapidPublicKey = VAPID_PUBLIC_KEY;
-        
-         subscription = await registration.pushManager.subscribe({
-           userVisibleOnly: true,
-           applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
-         });
-       } catch (pushError: any) {
-         console.error('Push subscription error:', pushError);
-         const msg = String(pushError?.message || '').toLowerCase();
-         if (msg.includes('applicationServerKey')) {
-           toast.error('Push notification key mismatch. Contact support (VAPID).');
-         } else if (msg.includes('denied') || msg.includes('permission')) {
-           toast.error('Notifications blocked. Allow them in your browser settings, then try again.');
-         } else {
-           toast.error(`Failed to subscribe: ${pushError?.message || 'Push service rejected the subscription.'}`);
-         }
-         setIsSubscribing(false);
-         return;
-       }
+
+        subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+        });
+      } catch (pushError: any) {
+        console.error('Push subscription error:', pushError);
+        const msg = String(pushError?.message || '').toLowerCase();
+        const name = String(pushError?.name || '').toLowerCase();
+        const isIllegal = name.includes('typeerror') && msg.includes('illegal invocation');
+        if (isIllegal || msg.includes('illegal invocation')) {
+          toast.error('Browser blocked the push key (illegal invocation). Try a different browser (Chrome/Edge) or refresh.', {
+            className: 'bg-destructive text-destructive-foreground',
+          });
+        } else if (msg.includes('applicationserverkey')) {
+          toast.error('Push notification key mismatch. The VAPID key is not configured on the server.', {
+            className: 'bg-destructive text-destructive-foreground',
+          });
+        } else if (msg.includes('denied') || msg.includes('permission')) {
+          toast.error('Notifications blocked. Allow them in your browser settings, then try again.', {
+            className: 'bg-destructive text-destructive-foreground',
+          });
+        } else {
+          toast.error(`Unable to enable push notifications: ${pushError?.message || 'Please refresh and try again.'}`, {
+            className: 'bg-destructive text-destructive-foreground',
+          });
+        }
+        setIsSubscribing(false);
+        return;
+      }
 
       // Save subscription to database
       const subscriptionJSON = subscription.toJSON();
@@ -152,19 +163,23 @@ const PushNotificationManager = () => {
 
       if (error) {
         console.error('Database error:', error);
-        toast.error('Failed to save notification preferences');
+        toast.error(`Failed to save subscription: ${error.message || 'Please try again.'}`, {
+          className: 'bg-destructive text-destructive-foreground',
+        });
         setIsSubscribing(false);
         return;
       }
 
       setIsSubscribed(true);
-      toast.success('Push notifications enabled successfully!');
+      toast.success('Push notifications enabled successfully!', { className: 'bg-green-600 text-white' });
       
       // Show test notification
       showNotification('Notifications Enabled', 'You will receive weather updates and climate alerts automatically.');
     } catch (error: any) {
       console.error('Error subscribing to push:', error);
-      toast.error(error?.message || 'Failed to enable push notifications. Please try again.');
+      toast.error(error?.message || 'Failed to enable push notifications. Please try again.', {
+        className: 'bg-destructive text-destructive-foreground',
+      });
     } finally {
       setIsSubscribing(false);
     }
