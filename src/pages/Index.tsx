@@ -15,6 +15,7 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import TalkBack from '@/components/TalkBack';
 import heroImage from '@/assets/download (30).jpeg';
 import UpgradeNudge from '@/components/UpgradeNudge';
+import NativeAdCard from '@/components/NativeAdCard';
 
 const Index = () => {
   const { isPremium } = useUsageLimits();
@@ -112,6 +113,7 @@ const Index = () => {
 
       <main className="max-w-screen-sm mx-auto px-4 py-6 space-y-6">
         <UpgradeNudge />
+        <NativeAdCard />
         <button
           onClick={() => { window.location.href = 'https://imvelomarketplace.vercel.app'; }}
           className="w-full flex items-center justify-between rounded-xl border border-border bg-card p-4 hover:bg-accent/50 transition-colors"
