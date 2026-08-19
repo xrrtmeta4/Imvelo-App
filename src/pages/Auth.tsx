@@ -13,6 +13,25 @@ import { Separator } from '@/components/ui/separator';
 import { useLanguage } from '@/hooks/useLanguage';
 import SEO from '@/components/SEO';
 
+function isNetworkError(error: any): boolean {
+  const message = String(error?.message || '').toLowerCase();
+  return (
+    error instanceof TypeError ||
+    message.includes('failed to fetch') ||
+    message.includes('networkerror') ||
+    message.includes('network request failed') ||
+    message.includes('load failed') ||
+    message.includes('timeout')
+  );
+}
+
+function authErrorMessage(error: any): string {
+  if (isNetworkError(error)) {
+    return 'Could not reach the server. Please check your internet connection and try again.';
+  }
+  return error?.message || 'Something went wrong. Please try again.';
+}
+
 const signupSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
@@ -77,7 +96,7 @@ const Auth = () => {
           if (error.message.includes('Invalid login credentials')) {
             toast.error('Invalid email or password');
           } else {
-            toast.error(error.message);
+            toast.error(authErrorMessage(error));
           }
           return;
         }
@@ -120,7 +139,7 @@ const Auth = () => {
           if (error.message.includes('already registered')) {
             toast.error('Email already registered. Please login.');
           } else {
-            toast.error(error.message);
+            toast.error(authErrorMessage(error));
           }
           return;
         }
@@ -135,7 +154,7 @@ const Auth = () => {
         });
 
         if (error) {
-          toast.error(error.message);
+          toast.error(authErrorMessage(error));
           return;
         }
 
@@ -157,7 +176,7 @@ const Auth = () => {
         });
 
         if (error) {
-          toast.error(error.message);
+          toast.error(authErrorMessage(error));
           return;
         }
 
@@ -166,7 +185,7 @@ const Auth = () => {
       }
     } catch (error: any) {
       console.error('Auth error:', error);
-      toast.error('Something went wrong. Please try again.');
+      toast.error(authErrorMessage(error));
     } finally {
       setLoading(false);
     }
