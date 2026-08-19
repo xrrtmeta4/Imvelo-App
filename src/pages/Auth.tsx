@@ -27,11 +27,11 @@ function isNetworkError(error: any): boolean {
 }
 
 function authErrorMessage(error: any): string {
+  const raw = String(error?.message || '').slice(0, 160);
   if (isNetworkError(error)) {
-    const base = 'Could not reach the server. Please check your internet connection and try again.';
-    return import.meta.env.DEV ? `${base}\n(${SUPABASE_URL})` : base;
+    return `Could not reach the server (${SUPABASE_URL}). ${raw || 'Check your connection.'}`;
   }
-  return error?.message || 'Something went wrong. Please try again.';
+  return raw || 'Something went wrong. Please try again.';
 }
 
 const signupSchema = z.object({

@@ -441,6 +441,18 @@ const Profile = () => {
               </Button>
             </a>
 
+            <a
+              href="https://imveloagriacademy.vercel.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full mt-4 inline-flex"
+            >
+              <Button variant="outline" className="w-full gap-2">
+                <ExternalLink className="w-4 h-4" />
+                Imvelo Agri Academy
+              </Button>
+            </a>
+
             <Button
               variant="destructive"
               className="w-full mt-4"
