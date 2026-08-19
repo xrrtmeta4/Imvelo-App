@@ -18,8 +18,28 @@ function resolveEnv(key: 'VITE_SUPABASE_URL' | 'VITE_SUPABASE_PUBLISHABLE_KEY'):
 
 export const FALLBACK_URL = FALLBACK_URL_CONST;
 export const FALLBACK_KEY = FALLBACK_KEY_CONST;
-export const SUPABASE_URL = resolveEnv('VITE_SUPABASE_URL') || FALLBACK_URL_CONST;
-export const SUPABASE_KEY = resolveEnv('VITE_SUPABASE_PUBLISHABLE_KEY') || FALLBACK_KEY_CONST;
+
+/**
+ * Resolve the URL + key as an inseparable PAIR from the same project.
+ * A partial override (URL without key, or key without URL) points at a
+ * mismatched project and causes "invalid api key" on login, so we only honour
+ * the deployment values when BOTH are present.
+ */
+function resolvePairedConfig(): SupabaseConfig {
+  const envUrl = resolveEnv('VITE_SUPABASE_URL');
+  const envKey = resolveEnv('VITE_SUPABASE_PUBLISHABLE_KEY');
+  if (envUrl && envKey) return { url: envUrl, key: envKey };
+  if (envUrl || envKey) {
+    console.warn(
+      '[supabase] VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY must both be set ' +
+        '(same project). Only one was found; using the default project to avoid an "invalid api key" error.',
+    );
+  }
+  return { url: FALLBACK_URL_CONST, key: FALLBACK_KEY_CONST };
+}
+
+export const SUPABASE_URL = resolvePairedConfig().url;
+export const SUPABASE_KEY = resolvePairedConfig().key;
 
 const REQUEST_TIMEOUT_MS = 15000;
 const MAX_RETRIES = 2;
@@ -126,32 +146,55 @@ async function isReachable(url: string, timeoutMs = 6000): Promise<boolean> {
 }
 
 /**
- * Decide which project to use.
+ * Verify that `key` is a valid API key for the given Supabase `url`.
+ * A valid key returns 200 on /auth/v1/health; a mismatched/stale/invalid key
+ * returns 401 {"message":"Invalid API key"}. This catches the "invalid api key"
+ * login error caused by pairing a URL with a key from a different project.
+ */
+async function isKeyValid(url: string, key: string, timeoutMs = 6000): Promise<boolean> {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const res = await fetch(`${url}/auth/v1/health`, {
+      signal: ctrl.signal,
+      headers: { apikey: key },
+    });
+    return res.ok;
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
+ * Decide which (url, key) PROJECT PAIR to use.
  *
- * Starts from the known-good FALLBACK project. If a deployment supplies a
- * different VITE_SUPABASE_URL, we only switch to it when it is actually
- * reachable — otherwise we keep the known-good project so login doesn't fail
- * with a raw "Failed to fetch". This makes a misconfigured deploy self-heal.
+ * Always keeps URL + key from the same project (a mismatch causes
+ * "invalid api key" on login). If a deployment-supplied project is set but
+ * unreachable, we fall back to the known-good default (as a pair).
  */
 export async function resolveConfig(): Promise<SupabaseConfig> {
-  const envUrl = resolveEnv('VITE_SUPABASE_URL');
-  const envKey = resolveEnv('VITE_SUPABASE_PUBLISHABLE_KEY');
+  const cfg = resolvePairedConfig();
 
-  if (envUrl && envUrl !== FALLBACK_URL) {
-    const ok = await isReachable(envUrl);
-    if (ok) {
-      console.info(`[supabase] using deployment project ${envUrl}`);
-      return { url: envUrl, key: envKey || FALLBACK_KEY };
+  // If a non-default project is configured, only keep it if the key is valid
+  // for that project (this also implies reachability — an unreachable URL
+  // makes isKeyValid reject). A mismatched/stale key would otherwise cause
+  // "invalid api key" on login, so we fall back to the known-good project.
+  if (cfg.url !== FALLBACK_URL_CONST) {
+    const keyValid = await isKeyValid(cfg.url, cfg.key);
+    if (keyValid) {
+      console.info(`[supabase] using deployment project ${cfg.url}`);
+      return cfg;
     }
-    const fbOk = await isReachable(FALLBACK_URL);
     console.warn(
-      `[supabase] VITE_SUPABASE_URL (${envUrl}) is unreachable; ` +
-        `falling back to ${FALLBACK_URL}${fbOk ? '' : ' (also unreachable — check network)'}`,
+      `[supabase] ${cfg.url} has no valid API key for this project (or is unreachable); ` +
+        `falling back to ${FALLBACK_URL_CONST}. Verify VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY match.`,
     );
-    return { url: FALLBACK_URL, key: FALLBACK_KEY };
+    return { url: FALLBACK_URL_CONST, key: FALLBACK_KEY_CONST };
   }
 
-  return { url: envUrl || FALLBACK_URL, key: envKey || FALLBACK_KEY };
+  return cfg;
 }
 
 export function createSupabaseClient(url: string = SUPABASE_URL, key: string = SUPABASE_KEY): SupabaseClient {
