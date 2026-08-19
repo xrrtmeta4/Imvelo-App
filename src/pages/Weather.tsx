@@ -97,7 +97,13 @@ const Weather = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <header className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground py-8 px-4">
+      <header
+        className="text-primary-foreground py-8 px-4 bg-center bg-cover bg-no-repeat"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.55)), url('/78f900962723d82d797116f367942994.jpg')",
+        }}
+      >
         <div className="max-w-screen-sm mx-auto text-center">
           <Cloud className="w-12 h-12 mx-auto mb-4" />
           <h1 className="text-3xl font-bold">{t('weather')}</h1>
