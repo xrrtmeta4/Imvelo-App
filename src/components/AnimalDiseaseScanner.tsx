@@ -35,7 +35,7 @@ const AnimalDiseaseScanner = () => {
 
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `animal-disease/${user.id}/${Date.now()}.${fileExt}`;
+      const fileName = `${user.id}/animal-disease/${Date.now()}.${fileExt}`;
       
       const { error: uploadError } = await supabase.storage
         .from('pest-images')

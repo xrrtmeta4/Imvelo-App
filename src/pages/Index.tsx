@@ -7,7 +7,7 @@ import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/lib/supabase';
-import { Sprout, Crown, Store, Users, Phone, Sparkles, AlertTriangle } from 'lucide-react';
+import { Sprout, Crown, Store, Users, Phone, Sparkles, AlertTriangle, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -132,6 +132,26 @@ const Index = () => {
                 </p>
                 <span className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-primary">
                   Open chat →
+                </span>
+              </div>
+            </div>
+          </button>
+
+          <button
+            onClick={() => window.open('https://imveloagriacademy.vercel.app', '_blank', 'noopener,noreferrer')}
+            className="w-full text-left rounded-xl border border-border bg-card p-4 hover:bg-accent/50 transition-colors"
+          >
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-primary/15">
+                <GraduationCap className="w-5 h-5 text-primary" />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-sm text-foreground">Imvelo Agri Academy</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Learn farming with courses and certified training from Imvelo.
+                </p>
+                <span className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-primary">
+                  Open academy →
                 </span>
               </div>
             </div>

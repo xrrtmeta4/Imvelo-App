@@ -32,7 +32,7 @@ const SoilScanner = () => {
 
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `soil-analysis/${user.id}/${Date.now()}.${fileExt}`;
+      const fileName = `${user.id}/soil-analysis/${Date.now()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from('pest-images')

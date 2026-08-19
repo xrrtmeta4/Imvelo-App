@@ -31,7 +31,7 @@ const ProduceEstimator = () => {
 
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `produce-estimate/${user.id}/${Date.now()}.${fileExt}`;
+      const fileName = `${user.id}/produce-estimate/${Date.now()}.${fileExt}`;
       
       const { error: uploadError } = await supabase.storage
         .from('pest-images')
