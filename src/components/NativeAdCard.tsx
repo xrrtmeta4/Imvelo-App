@@ -16,45 +16,35 @@ export default function NativeAdCard() {
   const [debug, setDebug] = useState<string | null>(
     import.meta.env.MODE === 'development' ? 'checking availability…' : null
   );
+  const [key, setKey] = useState(0);
 
   useEffect(() => {
-    if (!isNativeAdAvailable()) {
-      setState('error');
-      setDebug(
-        import.meta.env.MODE === 'development'
-          ? 'ImveloNativeAd plugin not registered on this platform' : null
-      );
-      return;
-    }
-    setDebug(import.meta.env.MODE === 'development' ? 'loading native ad…' : null);
-
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
-    loadNativeAd()
-      .then((res) => {
-        if (cancelled) return;
-        if (res) {
-          setAsset(res);
-          setState('ready');
-          setDebug(null);
-        } else {
-          setState('error');
-          setDebug(
-            import.meta.env.MODE === 'development'
-              ? 'loadNativeAd resolved null (plugin not available or load failed)'
-              : null
-          );
-        }
-      })
-      .catch(() => {
-        if (cancelled) return;
+    (async () => {
+      if (!isNativeAdAvailable()) {
         setState('error');
         setDebug(
           import.meta.env.MODE === 'development'
-            ? 'loadNativeAd threw an error'
+            ? 'ImveloNativeAd plugin not registered on this platform'
             : null
         );
-      });
+        return;
+      }
+      setDebug(import.meta.env.MODE === 'development' ? 'loading native ad…' : null);
+
+      const { asset: loaded, error } = await loadNativeAd();
+      if (cancelled) return;
+
+      if (loaded) {
+        setAsset(loaded);
+        setState('ready');
+        setDebug(null);
+      } else {
+        setState('error');
+        setDebug(error);
+      }
+    })();
 
     timer = setTimeout(() => {
       if (cancelled) return;
@@ -73,6 +63,14 @@ export default function NativeAdCard() {
       if (timer) clearTimeout(timer);
     };
   }, []);
+
+  const handleRetry = () => {
+    setState('loading');
+    setDebug(null);
+    setAsset(null);
+    // Force re-run the effect by toggling a key.
+    setKey((k) => k + 1);
+  };
 
   useEffect(() => () => { void destroyNativeAd(); }, []);
 
