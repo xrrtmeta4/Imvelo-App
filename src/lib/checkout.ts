@@ -8,44 +8,81 @@ export interface CheckoutBody {
   redirect_url?: string;
   cancel_url?: string;
   payment_methods?: string[];
+  success_url?: string;
 }
+
+interface CheckoutResponse {
+  checkout_url?: string;
+  session_id?: string;
+  error?: string;
+}
+
+const POST_OPTIONS = (body: CheckoutBody) => ({
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    product_id: body.product_id,
+    product_name: body.product_name || '',
+    customer_email: body.customer_email,
+    customer_name: body.customer_name,
+    success_url: body.redirect_url || body.success_url,
+    cancel_url: body.cancel_url,
+    return_url: body.redirect_url || body.success_url,
+  }),
+});
 
 /**
  * Start a Dodo checkout and return the checkout URL.
  *
- * Primary path: Supabase Edge Function `create-checkout` (works on Vercel and
- * needs DODO_PAYMENTS_API_KEY set as a Supabase secret).
- * Fallback: Express server `/api/payments/checkout` (used in local/dev or when
- * the Express server is self-hosted and has the key in server/.env).
+ * Primary path: Vercel serverless function `/api/create-checkout`, which reads
+ * DODO_PAYMENTS_API_KEY from the deployment environment (Vercel env vars).
+ * Fallbacks: Supabase Edge Function `create-checkout`, then a self-hosted
+ * Express server at `/api/payments/checkout`.
  */
 export async function startDodoCheckout(body: CheckoutBody): Promise<string> {
+  const opts = POST_OPTIONS(body);
+
+  // 1) Vercel serverless function (uses Vercel env vars)
+  try {
+    const res = await fetch('/api/create-checkout', opts);
+    let data: CheckoutResponse = {};
+    try {
+      data = await res.json();
+    } catch {
+      /* ignore */
+    }
+    if (res.ok && data.checkout_url) {
+      return data.checkout_url;
+    }
+    if (!res.ok && res.status < 500 && data?.error) {
+      throw new Error(data.error);
+    }
+    console.warn('[checkout] /api/create-checkout unavailable:', res.status, data?.error);
+  } catch (e) {
+    console.warn('[checkout] /api/create-checkout threw:', e);
+  }
+
+  // 2) Supabase Edge Function
   try {
     const { data, error } = await supabase.functions.invoke('create-checkout', { body });
     if (!error && data?.checkout_url) {
       return data.checkout_url;
     }
-    console.warn('[checkout] Edge Function unavailable:', error?.message || data?.error);
+    console.warn('[checkout] Edge Function unavailable:', error?.message || (data as { error?: string } | null)?.error);
   } catch (e) {
     console.warn('[checkout] Edge Function threw:', e);
   }
 
+  // 3) Express fallback (self-hosted / local dev)
   try {
-    const res = await fetch('/api/payments/checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        product_id: body.product_id,
-        product_name: body.product_name || '',
-        amount: 37,
-        currency: 'USD',
-        customer_email: body.customer_email,
-        customer_name: body.customer_name,
-        success_url: body.redirect_url,
-        cancel_url: body.cancel_url,
-      }),
-    });
-    const data = await res.json();
-    if (res.ok && data?.checkout_url) {
+    const res = await fetch('/api/payments/checkout', opts);
+    let data: CheckoutResponse = {};
+    try {
+      data = await res.json();
+    } catch {
+      /* ignore */
+    }
+    if (res.ok && data.checkout_url) {
       return data.checkout_url;
     }
     if (data?.error) throw new Error(data.error);

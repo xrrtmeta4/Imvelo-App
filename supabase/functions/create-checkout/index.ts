@@ -35,7 +35,8 @@ serve(async (req) => {
 
     let payload: Record<string, unknown>;
     try {
-      payload = await req.json();
+      const text = await req.text();
+      payload = text ? (JSON.parse(text) as Record<string, unknown>) : {};
     } catch (e) {
       console.error('Invalid JSON payload', e);
       return new Response(JSON.stringify({ error: 'Invalid JSON payload' }), {
