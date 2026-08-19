@@ -9,7 +9,6 @@ import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { useAuth } from '@/hooks/useAuth';
 import PaymentLogos from '@/components/PaymentLogos';
 import { openDodoOverlay } from '@/lib/dodoCheckout';
-import { supabase } from '@/lib/supabase';
 
 const PREMIUM_PRODUCT_ID = 'pdt_0NYZaqcOARihEXXOPIdmC';
 const PREMIUM_PRICE = 37;
@@ -59,22 +58,17 @@ const Upgrade = () => {
 
       const customerName = user?.user_metadata?.full_name || userName || 'Customer';
 
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: {
-          product_id: PREMIUM_PRODUCT_ID,
-          product_name: 'Premium Plan',
-          customer_email: customerEmail,
-          customer_name: customerName,
-          redirect_url: window.location.origin + '/upgrade?success=true',
-          cancel_url: window.location.origin + '/upgrade',
-        },
+      const { startDodoCheckout } = await import('@/lib/checkout');
+      const checkoutUrl = await startDodoCheckout({
+        product_id: PREMIUM_PRODUCT_ID,
+        product_name: 'Premium Plan',
+        customer_email: customerEmail,
+        customer_name: customerName,
+        redirect_url: window.location.origin + '/upgrade?success=true',
+        cancel_url: window.location.origin + '/upgrade',
       });
 
-      if (error || !data?.checkout_url) {
-        throw new Error(error?.message || data?.error || 'Payment gateway is unavailable. Please try again later.');
-      }
-
-      await openDodoOverlay(data.checkout_url, () => setLoading(false));
+      await openDodoOverlay(checkoutUrl, () => setLoading(false));
     } catch (err: any) {
       console.error('[Upgrade] Checkout error:', err);
       toast.error(err?.message || 'Failed to start checkout. Please try again.');

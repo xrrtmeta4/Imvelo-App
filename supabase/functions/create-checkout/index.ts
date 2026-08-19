@@ -17,11 +17,20 @@ serve(async (req) => {
     const apiBase = isTestMode ? 'https://test.dodopayments.com' : 'https://live.dodopayments.com';
 
     if (!apiKey) {
-      console.error('Missing DODO_PAYMENTS_API_KEY secret');
-      return new Response(JSON.stringify({ error: 'DODO_PAYMENTS_API_KEY not configured on server' }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      const fix = 'supabase secrets set DODO_PAYMENTS_API_KEY=<your_dodo_live_key>';
+      console.error('Missing DODO_PAYMENTS_API_KEY secret. Fix with:', fix);
+      return new Response(
+        JSON.stringify({
+          error:
+            'DODO_PAYMENTS_API_KEY is not set as a Supabase secret. Run: ' +
+            fix,
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
+    }
+
+    if (isTestMode) {
+      console.warn('DODO_PAYMENTS_ENV is "test" but the provided key is a LIVE key; use live mode.');
     }
 
     let payload: Record<string, unknown>;
