@@ -62,7 +62,7 @@ export default function NativeAdCard() {
       cancelled = true;
       if (timer) clearTimeout(timer);
     };
-  }, []);
+  }, [key]);
 
   const handleRetry = () => {
     setState('loading');
