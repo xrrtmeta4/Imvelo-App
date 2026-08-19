@@ -85,14 +85,9 @@ export const openDodoOverlay = async (checkoutUrl: string, onOpened?: () => void
   const ready = await loadDodoSdk();
 
   if (!ready || !window.DodoPaymentsCheckout?.DodoPayments) {
-    const popup = window.open(
-      checkoutUrl,
-      'dodo-checkout',
-      'width=500,height=700,scrollbars=yes,resizable=yes,location=no,menubar=no'
-    );
-    if (!popup) {
-      window.location.href = checkoutUrl;
-    }
+    // Full-screen redirect so the user always sees the full payment method UI
+    // (cards, Google Pay, Apple Pay, Amazon Pay as available in their region).
+    window.location.href = checkoutUrl;
     onOpened?.();
     return;
   }
@@ -131,14 +126,7 @@ export const openDodoOverlay = async (checkoutUrl: string, onOpened?: () => void
     onOpened?.();
   } catch (error) {
     console.error('[dodoCheckout] Failed to open overlay:', error);
-    const popup = window.open(
-      checkoutUrl,
-      'dodo-checkout',
-      'width=500,height=700,scrollbars=yes,resizable=yes,location=no,menubar=no'
-    );
-    if (!popup) {
-      window.location.href = checkoutUrl;
-    }
+    window.location.href = checkoutUrl;
     onOpened?.();
   }
 };
