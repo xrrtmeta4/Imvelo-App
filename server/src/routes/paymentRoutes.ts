@@ -22,7 +22,7 @@ router.post('/checkout', async (req: any, res: any) => {
 
     const defaultMethods = process.env.DODO_PAYMENT_METHODS
       ? process.env.DODO_PAYMENT_METHODS.split(',').map(m => m.trim()).filter(Boolean)
-      : ['credit', 'debit', 'apple_pay', 'google_pay'];
+       : ['credit', 'debit', 'google_pay', 'amazon_pay'];
 
     const methods = (Array.isArray(payment_methods) && payment_methods.length > 0)
       ? payment_methods

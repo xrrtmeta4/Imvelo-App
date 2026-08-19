@@ -60,8 +60,8 @@ serve(async (req) => {
     const defaultGlobalMethods = [
       'credit',
       'debit',
-      'apple_pay',
       'google_pay',
+      'amazon_pay',
     ];
 
     const methods = (Array.isArray(payment_methods) && payment_methods.length > 0)

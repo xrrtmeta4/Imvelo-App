@@ -50,17 +50,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
-    const defaultMethods = Array.isArray(process.env.DODO_PAYMENT_METHODS)
-      ? (process.env.DODO_PAYMENT_METHODS as unknown as string[]).split(',').map((m) => m.trim()).filter(Boolean)
-      : typeof process.env.DODO_PAYMENT_METHODS === 'string'
-        ? String(process.env.DODO_PAYMENT_METHODS).split(',').map((m) => m.trim()).filter(Boolean)
-        : ['credit', 'debit', 'apple_pay', 'google_pay'];
-
-    const fallbackMethods = ['credit', 'debit', 'apple_pay', 'google_pay'];
+    const defaultMethods = ['credit', 'debit', 'google_pay', 'amazon_pay'];
     const methods =
       Array.isArray(payment_methods) && payment_methods.length > 0
         ? (payment_methods as string[])
-        : (defaultMethods.length ? defaultMethods : fallbackMethods);
+        : defaultMethods;
 
     const body: Record<string, unknown> = {
       product_cart: [{ product_id, quantity: 1 }],
