@@ -35,7 +35,7 @@ serve(async (req) => {
       });
     }
 
-    const { product_id, customer_email, customer_name, redirect_url, payment_methods } = payload;
+    const { product_id, customer_email, customer_name, redirect_url, success_url, cancel_url, payment_methods } = payload;
 
     if (!product_id) {
       console.error('Missing product_id in payload');
@@ -64,7 +64,9 @@ serve(async (req) => {
     };
 
     if (customer_email) body.customer = { email: customer_email, name: customer_name || undefined };
-    if (redirect_url) body.return_url = redirect_url;
+    const returnUrl = redirect_url || success_url || cancel_url;
+    if (returnUrl) body.return_url = returnUrl;
+    body.metadata = { email: customer_email, name: customer_name, product_id };
 
     console.log('Creating Dodo checkout for product:', product_id, 'methods:', methods.length, 'env:', dodoEnvironment);
 

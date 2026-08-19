@@ -220,26 +220,19 @@ export const useUsageLimits = () => {
     }
 
     try {
-      const response = await fetch('/api/payments/checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: {
           product_id: productId,
           product_name: targetPlan,
-          amount: 37,
-          currency: 'SZL',
           customer_email: customerEmail,
           customer_name: user?.user_metadata?.full_name || 'Customer',
-          success_url: window.location.origin + '/upgrade?success=true',
+          redirect_url: window.location.origin + '/upgrade?success=true',
           cancel_url: window.location.origin + '/upgrade',
-        }),
+        },
       });
 
-      const data = await response.json();
-      if (!response.ok || !data?.checkout_url) {
-        throw new Error(data?.error || 'Payment gateway is unavailable. Please try again later.');
+      if (error || !data?.checkout_url) {
+        throw new Error(error?.message || data?.error || 'Payment gateway is unavailable. Please try again later.');
       }
 
       const { openDodoOverlay } = await import('@/lib/dodoCheckout');
@@ -275,6 +268,7 @@ export const useUsageLimits = () => {
     hasFeature,
     loadingPremium,
     getFormattedPrice,
+    refreshPremiumStatus: checkPremiumStatus,
     PLANS,
   };
 };
