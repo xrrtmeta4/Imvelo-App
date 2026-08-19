@@ -2,12 +2,10 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Gift, PauseCircle, PlayCircle, RefreshCw } from 'lucide-react';
 import { useAdMob, addAdMobListener } from '@/hooks/useAdMob';
-import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { toast } from 'sonner';
 
 export default function AdBanner() {
   const { available, ready, showBanner, hideBanner, showInterstitial, showRewarded } = useAdMob();
-  const { isPremium } = useUsageLimits();
   const [rewardedLoading, setRewardedLoading] = useState(false);
   const [interstitialLoading, setInterstitialLoading] = useState(false);
 
@@ -25,44 +23,15 @@ export default function AdBanner() {
   }, []);
 
   useEffect(() => {
-    if (!ready || isPremium) {
-      if (!ready) hideBanner();
+    if (!ready) {
+      void hideBanner();
       return;
     }
     void showBanner();
     return () => {
       void hideBanner();
     };
-  }, [ready, isPremium, showBanner, hideBanner]);
-
-  if (!available || isPremium) return null;
-
-  const handleRewarded = async () => {
-    setRewardedLoading(true);
-    try {
-      const res = await showRewarded();
-      if (res.earned) {
-        toast.success(`Reward earned: ${res.rewardType} x${res.rewardAmount}`);
-      } else {
-        toast.error('Reward not earned. Please watch the full video.');
-      }
-    } catch (e) {
-      console.debug('[AdMob] rewarded error', e);
-    } finally {
-      setRewardedLoading(false);
-    }
-  };
-
-  const handleInterstitial = async () => {
-    setInterstitialLoading(true);
-    try {
-      await showInterstitial();
-    } catch (e) {
-      console.debug('[AdMob] interstitial error', e);
-    } finally {
-      setInterstitialLoading(false);
-    }
-  };
+  }, [ready, showBanner, hideBanner]);
 
   if (!ready) {
     return (
