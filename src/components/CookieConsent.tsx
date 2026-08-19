@@ -1,7 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Cookie, Shield, BarChart2, HelpCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
 
 const STORAGE_KEY = 'imvelo_cookie_consent';
 
@@ -177,9 +176,13 @@ export const CookieConsent = () => {
           </div>
 
           <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
-            <Link to="/privacy-policy" onClick={() => setVisible(false)} className="underline hover:text-foreground">
+            <a
+              href="/privacy-policy"
+              onClick={() => setVisible(false)}
+              className="underline hover:text-foreground"
+            >
               Cookie Policy
-            </Link>
+            </a>
             <button
               type="button"
               onClick={() => setShowManage((v) => !v)}
