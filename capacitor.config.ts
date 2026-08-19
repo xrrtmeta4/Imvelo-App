@@ -12,6 +12,7 @@ const config: CapacitorConfig = {
     PushNotifications: {
       presentationOptions: ['badge', 'sound', 'alert']
     },
+    AdMob: {},
     SplashScreen: {
       launchShowDuration: 1500,
       launchAutoHide: true,

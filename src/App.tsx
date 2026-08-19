@@ -50,6 +50,7 @@ const WeatherFeature = lazy(() => import("./pages/features/WeatherFeature"));
 const AnalysisFeature = lazy(() => import("./pages/features/AnalysisFeature"));
 import { SettingsProvider } from "./hooks/useSettings";
 import TalkBack from "./components/TalkBack";
+import AdBanner from "./components/AdBanner";
 import MobileNav from "./components/MobileNav";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import SubscriptionPopup from "./components/SubscriptionPopup";
@@ -123,9 +124,10 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
      <TooltipProvider>
        <Toaster />
-       <Sonner />
-      <PWAInstallPrompt />
-      <BrowserRouter>
+        <Sonner />
+       <PWAInstallPrompt />
+       <AdBanner />
+       <BrowserRouter>
         <CookieConsent />
         <AuthProvider>
           <LanguageProvider>
