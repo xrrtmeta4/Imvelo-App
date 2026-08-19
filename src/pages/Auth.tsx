@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
+import { SUPABASE_URL } from '@/lib/supabaseConfig';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -27,7 +28,8 @@ function isNetworkError(error: any): boolean {
 
 function authErrorMessage(error: any): string {
   if (isNetworkError(error)) {
-    return 'Could not reach the server. Please check your internet connection and try again.';
+    const base = 'Could not reach the server. Please check your internet connection and try again.';
+    return import.meta.env.DEV ? `${base}\n(${SUPABASE_URL})` : base;
   }
   return error?.message || 'Something went wrong. Please try again.';
 }

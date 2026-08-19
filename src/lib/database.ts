@@ -1,6 +1,6 @@
-import { createSupabaseClient } from './supabaseConfig';
+import { supabase } from './supabase';
 
-export const supabase = createSupabaseClient();
+export { supabase };
 
 export async function checkSupabaseHealth(): Promise<boolean> {
   try {
