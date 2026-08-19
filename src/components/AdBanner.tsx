@@ -22,7 +22,7 @@ export default function AdBanner() {
     });
   }, []);
 
-  useEffect(() => {
+   useEffect(() => {
     if (!ready) {
       void hideBanner();
       return;
@@ -32,6 +32,33 @@ export default function AdBanner() {
       void hideBanner();
     };
   }, [ready, showBanner, hideBanner]);
+
+  const handleRewarded = async () => {
+    setRewardedLoading(true);
+    try {
+      const res = await showRewarded();
+      if (res?.earned) {
+        toast.success(`Reward earned: ${res.rewardType} x${res.rewardAmount}`);
+      } else {
+        toast.error('Reward not earned. Please watch the full video.');
+      }
+    } catch (e) {
+      console.debug('[AdMob] rewarded error', e);
+    } finally {
+      setRewardedLoading(false);
+    }
+  };
+
+  const handleInterstitial = async () => {
+    setInterstitialLoading(true);
+    try {
+      await showInterstitial();
+    } catch (e) {
+      console.debug('[AdMob] interstitial error', e);
+    } finally {
+      setInterstitialLoading(false);
+    }
+  };
 
   if (!ready) {
     return (
