@@ -52,7 +52,11 @@ const DisasterWatch = () => {
       if (error) throw error;
       setPredictions(data?.predictions || []);
       setImminent(data?.imminent || []);
-      setConfidence(`${((data?.predictions?.reduce((a: number, p: Prediction) => a + p.confidence, 0) / Math.max(1, (data?.predictions || []).length) * 10) | 0)}0% avg accuracy`);
+      const preds: Prediction[] = data?.predictions || [];
+      const avgConf = preds.length
+        ? Math.round(preds.reduce((a, p) => a + p.confidence, 0) / preds.length)
+        : 0;
+      setConfidence(`${avgConf}% avg model confidence`);
     } catch (e: any) {
       console.error('DisasterWatch error:', e);
       toast.error('Could not load the 4-day outlook. Showing last cached data.');

@@ -85,6 +85,7 @@ const ProduceEstimator = () => {
   const [result, setResult] = useState<any>(null);
   const [indices, setIndices] = useState<any>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [sourceFile, setSourceFile] = useState<File | null>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
 
   const remaining = getRemainingDetections();
@@ -106,6 +107,7 @@ const ProduceEstimator = () => {
   const handleFile = (file: File) => {
     if (!canUseDetection()) { showLimitReached('scan'); return; }
     const url = URL.createObjectURL(file);
+    setSourceFile(file);
     setPreviewUrl(url);
     setResult(null);
     setIndices(null);
@@ -124,11 +126,14 @@ const ProduceEstimator = () => {
 
     setAnalyzing(true);
     try {
-      // Upload to storage (same bucket as pest-images)
-      const file = await (await fetch(previewUrl)).blob();
-      const fileName = `stress-ir/${user.id}/${Date.now()}.jpg`;
+      if (!sourceFile) throw new Error('No source image file');
+      const fileExt = sourceFile.name.split('.').pop() || 'jpg';
+      const fileName = `stress-ir/${user.id}/${Date.now()}.${fileExt}`;
       const { error: uploadError } = await supabase
-        .storage.from('pest-images').upload(fileName, file, { contentType: 'image/jpeg', upsert: true });
+        .storage.from('pest-images').upload(fileName, sourceFile, {
+          contentType: sourceFile.type || 'image/jpeg',
+          upsert: true,
+        });
       if (uploadError) throw uploadError;
       const { data: { publicUrl } } = supabase.storage.from('pest-images').getPublicUrl(fileName);
 

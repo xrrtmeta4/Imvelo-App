@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Droplets, Leaf } from 'lucide-react';
+import { ArrowLeft, Droplets, Leaf, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -27,6 +27,15 @@ const Analysis = () => {
       iconBg: 'bg-emerald-500/15',
       iconColor: 'text-emerald-600',
       border: 'border-emerald-500/20',
+    },
+    {
+      icon: ShieldCheck,
+      title: t('Disaster Watch'),
+      desc: t('4-day hazard outlook powered by ERA5. Warnings up to 4 days ahead, plus imminent alerts.'),
+      path: '/climate-risk',
+      iconBg: 'bg-red-500/15',
+      iconColor: 'text-red-500',
+      border: 'border-red-500/20',
     },
   ];
 
