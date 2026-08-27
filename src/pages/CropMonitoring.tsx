@@ -1,5 +1,5 @@
  
- import { useState } from 'react';
+ import { useState, useEffect } from 'react';
  import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
  import { Button } from '@/components/ui/button';
  import { Input } from '@/components/ui/input';
@@ -9,9 +9,10 @@
  import { Leaf, Camera, Upload, Loader2, AlertTriangle, CheckCircle, Droplets, Zap, Bug, TrendingUp, TrendingDown } from 'lucide-react';
  import { supabase } from '@/lib/supabase';
  import { toast } from 'sonner';
- import { useAuth } from '@/hooks/useAuth';
- import { useUsageLimits } from '@/hooks/useUsageLimits';
- import { format } from 'date-fns';
+import { useAuth } from '@/hooks/useAuth';
+import { useUsageLimits } from '@/hooks/useUsageLimits';
+import { useLocation } from '@/hooks/useLocation';
+import { format } from 'date-fns';
  
  const cropTypes = [
    'Maize', 'Sorghum', 'Beans', 'Groundnuts', 'Sweet Potatoes', 
@@ -29,9 +30,17 @@
    const [result, setResult] = useState<any>(null);
    const [cropType, setCropType] = useState('');
    const [plantingDate, setPlantingDate] = useState('');
-   const [expectedStage, setExpectedStage] = useState('');
- 
-   const remaining = getRemainingDetections();
+    const [expectedStage, setExpectedStage] = useState('');
+    const { getLocation } = useLocation();
+    const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(null);
+
+    useEffect(() => {
+      getLocation({ preferGps: false })
+        .then((loc) => setCoords({ latitude: loc.latitude, longitude: loc.longitude }))
+        .catch(() => {});
+    }, [getLocation]);
+
+    const remaining = getRemainingDetections();
  
    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
      if (!e.target.files || !e.target.files[0] || !user) return;
@@ -59,14 +68,16 @@
          .from('pest-images')
          .getPublicUrl(fileName);
  
-       const { data, error } = await supabase.functions.invoke('analyze-crop-health', {
-         body: { 
-           imageUrl: publicUrl,
-           cropType,
-           plantingDate,
-           expectedGrowthStage: expectedStage
-         }
-       });
+        const { data, error } = await supabase.functions.invoke('analyze-crop-health', {
+          body: { 
+            imageUrl: publicUrl,
+            cropType,
+            plantingDate,
+            expectedGrowthStage: expectedStage,
+            latitude: coords?.latitude,
+            longitude: coords?.longitude
+          }
+        });
  
        if (error) throw error;
  

@@ -1,31 +1,93 @@
  import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
  
- const corsHeaders = {
-   'Access-Control-Allow-Origin': '*',
-   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
- };
- 
- serve(async (req) => {
+const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
+  };
+
+  const sevenDaysAgoISO = () => {
+    const d = new Date();
+    d.setDate(d.getDate() - 7);
+    return d.toISOString().slice(0, 10);
+  };
+
+  // Collapse the daily ERA5 arrays into a compact summary the LLM can reason over.
+  const summarizeEra5 = (daily: Record<string, any[] | null>, crop: string, planted: string | null) => {
+    const n = (daily?.time?.length ?? 0);
+    if (n === 0) return null;
+    const last = (k: string) => daily[k]?.[n - 1];
+    const sum = (k: string) => daily[k]?.reduce((a: number, v: number) => a + (v ?? 0), 0) ?? 0;
+    const avg = (k: string, dec = 1) => {
+      const s = sum(k);
+      return +(s / n).toFixed(dec);
+    };
+    return {
+      period: `${daily.time?.[0]} → ${daily.time?.[n - 1]}`,
+      crop,
+      plantingDate: planted ?? 'unknown',
+      totalPrecip_mm: +sum('precipitation_sum').toFixed(1),
+      totalET0_mm: +sum('et0_fao_evapotranspiration').toFixed(1),
+      meanMaxTemp_C: avg('temperature_2m_max', 1),
+      meanMinTemp_C: avg('temperature_2m_min', 1),
+      meanShortwaveRadiation_MJ: avg('shortwave_radiation_sum', 0),
+      meanSoilMoisture_pct: +((avg('soil_moisture_0_to_7cm', 4) * 100)).toFixed(1),
+      waterBalance_mm: +((sum('precipitation_sum') - sum('et0_fao_evapotranspiration')).toFixed(1)),
+    };
+  };
+
+  serve(async (req) => {
    if (req.method === 'OPTIONS') {
      return new Response(null, { headers: corsHeaders });
    }
  
-   try {
-     const { imageUrl, cropType, plantingDate, expectedGrowthStage } = await req.json();
-     const LOVABLE_API_KEY_LOV = Deno.env.get('LOVABLE_API_KEY');
-    const GEMINI_KEY = Deno.env.get('Gemini');
-    const USE_LOVABLE = !GEMINI_KEY && !!LOVABLE_API_KEY_LOV;
-    const LOVABLE_API_KEY = GEMINI_KEY || LOVABLE_API_KEY_LOV;
-    const AI_URL = USE_LOVABLE ? 'https://ai.gateway.lovable.dev/v1/chat/completions' : 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
-    const AI_MODEL_PREFIX = USE_LOVABLE ? 'google/' : '';
-     
-     if (!LOVABLE_API_KEY) {
-       throw new Error('Gemini API key is not configured');
-     }
- 
-     console.log("Analyzing crop health for:", cropType, "planted:", plantingDate);
- 
-     const systemPrompt = `You are an expert agricultural scientist specializing in crop phenotyping and precision agriculture. 
+    try {
+      const { imageUrl, cropType, plantingDate, expectedGrowthStage, latitude, longitude } = await req.json();
+      const LOVABLE_API_KEY_LOV = Deno.env.get('LOVABLE_API_KEY');
+     const GEMINI_KEY = Deno.env.get('Gemini');
+     const USE_LOVABLE = !GEMINI_KEY && !!LOVABLE_API_KEY_LOV;
+     const LOVABLE_API_KEY = GEMINI_KEY || LOVABLE_API_KEY_LOV;
+     const AI_URL = USE_LOVABLE ? 'https://ai.gateway.lovable.dev/v1/chat/completions' : 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
+     const AI_MODEL_PREFIX = USE_LOVABLE ? 'google/' : '';
+
+      if (!LOVABLE_API_KEY) {
+        throw new Error('Gemini API key is not configured');
+      }
+
+      console.log("Analyzing crop health for:", cropType, "planted:", plantingDate);
+
+      // Fetch ERA5 reanalysis (Copernicus CDS) weather context for the farm location
+      // over the 7 days preceding the image. Open-Meteo serves ERA5-Single-Levels
+      // variables (precipitation, evapotranspiration, soil moisture, temperature,
+      // radiation) without requiring an API key — mirrors the cdsapi ERA5 request.
+      let weatherContext: any = null;
+      if (latitude != null && longitude != null) {
+        try {
+          const era5Url = new URL('https://archive-api.open-meteo.com/v1/era5');
+          era5Url.searchParams.set('latitude', String(latitude));
+          era5Url.searchParams.set('longitude', String(longitude));
+          era5Url.searchParams.set('start_date', sevenDaysAgoISO());
+          era5Url.searchParams.set('end_date', new Date().toISOString().slice(0, 10));
+          era5Url.searchParams.set('daily', [
+            'temperature_2m_max',
+            'temperature_2m_min',
+            'precipitation_sum',
+            'et0_fao_evapotranspiration',
+            'shortwave_radiation_sum',
+            'soil_moisture_0_to_7cm',
+          ].join(','));
+          era5Url.searchParams.set('timezone', 'auto');
+          const wresp = await fetch(era5Url.toString());
+          if (wresp.ok) {
+            const wjson = await wresp.json();
+            weatherContext = summarizeEra5(wjson.daily, cropType, plantingDate || null);
+            console.log('ERA5 context for crop-health:', weatherContext);
+          }
+        } catch (e) {
+          console.warn('ERA5 fetch failed (non-fatal):', e);
+        }
+      }
+
+      const systemPrompt = `You are an expert agricultural scientist specializing in crop phenotyping and precision agriculture.
  Analyze crop images to detect:
  1. Current growth stage (seedling, vegetative, flowering, fruiting, maturity)
  2. Nutrient deficiencies (nitrogen, phosphorus, potassium, iron, magnesium, etc.)
@@ -66,10 +128,29 @@
    "confidence": number (1-100)
  }`;
  
-     const userPrompt = `Analyze this crop image for phenotype-level health assessment:
+      const userPrompt = `Analyze this crop image for phenotype-level health assessment:
  - Crop type: ${cropType || 'Unknown'}
  - Planting date: ${plantingDate || 'Unknown'}
  - Expected growth stage: ${expectedGrowthStage || 'Unknown'}
+ - Location: ${latitude != null && longitude != null ? `${latitude}, ${longitude}` : 'not provided'}
+
+${weatherContext
+        ? `## ERA5 reanalysis weather context (last 7 days at this location, Copernicus CDS)
+ - Period: ${weatherContext.period}
+ - Total precipitation: ${weatherContext.totalPrecip_mm} mm
+ - Reference crop ET0 (evapotranspiration): ${weatherContext.totalET0_mm} mm
+ - Water balance (precip − ET0): ${weatherContext.waterBalance_mm} mm
+ - Mean daily max temp: ${weatherContext.meanMaxTemp_C} °C / min: ${weatherContext.meanMinTemp_C} °C
+ - Mean short-wave radiation: ${weatherContext.meanShortwaveRadiation_MJ} MJ/m²/day
+ - Mean top-soil moisture (0–7cm): ${weatherContext.meanSoilMoisture_pct}%
+
+Use the ERA5 water balance to disambiguate observed stress:
+ - A negative water balance (precip < ET0) plus wilting leaves → drought stress, NOT a pest/disease issue.
+ - Adequate/surplus rainfall with localized chlorosis → nutrient deficiency (leaching from excess rain).
+ - Adequate water with high radiation and heat → heat/water demand stress.
+Ground any watering recommendation in the ERA5 numbers above.`
+        : '## No weather context available (location not provided).'}
+`}
  
  Image URL: ${imageUrl}
  
