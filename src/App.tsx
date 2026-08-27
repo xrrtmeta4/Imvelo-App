@@ -27,7 +27,6 @@ const About = lazy(() => import("./pages/About"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const PesticideCalendar = lazy(() => import("./pages/PesticideCalendar"));
 const CropMonitoring = lazy(() => import("./pages/CropMonitoring"));
-const ClimateRisk = lazy(() => import("./pages/ClimateRisk"));
 const Upgrade = lazy(() => import("./pages/Upgrade"));
 const SmartIrrigation = lazy(() => import("./pages/SmartIrrigation"));
 const LivestockManager = lazy(() => import("./pages/LivestockManager"));
@@ -153,7 +152,6 @@ const App = () => (
             <Route path="/water-conservation" element={<ProtectedRoute><WaterConservation /></ProtectedRoute>} />
             <Route path="/pesticide-calendar" element={<ProtectedRoute><PesticideCalendar /></ProtectedRoute>} />
             <Route path="/crop-monitoring" element={<ProtectedRoute><CropMonitoring /></ProtectedRoute>} />
-            <Route path="/climate-risk" element={<ProtectedRoute><ClimateRisk /></ProtectedRoute>} />
             <Route path="/upgrade" element={<ProtectedRoute><Upgrade /></ProtectedRoute>} />
             <Route path="/smart-irrigation" element={<ProtectedRoute><SmartIrrigation /></ProtectedRoute>} />
             <Route path="/livestock" element={<ProtectedRoute><LivestockManager /></ProtectedRoute>} />

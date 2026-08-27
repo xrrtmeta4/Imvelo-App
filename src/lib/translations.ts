@@ -39,7 +39,7 @@ const en: Record<string, string> = {
   // Index / Home
   farmersBestFriend: "Farmer's Best Friend", upgrade: 'Upgrade Plan',
   cropMonitor: 'Crop Monitor', climateRisk: 'Climate Risk',
-  aiHealthScan: 'AI health scan', volatilityEngine: 'Volatility engine',
+  aiHealthScan: 'AI health scan',
   healthScan: 'Health Scan', pestSoilDisease: 'Pest, soil, disease',
   irrigation: 'Irrigation', rainWaterAdvisor: 'Rain & water advisor',
   livestock: 'Livestock', trackManage: 'Track & manage',

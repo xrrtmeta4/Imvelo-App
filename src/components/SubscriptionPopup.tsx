@@ -10,7 +10,7 @@ const popupMessages = [
   { icon: Shield, title: "Protect Your Farm", description: "Higher plans give you instant AI-powered diagnostics anytime. Early detection saves crops!" },
   { icon: Zap, title: "More AI Assistance", description: "Ask the AI assistant more questions about farming, weather, and best practices!" },
   { icon: BarChart3, title: "Track Your Finances", description: "Pro members can access the Digital Ledger to track expenses, income, and export financial reports!" },
-  { icon: FileText, title: "Advanced Analytics", description: "Premium members get crop monitoring, climate risk analysis, and unlimited access to everything!" }
+  { icon: FileText, title: "Advanced Analytics", description: "Premium members get crop monitoring, irrigation planning, and unlimited access to everything!" }
 ];
 
 interface SubscriptionPopupProps {

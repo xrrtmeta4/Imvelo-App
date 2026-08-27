@@ -899,7 +899,7 @@ const DigitalLedgerContent = () => {
             {activeTab === 'advisor' && !hasFeature('aiAdvisory') ? (
               <div className="text-center py-10 space-y-4">
                 <p className="text-sm font-semibold text-foreground">AI Financial Advisory is a Premium feature</p>
-                <p className="text-xs text-muted-foreground">Your ledger stays free — upgrade to unlock Chloe's financial advisory, climate volatility and smart irrigation.</p>
+                <p className="text-xs text-muted-foreground">Your ledger stays free — upgrade to unlock Chloe's financial advisory & smart irrigation.</p>
                 <Button onClick={() => navigate('/upgrade')} className="gap-2">Upgrade to Premium</Button>
               </div>
             ) : activeTab === 'advisor' ? (

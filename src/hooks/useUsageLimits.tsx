@@ -42,7 +42,7 @@ export const PLANS = {
     dailyChats: 2,
     maxLedgerEntries: Infinity,
     maxSprayEntries: Infinity,
-    features: ['1 scan per day', '2 AI chats per day', 'AI financial advisory', 'Climate volatility engine', 'Smart irrigation planner', '7-day weather forecast', 'Farming tips', 'Unlimited spray scheduling', 'Unlimited digital ledger', 'Produce estimation', 'Crop monitoring (phenotype)', 'Livestock manager', 'Harvest tracker', 'Market price alerts', 'Farm inventory', 'Carbon score', 'Post-harvest guide', 'Priority support'],
+    features: ['1 scan per day', '2 AI chats per day', 'AI financial advisory', '7-day weather forecast', 'Water & irrigation insight', 'Farming tips', 'Unlimited spray scheduling', 'Unlimited digital ledger', 'Produce estimation', 'Crop monitoring (phenotype)', 'Livestock manager', 'Harvest tracker', 'Market price alerts', 'Farm inventory', 'Carbon score', 'Post-harvest guide', 'Priority support'],
   },
   enterprise: {
     name: 'Enterprise',
@@ -52,7 +52,7 @@ export const PLANS = {
     dailyChats: Infinity,
     maxLedgerEntries: Infinity,
     maxSprayEntries: Infinity,
-    features: ['Unlimited pest, soil & disease scans', 'Unlimited AI chat messages', 'Unlimited produce estimation', 'Unlimited ledger entries', 'Unlimited spray schedules', 'Full 7-day weather forecast', 'AI financial advisory', 'Climate volatility engine', 'Smart irrigation planner', 'Market price alerts', 'Farm inventory', 'Crop monitoring (phenotype)', 'Livestock manager', 'Harvest tracker', 'Carbon score', 'Post-harvest guide', 'Priority support'],
+    features: ['Unlimited pest, soil & disease scans', 'Unlimited AI chat messages', 'Unlimited produce estimation', 'Unlimited ledger entries', 'Unlimited spray schedules', 'Full 7-day weather forecast', 'AI financial advisory', 'Smart irrigation planner', 'Market price alerts', 'Farm inventory', 'Crop monitoring (phenotype)', 'Livestock manager', 'Harvest tracker', 'Carbon score', 'Post-harvest guide', 'Priority support'],
   },
 };
 

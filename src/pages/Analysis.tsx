@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, CloudLightning, Droplets, Leaf } from 'lucide-react';
+import { ArrowLeft, Droplets, Leaf } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -10,15 +10,6 @@ const Analysis = () => {
   const { t } = useLanguage();
 
   const tools = [
-    {
-      icon: CloudLightning,
-      title: t('climateRisk'),
-      desc: t('volatilityEngine'),
-      path: '/climate-risk',
-      iconBg: 'bg-destructive/15',
-      iconColor: 'text-destructive',
-      border: 'border-destructive/20',
-    },
     {
       icon: Droplets,
       title: t('Smart Irrigation Planner'),

@@ -135,7 +135,7 @@ Provide a complete irrigation plan with daily schedule, water deficit analysis, 
           consensusFrom: ok.length,
         };
       } else {
-        analysis = await callModel('gemini-3-flash-preview').catch(() => callModel('gemini-2.5-flash'));
+        analysis = await callModel('gemini-2.5-flash-lite').catch(() => callModel('gemini-2.5-flash'));
       }
       if (!analysis) throw new Error('No JSON found');
     } catch (e) {
