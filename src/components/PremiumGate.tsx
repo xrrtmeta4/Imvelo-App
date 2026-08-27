@@ -1,7 +1,7 @@
 import { Crown, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { useUsageLimits, PlanTier, PLANS } from '@/hooks/useUsageLimits';
+import { useUsageLimits, PlanTier, PLANS, PLAN_ORDER } from '@/hooks/useUsageLimits';
 import { useNavigate } from 'react-router-dom';
 
 interface PremiumGateProps {
@@ -16,9 +16,8 @@ const PremiumGate = ({ feature, requiredPlan, children }: PremiumGateProps) => {
 
   if (loadingPremium) return null;
 
-  const planOrder: PlanTier[] = ['free', 'starter', 'premium'];
-  const currentIndex = planOrder.indexOf(currentPlan);
-  const requiredIndex = planOrder.indexOf(requiredPlan);
+  const currentIndex = PLAN_ORDER.indexOf(currentPlan);
+  const requiredIndex = PLAN_ORDER.indexOf(requiredPlan);
 
   if (currentIndex >= requiredIndex) return <>{children}</>;
 

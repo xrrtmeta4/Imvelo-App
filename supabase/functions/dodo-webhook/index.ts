@@ -174,6 +174,8 @@ serve(async (req) => {
     const PRODUCT_PLAN_MAP: Record<string, string> = {
       'pdt_0NVKhwZKeJCCaRbxoTNno': 'starter',
       'pdt_0NYZaqcOARihEXXOPIdmC': 'premium',
+      'pdt_0NYZaqcOARihEXXOPIdmC_commercial': 'commercial',
+      'pdt_0NYZaqcOARihEXXOPIdmC_enterprise': 'enterprise',
     };
 
     // Handle payment completed event
