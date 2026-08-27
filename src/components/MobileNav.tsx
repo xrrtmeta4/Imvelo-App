@@ -1,4 +1,4 @@
-import { Home, Bug, BookOpen, Settings, BarChart3 } from 'lucide-react';
+import { Home, Bug, BookOpen, Settings, BarChart3, AlertTriangle } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLanguage } from '@/hooks/useLanguage';
 
@@ -9,6 +9,7 @@ const MobileNav = () => {
     { to: '/', icon: Home, label: t('home') },
     { to: '/scanner', icon: Bug, label: t('scan') },
     { to: '/analysis', icon: BarChart3, label: 'Analysis' },
+    { to: '/climate-risk', icon: AlertTriangle, label: 'Disasters' },
     { to: '/ledger', icon: BookOpen, label: t('ledger') },
     { to: '/settings', icon: Settings, label: t('settings') },
   ];

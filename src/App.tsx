@@ -42,6 +42,7 @@ const KnowledgeGraphExplorer = lazy(() => import("./pages/KnowledgeGraphExplorer
 const Settings = lazy(() => import("./pages/Settings"));
 const UssdSimulator = lazy(() => import("./pages/UssdSimulator"));
 const Analysis = lazy(() => import("./pages/Analysis"));
+const DisasterWatch = lazy(() => import("./pages/DisasterWatch"));
 const Campaigns = lazy(() => import("./pages/Campaigns"));
 const AIChat = lazy(() => import("./pages/AIChat"));
 const ScannerFeature = lazy(() => import("./pages/features/ScannerFeature"));
@@ -68,6 +69,7 @@ const prefetchRoutes = () => {
   void import("./pages/Weather");
   void import("./pages/Scanner");
   void import("./pages/Analysis");
+  void import("./pages/DisasterWatch");
   void import("./pages/AIChat");
   void import("./pages/Settings");
 };
@@ -167,6 +169,7 @@ const App = () => (
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/ussd" element={<ProtectedRoute><UssdSimulator /></ProtectedRoute>} />
             <Route path="/analysis" element={<ProtectedRoute><Analysis /></ProtectedRoute>} />
+            <Route path="/climate-risk" element={<ProtectedRoute><DisasterWatch /></ProtectedRoute>} />
             <Route path="/campaigns" element={<ProtectedRoute><Campaigns /></ProtectedRoute>} />
             <Route path="/ai-chat" element={<ProtectedRoute><AIChat /></ProtectedRoute>} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
