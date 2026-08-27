@@ -56,6 +56,9 @@ import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import SubscriptionPopup from "./components/SubscriptionPopup";
 import AppTutorial from "./components/AppTutorial";
 import CookieConsent from "./components/CookieConsent";
+import AdSenseLoader from "./components/AdSenseLoader";
+import { useAdsense } from "./hooks/useAdsense";
+import { useAdsense } from "./hooks/useAdsense";
 import { useInteractionTracker } from "./hooks/useInteractionTracker";
 import ErrorBoundary from "./components/ErrorBoundary";
 
@@ -130,6 +133,7 @@ const App = () => (
        <BrowserRouter>
         <CookieConsent />
         <AuthProvider>
+          <AdSenseLoader />
           <LanguageProvider>
           <SettingsProvider>
           <RoutePrefetcher />
