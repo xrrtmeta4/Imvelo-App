@@ -37,7 +37,7 @@ async function verifyWebhookSignature(payload: string, signature: string, secret
 }
 
 // Send premium activation email using fetch (no external npm dependency)
-async function sendPremiumEmail(email: string, name: string): Promise<void> {
+async function sendPremiumEmail(email: string, name: string, planName: string): Promise<void> {
   const resendApiKey = Deno.env.get('RESEND_API_KEY');
   
   if (!resendApiKey) {
@@ -64,12 +64,12 @@ async function sendPremiumEmail(email: string, name: string): Promise<void> {
       <div class="container">
         <div class="header">
           <div class="logo">🌾</div>
-          <h1>Welcome to Premium!</h1>
+          <h1>Welcome to ${planName}!</h1>
           <p>Farmer's Best Friend</p>
         </div>
         <div class="content">
           <p>Dear ${name || 'Valued Farmer'},</p>
-          <p>Thank you for upgrading to <strong>Imvelo Premium</strong>! Your subscription is now active and you have access to all premium features:</p>
+          <p>Thank you for upgrading to <strong>Imvelo ${planName}</strong>! Your subscription is now active and you have access to all ${planName} features:</p>
           
           <div class="feature">✅ <strong style="margin-left: 10px;">Unlimited AI Pest & Disease Detection</strong></div>
           <div class="feature">✅ <strong style="margin-left: 10px;">Unlimited AI Chat Conversations</strong></div>
@@ -172,10 +172,9 @@ serve(async (req) => {
 
     // Map product IDs to plan tiers
     const PRODUCT_PLAN_MAP: Record<string, string> = {
-      'pdt_0NVKhwZKeJCCaRbxoTNno': 'starter',
       'pdt_0NYZaqcOARihEXXOPIdmC': 'premium',
-      'pdt_0NYZaqcOARihEXXOPIdmC_commercial': 'commercial',
-      'pdt_0NYZaqcOARihEXXOPIdmC_enterprise': 'enterprise',
+      'pdt_0NVKhwZKeJCCaRbxoTNno': 'commercial',
+      'pdt_0NYZb3ccdGubedVQypzZn': 'enterprise',
     };
 
     // Handle payment completed event
@@ -270,7 +269,8 @@ serve(async (req) => {
           }
 
           // Send premium activation email
-          await sendPremiumEmail(customerEmail, userName);
+          const planName = plan.charAt(0).toUpperCase() + plan.slice(1);
+          await sendPremiumEmail(customerEmail, userName, planName);
 
           return new Response(JSON.stringify({ 
             success: true, 

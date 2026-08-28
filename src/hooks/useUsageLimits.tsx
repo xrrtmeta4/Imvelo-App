@@ -12,8 +12,8 @@ export const PRODUCT_IDS: Record<PlanTier, string> = {
   free: '',
   starter: '',
   premium: 'pdt_0NYZaqcOARihEXXOPIdmC',
-  commercial: 'pdt_0NYZaqcOARihEXXOPIdmC_commercial',
-  enterprise: 'pdt_0NYZaqcOARihEXXOPIdmC_enterprise',
+  commercial: 'pdt_0NVKhwZKeJCCaRbxoTNno',
+  enterprise: 'pdt_0NYZb3ccdGubedVQypzZn',
 };
 
 export const PLANS: Record<PlanTier, {
