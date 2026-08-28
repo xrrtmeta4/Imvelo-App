@@ -29,3 +29,7 @@ server/.env
 *.sln
 *.sw?
 supabase/.temp/
+
+# TS build info
+*.tsbuildinfo
+tsconfig*.tsbuildinfo

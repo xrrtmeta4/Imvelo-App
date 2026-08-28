@@ -8,7 +8,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-webhook-signature, dodo-signature',
 };
 
-// Verify webhook signature using simple string comparison
+// Verify webhook signature using HMAC-SHA256 (timing-safe comparison).
 async function verifyWebhookSignature(payload: string, signature: string, secret: string): Promise<boolean> {
   try {
     const encoder = new TextEncoder();
@@ -19,27 +19,39 @@ async function verifyWebhookSignature(payload: string, signature: string, secret
       false,
       ["sign"]
     );
-    
+
     const signatureBuffer = await crypto.subtle.sign(
       "HMAC",
       key,
       encoder.encode(payload)
     );
-    
+
     const expectedSignature = new TextDecoder().decode(encode(new Uint8Array(signatureBuffer)));
-    
-    // Simple string comparison (timing-safe comparison is ideal but this is sufficient for most cases)
-    return signature === expectedSignature;
+
+    // Constant-time comparison to avoid timing attacks.
+    if (expectedSignature.length !== signature.length) return false;
+    let mismatch = 0;
+    for (let i = 0; i < expectedSignature.length; i++) {
+      mismatch |= expectedSignature.charCodeAt(i) ^ signature.charCodeAt(i);
+    }
+    return mismatch === 0;
   } catch (error) {
     console.error('Signature verification error:', error);
     return false;
   }
 }
 
+// Map product IDs to plan tiers (single source of truth, mirrors src/lib/products.ts).
+const PRODUCT_PLAN_MAP: Record<string, string> = {
+  'pdt_0NYZaqcOARihEXXOPIdmC': 'premium',
+  'pdt_0NVKhwZKeJCCaRbxoTNno': 'commercial',
+  'pdt_0NYZb3ccdGubedVQypzZn': 'enterprise',
+};
+
 // Send premium activation email using fetch (no external npm dependency)
 async function sendPremiumEmail(email: string, name: string, planName: string): Promise<void> {
   const resendApiKey = Deno.env.get('RESEND_API_KEY');
-  
+
   if (!resendApiKey) {
     console.log('RESEND_API_KEY not configured, skipping email notification');
     return;
@@ -70,15 +82,15 @@ async function sendPremiumEmail(email: string, name: string, planName: string): 
         <div class="content">
           <p>Dear ${name || 'Valued Farmer'},</p>
           <p>Thank you for upgrading to <strong>Imvelo ${planName}</strong>! Your subscription is now active and you have access to all ${planName} features:</p>
-          
+
           <div class="feature">✅ <strong style="margin-left: 10px;">Unlimited AI Pest & Disease Detection</strong></div>
           <div class="feature">✅ <strong style="margin-left: 10px;">Unlimited AI Chat Conversations</strong></div>
           <div class="feature">✅ <strong style="margin-left: 10px;">Unlimited Produce Estimation</strong></div>
           <div class="feature">✅ <strong style="margin-left: 10px;">Priority Weather Alerts</strong></div>
           <div class="feature">✅ <strong style="margin-left: 10px;">Premium Support</strong></div>
-          
+
           <p>Start exploring your unlimited access now and take your farming to the next level!</p>
-          
+
           <p style="margin-top: 30px;">Happy Farming! 🌱</p>
           <p><strong>The Imvelo Team</strong></p>
         </div>
@@ -138,7 +150,7 @@ serve(async (req) => {
     }
 
     const payload = await req.text();
-    
+
     // SECURITY: Signature verification is mandatory
     const signature = req.headers.get('dodo-signature') || req.headers.get('x-webhook-signature');
     if (!signature) {
@@ -170,155 +182,146 @@ serve(async (req) => {
     }
     console.log('Dodo Payment webhook received:', JSON.stringify(payloadJson, null, 2));
 
-    // Map product IDs to plan tiers
-    const PRODUCT_PLAN_MAP: Record<string, string> = {
-      'pdt_0NYZaqcOARihEXXOPIdmC': 'premium',
-      'pdt_0NVKhwZKeJCCaRbxoTNno': 'commercial',
-      'pdt_0NYZb3ccdGubedVQypzZn': 'enterprise',
-    };
+    const eventType: string = payloadJson.type || payloadJson.event_type || 'unknown';
 
-    // Handle payment completed event
-    if (payloadJson.type === 'payment.succeeded' || payloadJson.type === 'payment_intent.succeeded' || payloadJson.event_type === 'payment.completed') {
-      const paymentData = payloadJson.data || payloadJson;
-      
-      const customerEmail = paymentData.customer_email || 
-                           paymentData.customer?.email || 
-                           paymentData.metadata?.email ||
-                           paymentData.billing_details?.email;
-      
-      const customerName = paymentData.customer_name ||
-                          paymentData.customer?.name ||
-                          paymentData.metadata?.name ||
-                          paymentData.billing_details?.name;
-      
-      const paymentReference = paymentData.payment_id || 
-                               paymentData.id || 
-                               paymentData.payment_intent_id;
+    const isSuccess =
+      eventType === 'payment.succeeded' ||
+      eventType === 'payment_intent.succeeded' ||
+      eventType === 'payment.completed';
 
-      // Determine plan from product ID
-      const productId = paymentData.product_id || paymentData.metadata?.product_id || '';
-      const plan = PRODUCT_PLAN_MAP[productId] || 'starter';
+    const isFailure =
+      eventType === 'payment.failed' ||
+      eventType === 'payment_intent.failed' ||
+      eventType === 'payment.failed';
 
-      console.log('Processing payment for email:', customerEmail);
-      console.log('Payment reference:', paymentReference);
+    const isCancelled =
+      eventType === 'payment.cancelled' ||
+      eventType === 'payment_intent.cancelled';
 
-      if (customerEmail) {
-        // Find user by email
-        const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
-        
-        if (authError) {
-          console.error('Error fetching users:', authError);
-          throw authError;
-        }
+    // Only act on terminal payment events.
+    if (!isSuccess && !isFailure && !isCancelled) {
+      return new Response(JSON.stringify({ success: true, message: 'Event received (ignored)' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      });
+    }
 
-        const user = authUsers.users.find(u => u.email === customerEmail);
+    const paymentData = payloadJson.data || payloadJson;
 
-        if (user) {
-          console.log('Found user:', user.id);
-          
-          // Get user profile for name
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('full_name')
-            .eq('id', user.id)
-            .maybeSingle();
-          
-          const userName = profile?.full_name || customerName || 'Valued Farmer';
-          
-          // Check if subscription already exists
-          const { data: existingSub } = await supabase
-            .from('premium_subscriptions')
-            .select('id')
-            .eq('user_id', user.id)
-            .maybeSingle();
+    const customerEmail =
+      paymentData.customer_email ||
+      paymentData.customer?.email ||
+      paymentData.metadata?.email ||
+      paymentData.billing_details?.email;
 
-          if (existingSub) {
-            // Update existing subscription
-            const { error: updateError } = await supabase
-              .from('premium_subscriptions')
-              .update({
-                status: 'active',
-                payment_reference: paymentReference,
-                expires_at: null,
-                plan: plan
-              })
-              .eq('user_id', user.id);
+    const customerName =
+      paymentData.customer_name ||
+      paymentData.customer?.name ||
+      paymentData.metadata?.name ||
+      paymentData.billing_details?.name;
 
-            if (updateError) {
-              console.error('Error updating subscription:', updateError);
-              throw updateError;
-            }
-            console.log('Updated existing subscription for user:', user.id);
-          } else {
-            // Create new subscription
-            const { error: insertError } = await supabase
-              .from('premium_subscriptions')
-              .insert({
-                user_id: user.id,
-                status: 'active',
-                payment_reference: paymentReference,
-                expires_at: null,
-                plan: plan
-              });
+    const paymentReference =
+      paymentData.metadata?.payment_reference ||
+      paymentData.payment_id ||
+      paymentData.id ||
+      paymentData.payment_intent_id;
 
-            if (insertError) {
-              console.error('Error creating subscription:', insertError);
-              throw insertError;
-            }
-            console.log('Created new subscription for user:', user.id);
-          }
+    const productId = paymentData.product_id || paymentData.metadata?.product_id || '';
+    const plan = PRODUCT_PLAN_MAP[productId] || 'premium';
 
-          // Send premium activation email
-          const planName = plan.charAt(0).toUpperCase() + plan.slice(1);
-          await sendPremiumEmail(customerEmail, userName, planName);
+    if (!customerEmail) {
+      console.log('No customer email found in payload');
+      return new Response(JSON.stringify({ success: false, message: 'No customer email in payload' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      });
+    }
 
-          return new Response(JSON.stringify({ 
-            success: true, 
-            message: 'Subscription activated',
-            user_id: user.id 
-          }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 200
-          });
-        } else {
-          console.log('User not found for email:', customerEmail);
-          return new Response(JSON.stringify({ 
-            success: false, 
-            message: 'User not found for email' 
-          }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 200 // Return 200 to acknowledge receipt
-          });
-        }
-      } else {
-        console.log('No customer email found in payload');
-        return new Response(JSON.stringify({ 
-          success: false, 
-          message: 'No customer email in payload' 
-        }), {
+    // Find user by email
+    const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
+    if (authError) {
+      console.error('Error fetching users:', authError);
+      throw authError;
+    }
+    const user = authUsers.users.find((u: any) => u.email === customerEmail);
+    if (!user) {
+      console.log('User not found for email:', customerEmail);
+      return new Response(JSON.stringify({ success: false, message: 'User not found for email' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      });
+    }
+
+    const { data: existingSub } = await supabase
+      .from('premium_subscriptions')
+      .select('id, status, payment_reference, plan')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (isSuccess) {
+      // IDEMPOTENCY: if this exact payment was already applied, do not
+      // re-activate or re-send the welcome email.
+      if (existingSub && existingSub.status === 'active' && existingSub.payment_reference === paymentReference) {
+        console.log('Webhook already processed for payment_reference', paymentReference);
+        return new Response(JSON.stringify({ success: true, message: 'Already activated', user_id: user.id }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200
+          status: 200,
         });
+      }
+
+      const wasAlreadyActive = existingSub && existingSub.status === 'active';
+      const { error: writeError } = await supabase
+        .from('premium_subscriptions')
+        .upsert(
+          {
+            user_id: user.id,
+            status: 'active',
+            payment_reference: paymentReference,
+            expires_at: null,
+            plan,
+          },
+          { onConflict: 'user_id' },
+        );
+
+      if (writeError) {
+        console.error('Error writing subscription:', writeError);
+        throw writeError;
+      }
+      console.log('Activated subscription for user', user.id, 'plan', plan);
+
+      // Only send the welcome email for a genuinely new activation.
+      if (!wasAlreadyActive) {
+        const profileRes = await supabase.from('profiles').select('full_name').eq('id', user.id).maybeSingle();
+        const userName = profileRes.data?.full_name || customerName || 'Valued Farmer';
+        const planName = plan.charAt(0).toUpperCase() + plan.slice(1);
+        await sendPremiumEmail(customerEmail, userName, planName);
+      }
+    } else {
+      // Failed / cancelled: only revert if this payment matches the active row,
+      // so we never accidentally downgrade a different (valid) subscription.
+      if (existingSub && existingSub.payment_reference === paymentReference) {
+        const { error: writeError } = await supabase
+          .from('premium_subscriptions')
+          .update({ status: isCancelled ? 'cancelled' : 'failed', payment_reference: paymentReference })
+          .eq('user_id', user.id);
+        if (writeError) {
+          console.error('Error updating subscription status:', writeError);
+          throw writeError;
+        }
+        console.log('Marked subscription', isCancelled ? 'cancelled' : 'failed', 'for user', user.id);
       }
     }
 
-    // Acknowledge other event types
-    return new Response(JSON.stringify({ 
-      success: true, 
-      message: 'Event received' 
-    }), {
+    return new Response(JSON.stringify({ success: true, message: 'Processed', user_id: user.id }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200
+      status: 200,
     });
-
   } catch (error: unknown) {
     console.error('Webhook error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    return new Response(JSON.stringify({ 
-      error: errorMessage 
-    }), {
+    return new Response(JSON.stringify({ error: errorMessage }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 500
+      status: 500,
     });
   }
 });

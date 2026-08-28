@@ -1,10 +1,18 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { isKnownProduct, getProduct, PRODUCT_PLAN_MAP } from '../src/lib/products';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, content-type, x-webhook-signature',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
+
+function newPaymentReference(): string {
+  const uuid =
+    (globalThis as any).crypto?.randomUUID?.() ||
+    `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  return `pay_${uuid}`;
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'OPTIONS') {
@@ -45,10 +53,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return_url,
     } = (req.body || {}) as Record<string, unknown>;
 
-    if (!product_id) {
-      res.status(400).json({ error: 'product_id is required' });
+    // The backend is the authority on which products are valid and how much
+    // they cost. Never trust an amount sent from the client.
+    if (!product_id || !isKnownProduct(product_id as string)) {
+      res.status(400).json({ error: 'Unknown or missing product_id.' });
       return;
     }
+
+    const product = getProduct(product_id as string)!;
+    const paymentReference = newPaymentReference();
 
     const defaultMethods = ['credit', 'debit', 'google_pay', 'amazon_pay'];
     const methods =
@@ -56,15 +69,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         ? (payment_methods as string[])
         : defaultMethods;
 
+    // The return URL is where Dodo sends the user after the (in-app) checkout
+    // completes. It must NOT contain any "success" flag — activation is driven
+    // exclusively by the verified webhook, never by the redirect target.
+    const returnUrl =
+      (return_url || redirect_url || success_url || cancel_url || `${req.headers.origin || ''}/upgrade`) as string;
+
     const body: Record<string, unknown> = {
       product_cart: [{ product_id, quantity: 1 }],
       allowed_payment_method_types: methods,
+      // Correlate the Dodo checkout with our internal reference so the webhook
+      // can map the event back to this payment.
+      metadata: {
+        email: customer_email,
+        name: customer_name,
+        product_id,
+        plan: PRODUCT_PLAN_MAP[product_id as string] || product.plan,
+        payment_reference: paymentReference,
+      },
     };
 
     if (customer_email) body.customer = { email: customer_email, name: customer_name || undefined };
-    const returnUrl = return_url || redirect_url || success_url || cancel_url;
     if (returnUrl) body.return_url = returnUrl;
-    body.metadata = { email: customer_email, name: customer_name, product_id };
 
     const response = await fetch(`${apiBase}/checkouts`, {
       method: 'POST',
@@ -96,9 +122,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       res.setHeader(k, v as string);
     }
 
+    // Return the internal payment reference alongside Dodo's checkout info so
+    // the client can poll status and the webhook can reconcile the event.
     res.status(200).json({
+      payment_id: paymentReference,
       checkout_url: (data.checkout_url as string | undefined) ?? undefined,
       session_id: (data.session_id as string | undefined) ?? undefined,
+      amount: product.price,
+      currency: product.currency,
+      plan: product.plan,
     });
   } catch (error: unknown) {
     console.error('Checkout server error:', error);

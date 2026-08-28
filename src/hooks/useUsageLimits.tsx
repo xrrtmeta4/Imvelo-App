@@ -3,6 +3,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { safeJsonParse } from '@/lib/safeJson';
+import { createPayment, getPaymentStatus } from '@/lib/payment';
+import { openDodoCheckout } from '@/lib/dodoCheckout';
 
 export type PlanTier = 'free' | 'starter' | 'premium' | 'commercial' | 'enterprise';
 
@@ -119,6 +121,7 @@ export const useUsageLimits = () => {
   });
   const [currentPlan, setCurrentPlan] = useState<PlanTier>('free');
   const [loadingPremium, setLoadingPremium] = useState(true);
+  const [creatingPayment, setCreatingPayment] = useState(false);
 
   const checkPremiumStatus = useCallback(async () => {
     if (!user) {
@@ -147,38 +150,25 @@ export const useUsageLimits = () => {
     }
   }, [user]);
 
-  // Webhook-free activation: after a successful Dodo checkout the app is
-  // redirected back with ?success=true&plan=<tier>. We write the caller's own
-  // subscription row (allowed by the "Users can manage own subscription" RLS
-  // policy). The Dodo webhook remains the authoritative source and will
-  // overwrite this on delivery.
-  const activatePlan = useCallback(async (plan: PlanTier) => {
-    if (!user) return false;
-    if (plan === 'free' || plan === 'starter') return false;
-    try {
-      const { error } = await supabase
-        .from('premium_subscriptions')
-        .upsert(
-          {
-            user_id: user.id,
-            status: 'active',
-            payment_reference: `client_${Date.now()}`,
-            expires_at: null,
-            plan,
-          },
-          { onConflict: 'user_id' },
-        );
-      if (error) {
-        console.error('[activatePlan] upsert error:', error);
-        return false;
+  // IMPORTANT: subscription activation is performed ONLY by the backend (the
+  // verified Dodo webhook, or a server-side status check). The client never
+  // grants premium access. After the in-app checkout completes we simply poll
+  // the backend for the authoritative status.
+  const pollUntilActive = useCallback(
+    async (paymentId?: string) => {
+      for (let attempt = 0; attempt < 12; attempt++) {
+        await new Promise((r) => setTimeout(r, 2000));
+        await checkPremiumStatus();
+        if (paymentId) {
+          const status = await getPaymentStatus(paymentId);
+          if (status && ['successful', 'failed', 'cancelled', 'refunded', 'expired'].includes(status.status)) {
+            break;
+          }
+        }
       }
-      setCurrentPlan(plan);
-      return true;
-    } catch (e) {
-      console.error('[activatePlan] error:', e);
-      return false;
-    }
-  }, [user]);
+    },
+    [checkPremiumStatus],
+  );
 
   const loadUsage = useCallback(() => {
     if (!user) return;
@@ -279,7 +269,10 @@ export const useUsageLimits = () => {
   const openUpgrade = async (planOrEvent?: PlanTier | React.MouseEvent, paymentMethods?: string[]) => {
     const targetPlan = (typeof planOrEvent === 'string' ? planOrEvent : undefined) || getNextPlan();
     const productId = PRODUCT_IDS[targetPlan];
-    if (!productId) return;
+    if (!productId) {
+      toast.error('This plan is not available for purchase.');
+      return;
+    }
 
     const customerEmail = user?.email;
     if (!customerEmail) {
@@ -287,26 +280,32 @@ export const useUsageLimits = () => {
       return;
     }
 
+    setCreatingPayment(true);
     try {
-      const { startDodoCheckout } = await import('@/lib/checkout');
-      const checkoutUrl = await startDodoCheckout({
-        product_id: productId,
-        product_name: targetPlan,
-        customer_email: customerEmail,
-        customer_name: user?.user_metadata?.full_name || 'Customer',
-        redirect_url: window.location.origin + `/upgrade?success=true&plan=${targetPlan}`,
-        cancel_url: window.location.origin + '/upgrade',
+      // Ask our backend to create the Dodo checkout (server-side, with the
+      // authoritative product/price). The backend returns an in-app checkout
+      // URL and an internal payment reference.
+      const result = await createPayment({
+        productId,
+        customerEmail,
+        customerName: user?.user_metadata?.full_name || 'Customer',
+        paymentMethods,
+        returnUrl: window.location.origin + '/upgrade',
       });
 
-      // Use the Dodo REST API strictly: the create-checkout call above already
-      // hit the Dodo API; we now send the browser directly to the returned
-      // checkout_url (a full navigation) instead of embedding Dodo's hosted
-      // checkout overlay HTML. This also fixes the "non-stop loading" — the
-      // page navigates away on success, and any failure is caught below.
-      window.location.href = checkoutUrl;
+      // Open the checkout IN-APP. The user never leaves the application and we
+      // never redirect to a hosted checkout link. Activation is performed only
+      // by the verified backend webhook (polled below), never by the client.
+      await openDodoCheckout(result.checkoutUrl, {
+        onCompleted: () => {
+          void pollUntilActive(result.paymentId);
+        },
+      });
     } catch (err: any) {
       console.error('[openUpgrade] Checkout error:', err);
       toast.error(err?.message || 'Failed to start checkout. Please try again.');
+    } finally {
+      setCreatingPayment(false);
     }
   };
 
@@ -327,7 +326,7 @@ export const useUsageLimits = () => {
     getRemainingDetections,
     getRemainingChats,
     openUpgrade,
-    activatePlan,
+    creatingPayment,
     isPremium,
     currentPlan,
     hasFeature,

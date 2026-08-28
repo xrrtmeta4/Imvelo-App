@@ -1,109 +1,76 @@
 import { Router } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
-import { createCheckoutSchema } from '../schemas';
+import { createPayment, getPaymentStatus } from '../payment/paymentService.js';
 
 const router = Router();
-const prisma = new PrismaClient();
+
+const checkoutSchema = z.object({
+  product_id: z.string().min(1),
+  customer_email: z.string().email().optional(),
+  customer_name: z.string().optional(),
+  payment_methods: z.array(z.string()).optional(),
+  return_url: z.string().url().optional(),
+});
 
 router.post('/checkout', async (req: any, res: any) => {
   try {
-    const input = createCheckoutSchema.parse(req.body);
-    const { product_id, product_name, amount, currency, customer_email, customer_name, payment_methods, success_url, cancel_url, metadata } = input;
+    const input = checkoutSchema.parse(req.body);
 
-    const apiKey = process.env.DODO_PAYMENTS_API_KEY;
-    const dodoEnv = (process.env.DODO_PAYMENTS_ENV || 'live').toLowerCase();
-    const isTestMode = dodoEnv === 'test';
-    const apiBase = isTestMode ? 'https://test.dodopayments.com' : 'https://live.dodopayments.com';
-
-    if (!apiKey) {
-      return res.status(500).json({ error: 'Dodo Payments API key not configured' });
+    if (!process.env.DODO_PAYMENTS_API_KEY) {
+      return res.status(500).json({ error: 'Payment gateway is not configured.' });
     }
 
-    const defaultMethods = process.env.DODO_PAYMENT_METHODS
-      ? process.env.DODO_PAYMENT_METHODS.split(',').map(m => m.trim()).filter(Boolean)
-       : ['credit', 'debit', 'google_pay', 'amazon_pay'];
-
-    const methods = (Array.isArray(payment_methods) && payment_methods.length > 0)
-      ? payment_methods
-      : defaultMethods;
-
-    const dodoBody: Record<string, unknown> = {
-      product_cart: [{ product_id, quantity: 1 }],
-      allowed_payment_method_types: methods,
-    };
-
-    if (customer_email) {
-      dodoBody.customer = { email: customer_email, name: customer_name || undefined };
-    }
-    if (success_url || cancel_url) {
-      dodoBody.return_url = success_url || cancel_url;
-    }
-    if (metadata) {
-      dodoBody.metadata = metadata;
-    }
-
-    const dodoResponse = await fetch(`${apiBase}/checkouts`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(dodoBody),
-    });
-
-    let dodoData: any = {};
-    try {
-      dodoData = await dodoResponse.json();
-    } catch (jsonError) {
-      console.error('[checkout] Failed to parse Dodo response as JSON:', jsonError);
-      return res.status(502).json({ error: 'Payment gateway returned an invalid response. Please try again later.' });
-    }
-
-    if (!dodoResponse.ok) {
-      const errMsg = dodoData.message || dodoData.error || dodoData.detail || JSON.stringify(dodoData) || `Dodo API error: ${dodoResponse.status}`;
-      return res.status(dodoResponse.status >= 400 && dodoResponse.status < 500 ? dodoResponse.status : 502).json({ error: errMsg });
-    }
-
-    const payment = await prisma.payment.create({
-      data: {
-        userId: customer_email || 'guest',
-        provider: 'dodo',
-        amount,
-        currency,
-        status: 'pending',
-        paymentMethod: methods.join(','),
-        providerPaymentId: dodoData.session_id || dodoData.id,
-        metadata,
-      },
+    const result = await createPayment({
+      productId: input.product_id,
+      customerEmail: input.customer_email,
+      customerName: input.customer_name,
+      paymentMethods: input.payment_methods,
+      returnUrl: input.return_url,
     });
 
     res.status(200).json({
-      id: payment.id,
-      checkout_url: dodoData.checkout_url,
-      session_id: dodoData.session_id,
-      amount,
-      currency,
-      status: payment.status,
+      id: result.paymentId,
+      payment_id: result.paymentReference,
+      checkout_url: result.checkoutUrl,
+      session_id: result.sessionId,
+      amount: result.amount,
+      currency: result.currency,
+      plan: result.plan,
+      status: result.status,
     });
   } catch (error) {
     console.error('Checkout error:', error);
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: 'Invalid request', details: error.flatten() });
+    }
     res.status(400).json({ error: error instanceof Error ? error.message : 'Invalid request' });
+  }
+});
+
+// Authoritative status lookup (server-side). Used by the client to poll.
+router.get('/:id/status', async (req: any, res: any) => {
+  try {
+    const status = await getPaymentStatus(req.params.id);
+    if (!status) {
+      return res.status(404).json({ error: 'Payment not found' });
+    }
+    res.json(status);
+  } catch (error) {
+    console.error('Get payment status error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
 router.get('/:id', async (req: any, res: any) => {
   try {
-    const { id } = req.params;
+      const { prisma } = await import('../db.js');
     const payment = await prisma.payment.findUnique({
-      where: { id },
+      where: { id: req.params.id },
       include: { user: true },
     });
-
     if (!payment) {
       return res.status(404).json({ error: 'Payment not found' });
     }
-
     res.json(payment);
   } catch (error) {
     console.error('Get payment error:', error);

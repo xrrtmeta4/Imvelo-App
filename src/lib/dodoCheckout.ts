@@ -10,7 +10,7 @@ declare global {
           onEvent: (event: { event_type: string; data?: any }) => void;
         }) => void;
         Checkout: {
-          open: (opts: { checkoutUrl: string; options?: { showTimer?: boolean; showSecurityBadge?: boolean } }) => Promise<void> | void;
+          open: (opts: { checkoutUrl: string; options?: { showTimer?: boolean; showSecurityBadge?: boolean; manualRedirect?: boolean } }) => Promise<void> | void;
           close: () => void;
           isOpen: () => boolean;
         };
@@ -80,38 +80,48 @@ export const getDodoMode = (): DodoCheckoutMode => {
   return 'live';
 };
 
-export const openDodoOverlay = async (checkoutUrl: string, onOpened?: () => void) => {
+export interface DodoOverlayCallbacks {
+  onOpened?: () => void;
+  // Fired when the checkout flow completes (success, cancel or redirect).
+  // The caller should poll the backend for the authoritative status — we
+  // NEVER activate anything here based on the client event.
+  onCompleted?: () => void;
+  onError?: (error: unknown) => void;
+}
+
+/**
+ * Open the Dodo checkout IN-APP as an overlay.
+ *
+ * Security note: this function must never navigate the browser away to a
+ * hosted checkout URL (`window.location.href = ...`). The user pays inside
+ * the app; subscription activation is performed only by the verified backend
+ * webhook (or, as a fallback, by a server-side status check), never by the
+ * client. If the checkout SDK cannot be loaded, we throw so the caller can
+ * surface a retryable error instead of silently falling back to a redirect.
+ */
+export const openDodoCheckout = async (checkoutUrl: string, callbacks?: DodoOverlayCallbacks): Promise<void> => {
   const mode = getDodoMode();
   const ready = await loadDodoSdk();
 
   if (!ready || !window.DodoPaymentsCheckout?.DodoPayments) {
-    // Full-screen redirect so the user always sees the full payment method UI
-    // (cards, Google Pay, Apple Pay, Amazon Pay as available in their region).
-    window.location.href = checkoutUrl;
-    onOpened?.();
-    return;
+    const err = new Error('Payment checkout could not be loaded. Please check your connection and try again.');
+    callbacks?.onError?.(err);
+    throw err;
   }
 
   window.DodoPaymentsCheckout.DodoPayments.Initialize({
     mode,
     displayType: 'overlay',
     onEvent: (event) => {
-      if (event.event_type === 'checkout.closed') {
-        // User closed overlay, stay on page
-      }
-      if (event.event_type === 'checkout.redirect') {
-        const redirectTo = event.data?.message?.redirect_to || event.data?.redirect_to;
-        if (redirectTo) {
-          window.location.href = redirectTo;
-        } else {
-          const url = new URL(window.location.href);
-          url.searchParams.set('success', 'true');
-          window.location.href = url.toString();
-        }
+      if (event.event_type === 'checkout.completed' || event.event_type === 'checkout.redirect') {
+        // Do not navigate. Just let the caller re-check backend status.
+        callbacks?.onCompleted?.();
       }
       if (event.event_type === 'checkout.error') {
         console.error('[dodoCheckout] Checkout error:', event.data);
+        callbacks?.onError?.(event.data);
       }
+      // checkout.closed: user dismissed — stay on the page, no action.
     },
   });
 
@@ -124,10 +134,10 @@ export const openDodoOverlay = async (checkoutUrl: string, onOpened?: () => void
         manualRedirect: true,
       },
     });
-    onOpened?.();
+    callbacks?.onOpened?.();
   } catch (error) {
     console.error('[dodoCheckout] Failed to open overlay:', error);
-    window.location.href = checkoutUrl;
-    onOpened?.();
+    callbacks?.onError?.(error);
+    throw error;
   }
 };

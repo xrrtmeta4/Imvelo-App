@@ -45,26 +45,33 @@ model Subscription {
 }
 
 model Payment {
-  id              String    @id @default(cuid())
-  userId          String
-  provider        String
+  id               String    @id @default(cuid())
+  userId           String
+  provider         String
   providerPaymentId String?
-  amount          Float
-  currency        String    @default("USD")
-  status          String    @default("pending")
-  paymentMethod   String?
-  country         String?
-  ipAddress       String?
-  userAgent       String?
-  metadata        Json?
-  rawWebhook      Json?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  providerReference String?
+  gateway          String?
+  productId        String?
+  plan             String?
+  amount           Float
+  currency         String    @default("USD")
+  status           String    @default("pending")
+  paymentMethod    String?
+  country          String?
+  ipAddress        String?
+  userAgent        String?
+  metadata         Json?
+  rawWebhook       Json?
+  paidAt           DateTime?
+  failureReason    String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id])
 
   @@index([userId])
   @@index([providerPaymentId])
+  @@index([providerReference])
   @@map("payments")
 }
 
@@ -80,5 +87,6 @@ model WebhookEvent {
   createdAt     DateTime  @default(now())
 
   @@index([provider, processed])
+  @@unique([provider, providerEventId])
   @@map("webhook_events")
 }

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { useUsageLimits, PlanTier, PLANS, activatePlan } from '@/hooks/useUsageLimits';
+import { useUsageLimits, PlanTier, PLANS } from '@/hooks/useUsageLimits';
 import { useAuth } from '@/hooks/useAuth';
 import PaymentLogos from '@/components/PaymentLogos';
 
@@ -15,9 +15,8 @@ const Upgrade = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { isPremium, currentPlan, openUpgrade, refreshPremiumStatus, activatePlan } = useUsageLimits();
+  const { isPremium, currentPlan, openUpgrade, refreshPremiumStatus, creatingPayment } = useUsageLimits();
   const { user } = useAuth();
-  const [loading, setLoading] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<PlanTier>('commercial');
 
@@ -33,16 +32,19 @@ const Upgrade = () => {
 
   useEffect(() => {
     if (success === 'true') {
-      const returnedPlan = (searchParams.get('plan') as PlanTier) || 'premium';
-      activatePlan(returnedPlan).finally(() => {
-        refreshPremiumStatus();
-        toast.success('Payment successful! Access upgraded.');
-      });
+      // Activation happens only via the verified backend webhook. We poll the
+      // authoritative subscription status; we never grant access from the URL.
+      refreshPremiumStatus();
+      const interval = setInterval(() => refreshPremiumStatus(), 3000);
+      const stop = setTimeout(() => clearInterval(interval), 30000);
+      return () => {
+        clearInterval(interval);
+        clearTimeout(stop);
+      };
     }
-  }, [success, refreshPremiumStatus, activatePlan, searchParams]);
+  }, [success, refreshPremiumStatus]);
 
   const handleUpgrade = useCallback(async () => {
-    setLoading(true);
     try {
       const customerEmail = user?.email;
       if (!customerEmail) {
@@ -53,7 +55,6 @@ const Upgrade = () => {
     } catch (err: any) {
       console.error('[Upgrade] Checkout error:', err);
       toast.error(err?.message || 'Failed to start checkout. Please try again.');
-      setLoading(false);
     }
   }, [user, selectedPlan]);
 
@@ -104,7 +105,7 @@ const Upgrade = () => {
           <Card className="mb-6 border-green-500/50 bg-green-500/10 backdrop-blur-md">
             <CardContent className="p-4 text-center">
               <p className="text-sm font-medium text-green-700 dark:text-green-400">
-                Payment successful! Your access is being upgraded.
+                We're confirming your payment… Your access will be activated shortly.
               </p>
             </CardContent>
           </Card>
@@ -155,14 +156,14 @@ const Upgrade = () => {
 
         <Button
           onClick={handleUpgrade}
-          disabled={loading}
+          disabled={creatingPayment}
           className="w-full gap-2 bg-green-600 hover:bg-green-700 text-white border-green-600 backdrop-blur-md"
           size="lg"
         >
-          {loading ? (
+          {creatingPayment ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              {t('redirecting')}
+              Processing…
             </>
           ) : (
             <>
@@ -172,9 +173,9 @@ const Upgrade = () => {
           )}
         </Button>
 
-        {loading && (
+        {creatingPayment && (
           <p className="text-xs text-center text-white/70 mt-2">
-            {t('clickToContinue')}
+            Opening secure checkout…
           </p>
         )}
 
