@@ -22,15 +22,20 @@ serve(async (req) => {
   void apiKey;
 
   try {
-    const { indices, imageUrl, cropType, growthStage } = (await req.json()) as {
+    const { indices, imageUrl, imageBase64, cropType, growthStage } = (await req.json()) as {
       indices?: VegIndexInput;
-      imageUrl: string;
+      imageUrl?: string;
+      imageBase64?: string;
       cropType?: string;
       growthStage?: string;
     };
 
-    if (!imageUrl) {
-      return new Response(JSON.stringify({ error: "imageUrl required" }), {
+    // imageBase64 is an inline data URI sent from the client (no storage
+    // upload needed, which avoids storage RLS). imageUrl kept for backward
+    // compatibility.
+    const imageRef = imageBase64 || imageUrl;
+    if (!imageRef) {
+      return new Response(JSON.stringify({ error: "image required (imageBase64 or imageUrl)" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -114,7 +119,7 @@ Growth stage (if known): ${growthStage || "unknown"}
 - Auto-classified health from indices: ${healthAssessment}
 - Auto-classified water status from indices: ${waterStatus}
 
-Interpret image: ${imageUrl} — correlate the index values with visible leaf color, wilting, canopy gaps, pest lesions, or animal condition. Distinguish water stress (high NDVI drop + low water index) from nutrient deficiency (patchy greening) from disease/pest (localized lesions or skeletonizing).`;
+Interpret image: ${imageRef} — correlate the index values with visible leaf color, wilting, canopy gaps, pest lesions, or animal condition. Distinguish water stress (high NDVI drop + low water index) from nutrient deficiency (patchy greening) from disease/pest (localized lesions or skeletonizing).`;
 
     const response = await fetch(AI_URL, {
       method: "POST",
@@ -125,7 +130,7 @@ Interpret image: ${imageUrl} — correlate the index values with visible leaf co
           { role: "system", content: systemPrompt },
           { role: "user", content: [
             { type: "text", text: userPrompt },
-            { type: "image_url", image_url: { url: imageUrl } }
+            { type: "image_url", image_url: { url: imageRef } }
           ] }
         ],
         max_tokens: 1500,

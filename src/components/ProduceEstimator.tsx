@@ -22,6 +22,35 @@ const STRESS_ICONS: Record<string, JSX.Element> = {
   stressed_animal: <AlertTriangle className="w-5 h-5 text-orange-600" />,
 };
 
+// Downscale an image file to a JPEG data URL. We send this inline to the
+// Edge Function instead of uploading to storage, which removes the
+// `pest-images` storage INSERT that was tripping row-level-security (RLS).
+const fileToScaledDataUrl = (file: File, maxDim = 1024): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const iw = img.width || maxDim;
+        const ih = img.height || maxDim;
+        const scale = Math.min(1, maxDim / Math.max(iw, ih));
+        const w = Math.max(1, Math.round(iw * scale));
+        const h = Math.max(1, Math.round(ih * scale));
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) { reject(new Error('Canvas unavailable')); return; }
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', 0.72));
+      } catch (e) {
+        reject(e);
+      }
+    };
+    img.onerror = () => reject(new Error('Could not read image file'));
+    img.src = URL.createObjectURL(file);
+  });
+};
+
 // Compute vegetation/water indices on-device from a phone camera image.
 // Uses green vs red channel difference as an NDVI-like proxy: healthy tissue
 // reflects more in the green and absorbs in red; the gap = vigor. Water stress
@@ -127,21 +156,18 @@ const ProduceEstimator = () => {
     setAnalyzing(true);
     try {
       if (!sourceFile) throw new Error('No source image file');
-      const fileExt = sourceFile.name.split('.').pop() || 'jpg';
-      const fileName = `stress-ir/${user.id}/${Date.now()}.${fileExt}`;
-      const { error: uploadError } = await supabase
-        .storage.from('pest-images').upload(fileName, sourceFile, {
-          contentType: sourceFile.type || 'image/jpeg',
-        });
-      if (uploadError) throw uploadError;
-      const { data: { publicUrl } } = supabase.storage.from('pest-images').getPublicUrl(fileName);
 
+      // Downscale on-device to keep the payload small, then send the image as
+      // a base64 data URL. This avoids the `pest-images` storage INSERT
+      // (which is what triggered "new row violates row level security") — the
+      // function forwards it straight to the model.
+      const dataUrl = await fileToScaledDataUrl(sourceFile, 1024);
       const idx = indices || (imgRef.current ? computeIndices(imgRef.current) : null);
       if (!idx) throw new Error('Could not compute indices from image');
 
       const { data, error } = await supabase.functions.invoke('scan-stress-ir', {
         body: {
-          imageUrl: publicUrl,
+          imageBase64: dataUrl,
           indices: idx,
         },
       });
