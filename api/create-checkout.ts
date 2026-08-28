@@ -73,6 +73,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),
+      // Bound the upstream Dodo call so an invalid product can't hang the
+      // function (which would otherwise surface as "loading non-stop" in the app).
+      signal: AbortSignal.timeout(15000),
     });
 
     const data: Record<string, unknown> = await response.json().catch(() => ({}));

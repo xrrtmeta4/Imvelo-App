@@ -129,8 +129,8 @@ const Upgrade = () => {
                     disabled={selected}
                     className={`flex-1 py-2 px-3 rounded-lg border text-center transition ${
                       selected
-                        ? 'border-primary bg-primary/20 text-white'
-                        : 'border-white/20 bg-white/5 text-white/80 hover:bg-white/10'
+                        ? 'border-green-500 bg-green-600 text-white shadow-md'
+                        : 'border-green-500/40 bg-green-500/10 text-white/80 hover:bg-green-500/20'
                     }`}
                   >
                     <span className="text-sm font-medium">{cfg.name}</span>

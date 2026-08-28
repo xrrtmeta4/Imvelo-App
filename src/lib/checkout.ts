@@ -17,6 +17,17 @@ interface CheckoutResponse {
   error?: string;
 }
 
+// Browser `fetch` has no default timeout. A stalled payment gateway (e.g. Dodo
+// hanging on an unknown product) would leave `loading` spinning forever, which
+// is exactly the "loading non-stop" bug. Bound every request.
+const REQUEST_TIMEOUT_MS = 15000;
+
+const fetchWithTimeout = (url: string, opts: RequestInit, ms = REQUEST_TIMEOUT_MS): Promise<Response> => {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  return fetch(url, { ...opts, signal: controller.signal }).finally(() => clearTimeout(timer));
+};
+
 const POST_OPTIONS = (body: CheckoutBody) => ({
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
@@ -44,7 +55,7 @@ export async function startDodoCheckout(body: CheckoutBody): Promise<string> {
 
   // 1) Vercel serverless function (uses Vercel env vars)
   try {
-    const res = await fetch('/api/create-checkout', opts);
+    const res = await fetchWithTimeout('/api/create-checkout', opts);
     let data: CheckoutResponse = {};
     try {
       data = await res.json();
@@ -62,9 +73,15 @@ export async function startDodoCheckout(body: CheckoutBody): Promise<string> {
     console.warn('[checkout] /api/create-checkout threw:', e);
   }
 
-  // 2) Supabase Edge Function
+  // 2) Supabase Edge Function (bounded so a stalled gateway can't hang forever)
   try {
-    const { data, error } = await supabase.functions.invoke('create-checkout', { body });
+    const timedInvoke = await Promise.race([
+      supabase.functions.invoke('create-checkout', { body }),
+      new Promise<{ data: { checkout_url?: string; error?: string } | null; error: { message?: string } | null }>(
+        (_, reject) => setTimeout(() => reject(new Error('Checkout request timed out')), REQUEST_TIMEOUT_MS),
+      ),
+    ]);
+    const { data, error } = timedInvoke;
     if (!error && data?.checkout_url) {
       return data.checkout_url;
     }
@@ -75,7 +92,7 @@ export async function startDodoCheckout(body: CheckoutBody): Promise<string> {
 
   // 3) Express fallback (self-hosted / local dev)
   try {
-    const res = await fetch('/api/payments/checkout', opts);
+    const res = await fetchWithTimeout('/api/payments/checkout', opts);
     let data: CheckoutResponse = {};
     try {
       data = await res.json();
