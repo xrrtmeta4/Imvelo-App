@@ -1,4 +1,4 @@
-import { ArrowLeft, Type, Wifi, Sun, Minus, Plus, User, ChevronRight, Megaphone, Volume2 } from 'lucide-react';
+import { ArrowLeft, Type, Wifi, Sun, Minus, Plus, User, ChevronRight, Megaphone, Volume2, Globe } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useSettings } from '@/hooks/useSettings';
@@ -57,16 +57,27 @@ const Settings = () => {
                 Admin
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <Button
-                variant="outline"
-                className="w-full justify-between"
-                onClick={() => navigate('/campaigns')}
-              >
-                <span>Campaigns &amp; SMS console</span>
-                <ChevronRight className="w-4 h-4 text-muted-foreground" />
-              </Button>
-            </CardContent>
+          <CardContent>
+            <Button
+              variant="outline"
+              className="w-full justify-between"
+              onClick={() => navigate('/campaigns')}
+            >
+              <span>Campaigns &amp; SMS console</span>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full justify-between mt-2"
+              onClick={() => navigate('/secret-dashboard')}
+            >
+              <span className="flex items-center gap-2">
+                <Globe className="w-4 h-4 text-emerald-500" />
+                Climate Intelligence
+              </span>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            </Button>
+          </CardContent>
           </Card>
         )}
 

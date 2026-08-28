@@ -48,6 +48,7 @@ const AIChat = lazy(() => import("./pages/AIChat"));
 const ScannerFeature = lazy(() => import("./pages/features/ScannerFeature"));
 const WeatherFeature = lazy(() => import("./pages/features/WeatherFeature"));
 const AnalysisFeature = lazy(() => import("./pages/features/AnalysisFeature"));
+const SecretDashboard = lazy(() => import("./pages/SecretDashboard"));
 import { SettingsProvider } from "./hooks/useSettings";
 import TalkBack from "./components/TalkBack";
 import AdBanner from "./components/AdBanner";
@@ -171,6 +172,7 @@ const App = () => (
             <Route path="/analysis" element={<ProtectedRoute><Analysis /></ProtectedRoute>} />
             <Route path="/climate-risk" element={<ProtectedRoute><DisasterWatch /></ProtectedRoute>} />
             <Route path="/campaigns" element={<ProtectedRoute><Campaigns /></ProtectedRoute>} />
+            <Route path="/secret-dashboard" element={<ProtectedRoute><SecretDashboard /></ProtectedRoute>} />
             <Route path="/ai-chat" element={<ProtectedRoute><AIChat /></ProtectedRoute>} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
