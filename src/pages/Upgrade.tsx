@@ -130,10 +130,10 @@ const Upgrade = () => {
                     type="button"
                     onClick={() => setSelectedPlan(plan)}
                     disabled={selected}
-                    className={`flex-1 py-2 px-3 rounded-lg border text-center transition ${
+                    className={`flex-1 py-2 px-3 rounded-lg border-2 text-center transition ${
                       selected
-                        ? 'border-green-500 bg-green-600 text-white shadow-md'
-                        : 'border-green-500/40 bg-green-500/10 text-white/80 hover:bg-green-500/20'
+                        ? 'border-white bg-green-600 text-white shadow-md'
+                        : 'border-green-700 bg-green-700 text-white hover:bg-green-600'
                     }`}
                   >
                     <span className="text-sm font-medium">{cfg.name}</span>

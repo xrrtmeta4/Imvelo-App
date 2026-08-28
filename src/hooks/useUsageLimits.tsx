@@ -298,8 +298,12 @@ export const useUsageLimits = () => {
         cancel_url: window.location.origin + '/upgrade',
       });
 
-      const { openDodoOverlay } = await import('@/lib/dodoCheckout');
-      await openDodoOverlay(checkoutUrl);
+      // Use the Dodo REST API strictly: the create-checkout call above already
+      // hit the Dodo API; we now send the browser directly to the returned
+      // checkout_url (a full navigation) instead of embedding Dodo's hosted
+      // checkout overlay HTML. This also fixes the "non-stop loading" — the
+      // page navigates away on success, and any failure is caught below.
+      window.location.href = checkoutUrl;
     } catch (err: any) {
       console.error('[openUpgrade] Checkout error:', err);
       toast.error(err?.message || 'Failed to start checkout. Please try again.');
