@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { useUsageLimits, PlanTier, PLANS } from '@/hooks/useUsageLimits';
+import { useUsageLimits, PlanTier, PLANS, activatePlan } from '@/hooks/useUsageLimits';
 import { useAuth } from '@/hooks/useAuth';
 import PaymentLogos from '@/components/PaymentLogos';
 
@@ -15,7 +15,7 @@ const Upgrade = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { isPremium, currentPlan, openUpgrade, refreshPremiumStatus } = useUsageLimits();
+  const { isPremium, currentPlan, openUpgrade, refreshPremiumStatus, activatePlan } = useUsageLimits();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
@@ -33,10 +33,13 @@ const Upgrade = () => {
 
   useEffect(() => {
     if (success === 'true') {
-      refreshPremiumStatus();
-      toast.success('Payment successful! Access upgraded.');
+      const returnedPlan = (searchParams.get('plan') as PlanTier) || 'premium';
+      activatePlan(returnedPlan).finally(() => {
+        refreshPremiumStatus();
+        toast.success('Payment successful! Access upgraded.');
+      });
     }
-  }, [success, refreshPremiumStatus]);
+  }, [success, refreshPremiumStatus, activatePlan, searchParams]);
 
   const handleUpgrade = useCallback(async () => {
     setLoading(true);

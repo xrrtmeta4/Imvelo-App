@@ -147,6 +147,39 @@ export const useUsageLimits = () => {
     }
   }, [user]);
 
+  // Webhook-free activation: after a successful Dodo checkout the app is
+  // redirected back with ?success=true&plan=<tier>. We write the caller's own
+  // subscription row (allowed by the "Users can manage own subscription" RLS
+  // policy). The Dodo webhook remains the authoritative source and will
+  // overwrite this on delivery.
+  const activatePlan = useCallback(async (plan: PlanTier) => {
+    if (!user) return false;
+    if (plan === 'free' || plan === 'starter') return false;
+    try {
+      const { error } = await supabase
+        .from('premium_subscriptions')
+        .upsert(
+          {
+            user_id: user.id,
+            status: 'active',
+            payment_reference: `client_${Date.now()}`,
+            expires_at: null,
+            plan,
+          },
+          { onConflict: 'user_id' },
+        );
+      if (error) {
+        console.error('[activatePlan] upsert error:', error);
+        return false;
+      }
+      setCurrentPlan(plan);
+      return true;
+    } catch (e) {
+      console.error('[activatePlan] error:', e);
+      return false;
+    }
+  }, [user]);
+
   const loadUsage = useCallback(() => {
     if (!user) return;
     const stored = localStorage.getItem(getStorageKey(user.id));
@@ -261,7 +294,7 @@ export const useUsageLimits = () => {
         product_name: targetPlan,
         customer_email: customerEmail,
         customer_name: user?.user_metadata?.full_name || 'Customer',
-        redirect_url: window.location.origin + '/upgrade?success=true',
+        redirect_url: window.location.origin + `/upgrade?success=true&plan=${targetPlan}`,
         cancel_url: window.location.origin + '/upgrade',
       });
 
@@ -290,6 +323,7 @@ export const useUsageLimits = () => {
     getRemainingDetections,
     getRemainingChats,
     openUpgrade,
+    activatePlan,
     isPremium,
     currentPlan,
     hasFeature,
