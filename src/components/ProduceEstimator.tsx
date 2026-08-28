@@ -51,6 +51,34 @@ const fileToScaledDataUrl = (file: File, maxDim = 1024): Promise<string> => {
   });
 };
 
+// Send the image (base64 data URL) + on-device vegetation indices for stress
+// analysis. Primary path: Vercel serverless function /api/scan-stress-ir
+// (auto-deployed from the repo, reads the Gemini key from Vercel env). Falls
+// back to the Supabase Edge Function if it has been deployed.
+const analyzeStress = async (imageBase64: string, indices: Record<string, number>): Promise<any> => {
+  try {
+    const res = await fetch('/api/scan-stress-ir', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imageBase64, indices }),
+    });
+    if (res.ok) {
+      const json = await res.json();
+      if (json?.error) throw new Error(json.error);
+      return json;
+    }
+    console.warn('[scan-stress-ir] Vercel path returned', res.status);
+  } catch (e) {
+    console.warn('[scan-stress-ir] Vercel path failed, trying Supabase Edge Function:', e);
+  }
+
+  const { data, error } = await supabase.functions.invoke('scan-stress-ir', {
+    body: { imageBase64, indices },
+  });
+  if (error) throw error;
+  return data;
+};
+
 // Compute vegetation/water indices on-device from a phone camera image.
 // Uses green vs red channel difference as an NDVI-like proxy: healthy tissue
 // reflects more in the green and absorbs in red; the gap = vigor. Water stress
@@ -165,14 +193,7 @@ const ProduceEstimator = () => {
       const idx = indices || (imgRef.current ? computeIndices(imgRef.current) : null);
       if (!idx) throw new Error('Could not compute indices from image');
 
-      const { data, error } = await supabase.functions.invoke('scan-stress-ir', {
-        body: {
-          imageBase64: dataUrl,
-          indices: idx,
-        },
-      });
-
-      if (error) throw error;
+      const data = await analyzeStress(dataUrl, idx);
       setResult(data);
       incrementDetection();
       toast.success('Stress analysis complete!');
