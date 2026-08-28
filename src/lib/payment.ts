@@ -1,10 +1,14 @@
 // Frontend payment client.
 //
-// Talks ONLY to our own backend (Vercel serverless function in production, or
-// the self-hosted Express server in dev). It never calls Dodo directly and
-// never receives secret credentials. The backend is responsible for creating
-// the Dodo checkout; the client only opens the in-app overlay and polls the
-// backend for the authoritative payment status.
+// Talks ONLY to our own backend. It tries, in order:
+//   1. Vercel serverless function  /api/create-checkout   (reads Vercel env)
+//   2. Supabase Edge function       create-checkout        (reads Supabase secrets)
+//   3. Self-hosted Express server    /api/payments/checkout (reads server env)
+// All three create a Dodo checkout via the SAME provider API; the client never
+// calls Dodo directly and never receives secret credentials. The webhook (or a
+// server-side status check) is the only thing that activates the subscription.
+
+import { supabase } from '@/lib/supabase';
 
 export interface CreatePaymentInput {
   productId: string;
@@ -41,7 +45,6 @@ const fetchWithTimeout = (url: string, opts: RequestInit, ms = REQUEST_TIMEOUT_M
   return fetch(url, { ...opts, signal: controller.signal }).finally(() => clearTimeout(timer));
 };
 
-// Normalize the different backend response shapes into CreatePaymentResult.
 function toResult(data: any): CreatePaymentResult {
   return {
     paymentId: data.payment_id || data.id,
@@ -80,15 +83,25 @@ export async function createPayment(input: CreatePaymentInput): Promise<CreatePa
     if (res.ok && data?.checkout_url) {
       return toResult(data);
     }
-    if (!res.ok && res.status < 500 && data?.error) {
-      throw new Error(data.error);
-    }
-    console.warn('[payment] /api/create-checkout unavailable:', res.status, data?.error);
+    if (data?.error) throw new Error(data.error);
+    console.warn('[payment] /api/create-checkout responded', res.status, data?.error);
   } catch (e) {
+    if (e instanceof Error && e.message) throw e;
     console.warn('[payment] /api/create-checkout threw:', e);
   }
 
-  // 2) Express backend (local dev / self-hosted).
+  // 2) Supabase Edge Function (reads DODO_PAYMENTS_API_KEY from Supabase secrets).
+  try {
+    const { data, error } = await supabase.functions.invoke('create-checkout', { body });
+    if (!error && data?.checkout_url) {
+      return toResult(data);
+    }
+    if (error) console.warn('[payment] Edge Function error:', error.message);
+  } catch (e) {
+    console.warn('[payment] Edge Function threw:', e);
+  }
+
+  // 3) Express backend (local dev / self-hosted).
   try {
     const res = await fetchWithTimeout('/api/payments/checkout', opts);
     let data: any = {};
@@ -102,6 +115,7 @@ export async function createPayment(input: CreatePaymentInput): Promise<CreatePa
     }
     if (data?.error) throw new Error(data.error);
   } catch (e) {
+    if (e instanceof Error && e.message) throw e;
     console.warn('[payment] Express checkout failed:', e);
   }
 

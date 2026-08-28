@@ -1,5 +1,17 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { isKnownProduct, getProduct, PRODUCT_PLAN_MAP } from '../src/lib/products';
+
+// Self-contained product catalog (the Vercel function must not depend on files
+// outside `api/` — keep this in sync with src/lib/products.ts and
+// server/src/payment/products.ts). The backend is authoritative for prices.
+const PRODUCT_CATALOG: Record<string, { plan: string; price: number; currency: string }> = {
+  pdt_0NYZaqcOARihEXXOPIdmC: { plan: 'premium', price: 37, currency: 'USD' },
+  pdt_0NVKhwZKeJCCaRbxoTNno: { plan: 'commercial', price: 499, currency: 'USD' },
+  pdt_0NYZb3ccdGubedVQypzZn: { plan: 'enterprise', price: 999, currency: 'USD' },
+};
+
+const PRODUCT_PLAN_MAP: Record<string, string> = Object.fromEntries(
+  Object.entries(PRODUCT_CATALOG).map(([id, v]) => [id, v.plan]),
+);
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -34,7 +46,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (!apiKey) {
       console.error('Missing DODO_PAYMENTS_API_KEY env var');
-      res.status(500).json({ error: 'Payment gateway is not configured. Set DODO_PAYMENTS_API_KEY.' });
+      res.status(500).json({ error: 'Payment gateway is not configured (DODO_PAYMENTS_API_KEY).' });
       return;
     }
 
@@ -55,12 +67,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // The backend is the authority on which products are valid and how much
     // they cost. Never trust an amount sent from the client.
-    if (!product_id || !isKnownProduct(product_id as string)) {
+    if (!product_id || !PRODUCT_CATALOG[product_id as string]) {
       res.status(400).json({ error: 'Unknown or missing product_id.' });
       return;
     }
 
-    const product = getProduct(product_id as string)!;
+    const product = PRODUCT_CATALOG[product_id as string];
     const paymentReference = newPaymentReference();
 
     const defaultMethods = ['credit', 'debit', 'google_pay', 'amazon_pay'];
@@ -78,8 +90,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const body: Record<string, unknown> = {
       product_cart: [{ product_id, quantity: 1 }],
       allowed_payment_method_types: methods,
-      // Correlate the Dodo checkout with our internal reference so the webhook
-      // can map the event back to this payment.
       metadata: {
         email: customer_email,
         name: customer_name,
@@ -99,8 +109,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),
-      // Bound the upstream Dodo call so an invalid product can't hang the
-      // function (which would otherwise surface as "loading non-stop" in the app).
       signal: AbortSignal.timeout(15000),
     });
 
