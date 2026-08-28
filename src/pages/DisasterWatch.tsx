@@ -59,7 +59,13 @@ const DisasterWatch = () => {
       setConfidence(`${avgConf}% avg model confidence`);
     } catch (e: any) {
       console.error('DisasterWatch error:', e);
-      toast.error('Could not load the 4-day outlook. Showing last cached data.');
+      const status = e?.context?.status;
+      const msg = e?.context?.body || e?.message || String(e);
+      if (status === 404 || /not found/i.test(msg)) {
+        toast.error('Outlook service is updating — try again in a moment.');
+      } else {
+        toast.error('Could not load the 4-day outlook. Showing last cached data.');
+      }
     } finally {
       setLoading(false);
     }

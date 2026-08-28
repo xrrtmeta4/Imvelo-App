@@ -132,7 +132,6 @@ const ProduceEstimator = () => {
       const { error: uploadError } = await supabase
         .storage.from('pest-images').upload(fileName, sourceFile, {
           contentType: sourceFile.type || 'image/jpeg',
-          upsert: true,
         });
       if (uploadError) throw uploadError;
       const { data: { publicUrl } } = supabase.storage.from('pest-images').getPublicUrl(fileName);
