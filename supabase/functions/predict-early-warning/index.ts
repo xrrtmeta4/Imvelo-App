@@ -28,10 +28,47 @@ const DISASTER_RULES = [
   { key: "cold_outbreak", label: "Cold Outbreak", check: (d: Daily[]) => { const cold = d.filter((x) => (x.tmax || 99) <= 5 && (x.precip || 0) >= 5).length; if (cold >= 2) return { severity: "moderate", detail: `${cold} day(s) of cold rain (max ${Math.min(...d.map((x) => x.tmax || 0))}°C)`, confidence: 83 }; return null; } },
 ];
 
-// 4-day forecast outlook. ERA5 provides the climatological baseline used for
-// calibration; Open-Meteo ensemble forecast provides the forward-looking days.
-// `startDaysAhead` selects days 0..3 from today (the future), not the past.
+// Meteoblue daily outlook (primary provider). Returns the next 4 days in the
+// same Daily shape the disaster rules expect.
+async function fetchMeteoblueOutlook(lat: number, lon: number, key: string): Promise<{ days: Daily[]; source: string } | null> {
+  const url = `https://my.meteoblue.com/packages/basic-day?apikey=${key}` +
+    `&lat=${lat}&lon=${lon}&format=json&forecast_days=7&temperature=C&windspeed=km/h`;
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`meteoblue ${r.status}`);
+  const j = await r.json();
+  const d = j?.data_day;
+  if (!d?.time || d.time.length < 4) return null;
+  const days: Daily[] = [];
+  for (let i = 0; i < 4 && i < d.time.length; i++) {
+    days.push({
+      date: d.time[i],
+      tmax: +(d.temperature_max?.[i] ?? 0),
+      tmin: +(d.temperature_min?.[i] ?? 0),
+      precip: +(d.precipitation?.[i] ?? 0),
+      precipProb: +(d.precipitation_probability?.[i] ?? 0),
+      wind: +(d.windspeed_max?.[i] ?? d.windspeed_mean?.[i] ?? 0),
+      rh: +(d.humidity_mean?.[i] ?? d.relative_humidity_mean?.[i] ?? 0),
+    });
+  }
+  if (days.length >= 4) return { days, source: "meteoblue" };
+  return null;
+}
+
+// 4-day forecast outlook. Meteoblue is the primary provider; Open-Meteo +
+// ERA5 are kept as fallbacks when Meteoblue is unavailable.
 async function fetchOutlook(lat: number, lon: number): Promise<{ days: Daily[]; source: string } | null> {
+  // Primary: Meteoblue (reads METEOBLUE_API_KEY)
+  try {
+    const mbKey = Deno.env.get("METEOBLUE_API_KEY");
+    if (mbKey) {
+      const mb = await fetchMeteoblueOutlook(lat, lon, mbKey);
+      if (mb) return mb;
+    }
+  } catch (e) {
+    console.warn("meteoblue outlook failed:", e);
+  }
+
+  // Fallback: Open-Meteo forecast + ERA5 archive (existing)
   const out: Daily[] = [];
   try {
     const r = await fetch(

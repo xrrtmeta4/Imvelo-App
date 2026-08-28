@@ -84,7 +84,7 @@ const DisasterWatch = () => {
               <ShieldCheck className="w-8 h-8" />
               <div>
                 <h1 className="text-2xl font-bold">Disaster Watch</h1>
-                <p className="text-sm opacity-85">4-day hazard outlook powered by ERA5</p>
+                <p className="text-sm opacity-85">4-day hazard outlook powered by Meteoblue</p>
               </div>
             </div>
             <Button variant="ghost" size="sm" onClick={fetchOutlook} disabled={loading} className="text-white hover:bg-white/10">
@@ -189,7 +189,7 @@ const DisasterWatch = () => {
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">
-              Uses Copernicus <strong>ERA5</strong> reanalysis (precipitation, ET0, temperature, soil moisture) plus the Open-Meteo ensemble to run statistical event detection. Thresholds are calibrated on ERA5 climatology for ~90% precision; imminent alerts (≤48h) trigger in-app toasts and push notifications.
+              Uses the <strong>Meteoblue</strong> weather API (with Open-Meteo + Copernicus ERA5 as fallbacks) to run statistical event detection on the 4-day outlook (precipitation, temperature, wind, humidity). Thresholds are calibrated for ~90% precision; imminent alerts (≤48h) trigger in-app toasts and push notifications.
             </p>
           </CardContent>
         </Card>
