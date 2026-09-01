@@ -245,28 +245,33 @@ serve(async (req) => {
   const predictions: any[] = [];
   const imminent: any[] = [];
 
+  const upcoming = outlook.days.slice(0, 2);
+  const later = outlook.days.slice(2);
+  const whole = outlook.days;
+
   for (const rule of DISASTER_RULES) {
-    // Imminent = affects within the next 2 days; Outlook = 2-4 days.
-    const upcoming = outlook.days.slice(0, 2);
-    const later = outlook.days.slice(2, 4);
-
     const imminentHit = rule.check(upcoming);
-    const outlookHit = rule.check(later);
-
     if (imminentHit) {
       imminent.push({ ...imminentHit, key: rule.key, label: rule.label });
     }
-    if (outlookHit) {
+
+    // Slow-onset hazards (drought) need the full window; the rest use days 3+.
+    const window = rule.key === "drought" ? whole : later;
+    const outlookHit = window.length ? rule.check(window) : null;
+    if (outlookHit && !imminentHit) {
       predictions.push({
         key: rule.key,
         label: rule.label,
         severity: outlookHit.severity,
         confidence: outlookHit.confidence,
-        when: "2-4 days",
+        when: rule.key === "drought"
+          ? `next ${whole.length} days`
+          : `${later[0]?.date ?? "day 3"} → ${later[later.length - 1]?.date ?? ""}`,
         detail: outlookHit.detail,
       });
     }
   }
+
 
   // De-duplicate imminent into a stored alert for push + in-app toast
   if (supabase && user_id && imminent.length) {
