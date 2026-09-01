@@ -23,7 +23,7 @@ export const useNotifications = () => {
         },
         (payload: { new: Record<string, unknown> }) => {
           const alert = payload.new as { id?: string; alert_type?: string; message?: string; severity?: string };
-          const alertId = alert.id || payload.new?.id;
+          const alertId = (alert.id || (payload.new as { id?: string } | null)?.id) as string | undefined;
 
           // Deduplicate: show each alert exactly once per id (real-time can
           // surface the same INSERT twice while the service worker and this

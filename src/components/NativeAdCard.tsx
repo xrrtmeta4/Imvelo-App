@@ -33,16 +33,17 @@ export default function NativeAdCard() {
       }
       setDebug(import.meta.env.MODE === 'development' ? 'loading native ad…' : null);
 
-      const { asset: loaded, error } = await loadNativeAd();
+      const res = await loadNativeAd();
+      const { asset: loaded, error } = res;
       if (cancelled) return;
 
       if (loaded) {
         setAsset(loaded);
         setState('ready');
-        setDebug(res.usedTestAd ? '[using TEST ad unit]' : null);
+        setDebug((res as { usedTestAd?: boolean }).usedTestAd ? '[using TEST ad unit]' : null);
       } else {
         setState('error');
-        setDebug(res.error);
+        setDebug(error ?? null);
       }
     })();
 

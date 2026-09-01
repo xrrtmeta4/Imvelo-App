@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Gift, PauseCircle, PlayCircle, RefreshCw } from 'lucide-react';
 import { useAdMob, addAdMobListener } from '@/hooks/useAdMob';
+import { hideBannerAd } from '@/lib/admob';
 import { toast } from 'sonner';
 
 export default function AdBanner() {
@@ -12,8 +13,9 @@ export default function AdBanner() {
   useEffect(() => {
     addAdMobListener({
       onAdPaid: (data) => {
-        if (data?.value) {
-          toast.success(`Ad revenue: $${Number(data.value).toFixed(4)}`);
+        const value = (data as unknown as { value?: number })?.value;
+        if (value) {
+          toast.success(`Ad revenue: $${Number(value).toFixed(4)}`);
         }
       },
       onFailedToLoad: (err: any) => {
@@ -102,4 +104,4 @@ export default function AdBanner() {
   );
 }
 
-export const hideAdBanner = () => hideBanner();
+export const hideAdBanner = () => hideBannerAd();
