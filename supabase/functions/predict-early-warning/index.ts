@@ -39,7 +39,7 @@ async function fetchMeteoblueOutlook(lat: number, lon: number, key: string): Pro
   const d = j?.data_day;
   if (!d?.time || d.time.length < 4) return null;
   const days: Daily[] = [];
-  for (let i = 0; i < 4 && i < d.time.length; i++) {
+  for (let i = 0; i < 7 && i < d.time.length; i++) {
     days.push({
       date: d.time[i],
       tmax: +(d.temperature_max?.[i] ?? 0),
@@ -82,7 +82,7 @@ async function fetchOutlook(lat: number, lon: number): Promise<{ days: Daily[]; 
     if (!d?.time || d.time.length < 4) return null;
     // Take days 0..3 = next four days (future). Skip index 0 only if it's "today"
     // already underway and partially complete; we include it as "imminent day-1".
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 7 && i < d.time.length; i++) {
       out.push({
         date: d.time[i],
         tmax: +(d.temperature_2m_max?.[i] ?? 0),
