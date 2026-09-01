@@ -38,8 +38,8 @@ const checkNativeAvailable = async (): Promise<boolean> => {
   availabilityChecked = true;
   if (!NativeAd) return false;
   try {
-    const { asset } = await NativeAd.loadAd({ adUnitId: TEST_AD_UNIT });
-    nativeAvailable = !!asset;
+    const asset = await NativeAd.loadAd({ adUnitId: TEST_AD_UNIT });
+    nativeAvailable = !!asset?.headline;
   } catch {
     nativeAvailable = false;
   }
@@ -86,9 +86,9 @@ export const destroyNativeAd = async (): Promise<void> => {
   if (NativeAd) await NativeAd.destroyAd();
 };
 
-export const addNativeAdListener = (listener: NativeAdListener): PluginListenerHandle[] => {
+export const addNativeAdListener = (listener: NativeAdListener): Promise<PluginListenerHandle>[] => {
   if (!NativeAd) return [];
-  const handles: PluginListenerHandle[] = [];
+  const handles: Promise<PluginListenerHandle>[] = [];
   if (listener.onPaid) {
     handles.push(NativeAd.addListener('onNativeAdPaid', listener.onPaid));
   }

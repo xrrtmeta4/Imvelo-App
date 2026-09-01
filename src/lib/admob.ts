@@ -1,5 +1,6 @@
 import { AdMob, AdmobConsentStatus } from '@capacitor-community/admob';
 import type { AdLoadInfo, AdMobError, AdMobRevenueData, AdMobRewardItem } from '@capacitor-community/admob';
+import { BannerAdPosition, BannerAdSize } from '@capacitor-community/admob';
 import { Capacitor } from '@capacitor/core';
 
 const APP_ID =
@@ -39,7 +40,7 @@ export const initializeAdMob = async (): Promise<boolean> => {
   if (initialized) return true;
   try {
     await AdMob.initialize({
-      testingDevices: testMode ? [await Capacitor.getDebugToken?.() ?? ''] : undefined,
+      testingDevices: testMode ? [] : undefined,
     });
     initialized = true;
     return true;
@@ -65,8 +66,8 @@ export const showBannerAd = async (): Promise<void> => {
   try {
     await AdMob.showBanner({
       adId: AD_UNIT_IDS.banner,
-      adSize: 'ADAPTIVE_BANNER',
-      position: 'BOTTOM_CENTER',
+      adSize: BannerAdSize.ADAPTIVE_BANNER,
+      position: BannerAdPosition.BOTTOM_CENTER,
       npa: false,
       margin: 0,
     });
