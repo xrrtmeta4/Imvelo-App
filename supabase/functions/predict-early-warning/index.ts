@@ -317,6 +317,7 @@ serve(async (req) => {
       success: true,
       source: outlook.source,
       outlookDays: outlook.days.length,
+      days: outlook.days,
       predictions,
       imminent,
       generated_at: now.toISOString(),
