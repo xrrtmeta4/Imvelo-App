@@ -269,7 +269,7 @@ const en: Record<string, string> = {
   certificateOfCompletion: 'Certificate of Completion',
   courseFee: 'Course Fee',
   modules: 'Modules',
-  completed: 'Completed',
+
   retakeQuiz: 'Retake Quiz',
   processing: 'Processing...',
 
@@ -630,6 +630,6 @@ export const translations: Translations = {
     country: '国家', phone: '手机号码', fullName: '全名', role: '角色',
     farmer: '农民', trader: '商贩', extensionOfficer: '推广员',
     scanPestDisease: '识别害虫和疾病',
-    scan: '扫描', reportDeleted: '报告已删除',
+    reportDeleted: '报告已删除',
   }),
 };
