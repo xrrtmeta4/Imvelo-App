@@ -37,6 +37,7 @@ const DisasterWatch = () => {
   const [imminent, setImminent] = useState<any[]>([]);
   const [locationName, setLocationName] = useState<string>('');
   const [confidence, setConfidence] = useState<string>('');
+  const [days, setDays] = useState<any[]>([]);
 
   const fetchOutlook = useCallback(async () => {
     if (!user) return;
@@ -52,6 +53,7 @@ const DisasterWatch = () => {
       if (error) throw error;
       setPredictions(data?.predictions || []);
       setImminent(data?.imminent || []);
+      setDays(data?.days || []);
       const preds: Prediction[] = data?.predictions || [];
       const avgConf = preds.length
         ? Math.round(preds.reduce((a, p) => a + p.confidence, 0) / preds.length)
@@ -84,7 +86,7 @@ const DisasterWatch = () => {
               <ShieldCheck className="w-8 h-8" />
               <div>
                 <h1 className="text-2xl font-bold">Disaster Watch</h1>
-                <p className="text-sm opacity-85">4-day hazard outlook powered by Meteoblue</p>
+                <p className="text-sm opacity-85">7-day hazard outlook powered by Meteoblue</p>
               </div>
             </div>
             <Button variant="ghost" size="sm" onClick={fetchOutlook} disabled={loading} className="text-white hover:bg-white/10">
@@ -150,7 +152,7 @@ const DisasterWatch = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Calendar className="w-5 h-5 text-slate-600" />
-              2–4 Day Outlook
+              3–7 Day Outlook
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -160,7 +162,7 @@ const DisasterWatch = () => {
               </div>
             ) : predictions.length === 0 ? (
               <p className="text-sm text-green-700 flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5" /> No hazards forecast for the next 4 days.
+                <ShieldCheck className="w-5 h-5" /> No hazards forecast for the next 7 days.
               </p>
             ) : (
               <div className="space-y-3">
@@ -183,13 +185,38 @@ const DisasterWatch = () => {
           </CardContent>
         </Card>
 
+        {!!days.length && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <CloudRain className="w-5 h-5 text-slate-600" />
+                7-Day Forecast Signals
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-7 gap-1 text-center">
+                {days.map((d) => (
+                  <div key={d.date} className="rounded-md border border-border p-1.5">
+                    <p className="text-[10px] text-muted-foreground">
+                      {new Date(d.date).toLocaleDateString(undefined, { weekday: 'short' })}
+                    </p>
+                    <p className="text-[11px] font-semibold">{Math.round(d.tmax)}°</p>
+                    <p className="text-[10px] text-muted-foreground">{Math.round(d.tmin)}°</p>
+                    <p className="text-[10px] text-blue-600 mt-0.5">{Math.round(d.precip)}mm</p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <Card>
           <CardHeader>
             <CardTitle className="text-sm text-muted-foreground">How it works</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">
-              Uses the <strong>Meteoblue</strong> weather API (with Open-Meteo + Copernicus ERA5 as fallbacks) to run statistical event detection on the 4-day outlook (precipitation, temperature, wind, humidity). Thresholds are calibrated for ~90% precision; imminent alerts (≤48h) trigger in-app toasts and push notifications.
+              Uses the <strong>Meteoblue</strong> weather API (with Open-Meteo + Copernicus ERA5 as fallbacks) to run statistical event detection on the 7-day outlook (precipitation, temperature, wind, humidity). Thresholds are calibrated for ~90% precision; imminent alerts (≤48h) trigger in-app toasts and push notifications.
             </p>
           </CardContent>
         </Card>

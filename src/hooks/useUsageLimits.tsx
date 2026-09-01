@@ -122,6 +122,7 @@ export const useUsageLimits = () => {
   const [currentPlan, setCurrentPlan] = useState<PlanTier>('free');
   const [loadingPremium, setLoadingPremium] = useState(true);
   const [creatingPayment, setCreatingPayment] = useState(false);
+  const [trialDaysLeft, setTrialDaysLeft] = useState<number | null>(null);
 
   const checkPremiumStatus = useCallback(async () => {
     if (!user) {
@@ -141,6 +142,12 @@ export const useUsageLimits = () => {
            const plan: string = (data as any).plan || 'starter';
            const alias: Record<string, string> = { pro: 'premium' };
            setCurrentPlan((alias[plan] || plan) as PlanTier);
+           if (data.expires_at) {
+             const ms = new Date(data.expires_at).getTime() - Date.now();
+             setTrialDaysLeft(Math.max(0, Math.ceil(ms / 86400000)));
+           } else {
+             setTrialDaysLeft(null);
+           }
          }
        }
     } catch (error) {
@@ -261,7 +268,7 @@ export const useUsageLimits = () => {
   const hasFeature = (feature: string) => {
     const required = FEATURE_GATES[feature as keyof typeof FEATURE_GATES];
     if (!required) return isPremium; // unknown features require a paid tier by default
-    return PLAN_ORDER.indexOf(currentPlan) >= PLAN_ORDER.indexOf(required);
+    return required.includes(currentPlan);
   };
 
   const getFormattedPrice = () => `E${planConfig.price.toFixed(2)}`;
@@ -331,6 +338,7 @@ export const useUsageLimits = () => {
     currentPlan,
     hasFeature,
     loadingPremium,
+    trialDaysLeft,
      getFormattedPrice,
     refreshPremiumStatus: checkPremiumStatus,
     PLANS,
