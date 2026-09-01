@@ -16,17 +16,105 @@ type Daily = {
   rh?: number;
 };
 
-// Thresholds chosen against ERA5 climatology so false alarms stay low
-// (~90% precision on historical cases). `check` receives the day(s) in scope:
-// 2-day slice for imminent (≤48h) and 2–4 day slice for the outlook window.
-const DISASTER_RULES = [
-  { key: "flood_risk", label: "Flood Risk", check: (d: Daily[]) => { const tot = d.reduce((a, x) => a + (x.precip || 0), 0); if (tot >= 70) return { severity: tot >= 150 ? "high" : "moderate", detail: `${Math.round(tot)}mm expected in the period`, confidence: tot >= 150 ? 92 : 86 }; return null; } },
-  { key: "heatwave", label: "Heatwave", check: (d: Daily[]) => { const hot = d.filter((x) => (x.tmax || 0) >= 36).length; if (hot >= 2) return { severity: hot >= 3 ? "high" : "moderate", detail: `${hot} day(s) ≥36°C (max ${Math.max(...d.map((x) => x.tmax || 0))}°C)`, confidence: 88 }; return null; } },
-  { key: "drought", label: "Drought Watch", check: (d: Daily[]) => { const dry = d.filter((x) => (x.precip || 0) < 1).length; if (dry >= Math.max(2, d.length - 1)) return { severity: "moderate", detail: `${dry}/${d.length} day(s) with <1mm rain`, confidence: 85 }; return null; } },
-  { key: "frost", label: "Frost Alert", check: (d: Daily[]) => { const fr = d.filter((x) => (x.tmin || 99) <= 2).length; if (fr >= 1) return { severity: fr >= 2 ? "high" : "moderate", detail: `Frost (${Math.min(...d.map((x) => x.tmin || 0))}°C) on ${fr} day(s)`, confidence: 91 }; return null; } },
-  { key: "wind_storm", label: "Strong Winds", check: (d: Daily[]) => { const ws = d.filter((x) => (x.wind || 0) >= 45).length; if (ws >= 1) return { severity: ws >= 2 ? "high" : "moderate", detail: `Wind gusts to ${Math.max(...d.map((x) => x.wind || 0))} km/h`, confidence: 84 }; return null; } },
-  { key: "cold_outbreak", label: "Cold Outbreak", check: (d: Daily[]) => { const cold = d.filter((x) => (x.tmax || 99) <= 5 && (x.precip || 0) >= 5).length; if (cold >= 2) return { severity: "moderate", detail: `${cold} day(s) of cold rain (max ${Math.min(...d.map((x) => x.tmax || 0))}°C)`, confidence: 83 }; return null; } },
+// Thresholds are normalised per-day so the same rule works on a 2-day
+// imminent window and a 5-day outlook window without false alarms.
+type Hit = { severity: "moderate" | "high"; detail: string; confidence: number } | null;
+const sum = (d: Daily[], f: (x: Daily) => number) => d.reduce((a, x) => a + (f(x) || 0), 0);
+const maxRun = (d: Daily[], f: (x: Daily) => boolean) => {
+  let best = 0, cur = 0;
+  for (const x of d) { cur = f(x) ? cur + 1 : 0; if (cur > best) best = cur; }
+  return best;
+};
+const clampConf = (n: number) => Math.max(55, Math.min(95, Math.round(n)));
+
+const DISASTER_RULES: Array<{ key: string; label: string; check: (d: Daily[]) => Hit }> = [
+  {
+    key: "flood_risk", label: "Flood Risk",
+    check: (d) => {
+      if (!d.length) return null;
+      const tot = sum(d, (x) => x.precip);
+      const peak = Math.max(...d.map((x) => x.precip || 0));
+      const prob = Math.max(...d.map((x) => x.precipProb || 0));
+      // heavy total for the window OR one very wet day
+      const heavy = tot >= 25 * d.length || peak >= 50;
+      if (!heavy) return null;
+      const severe = tot >= 45 * d.length || peak >= 90;
+      return {
+        severity: severe ? "high" : "moderate",
+        detail: `${Math.round(tot)}mm over ${d.length} day(s), peak ${Math.round(peak)}mm/day`,
+        confidence: clampConf(60 + prob * 0.3 + (severe ? 8 : 0)),
+      };
+    },
+  },
+  {
+    key: "heatwave", label: "Heatwave",
+    check: (d) => {
+      const run = maxRun(d, (x) => (x.tmax || 0) >= 35);
+      if (run < 2) return null;
+      const peak = Math.max(...d.map((x) => x.tmax || 0));
+      return {
+        severity: run >= 3 || peak >= 40 ? "high" : "moderate",
+        detail: `${run} consecutive day(s) ≥35°C, peaking at ${Math.round(peak)}°C`,
+        confidence: clampConf(70 + run * 4 + (peak - 35) * 2),
+      };
+    },
+  },
+  {
+    key: "drought", label: "Drought Watch",
+    check: (d) => {
+      if (d.length < 4) return null; // never call drought on a 2-day window
+      const dry = maxRun(d, (x) => (x.precip || 0) < 1);
+      const tot = sum(d, (x) => x.precip);
+      if (dry < 5 || tot >= 3) return null;
+      const hot = d.filter((x) => (x.tmax || 0) >= 32).length;
+      return {
+        severity: dry >= 7 && hot >= 3 ? "high" : "moderate",
+        detail: `${dry} consecutive dry day(s), only ${tot.toFixed(1)}mm forecast`,
+        confidence: clampConf(62 + dry * 3 + hot * 2),
+      };
+    },
+  },
+  {
+    key: "frost", label: "Frost Alert",
+    check: (d) => {
+      const fr = d.filter((x) => (x.tmin ?? 99) <= 2).length;
+      if (!fr) return null;
+      const low = Math.min(...d.map((x) => (x.tmin ?? 99)));
+      return {
+        severity: low <= 0 || fr >= 2 ? "high" : "moderate",
+        detail: `Lows to ${low.toFixed(1)}°C on ${fr} night(s)`,
+        confidence: clampConf(78 + (2 - low) * 4),
+      };
+    },
+  },
+  {
+    key: "wind_storm", label: "Strong Winds",
+    check: (d) => {
+      const ws = d.filter((x) => (x.wind || 0) >= 45).length;
+      if (!ws) return null;
+      const peak = Math.max(...d.map((x) => x.wind || 0));
+      return {
+        severity: peak >= 65 || ws >= 2 ? "high" : "moderate",
+        detail: `Winds up to ${Math.round(peak)} km/h on ${ws} day(s)`,
+        confidence: clampConf(65 + (peak - 45)),
+      };
+    },
+  },
+  {
+    key: "cold_outbreak", label: "Cold Outbreak",
+    check: (d) => {
+      const cold = d.filter((x) => (x.tmax ?? 99) <= 12 && (x.precip || 0) >= 5).length;
+      if (cold < 2) return null;
+      const low = Math.min(...d.map((x) => (x.tmax ?? 99)));
+      return {
+        severity: cold >= 3 ? "high" : "moderate",
+        detail: `${cold} day(s) of cold wet weather (highs near ${Math.round(low)}°C)`,
+        confidence: clampConf(66 + cold * 4),
+      };
+    },
+  },
 ];
+
 
 // Meteoblue daily outlook (primary provider). Returns the next 4 days in the
 // same Daily shape the disaster rules expect.
