@@ -113,7 +113,61 @@ const DISASTER_RULES: Array<{ key: string; label: string; check: (d: Daily[]) =>
       };
     },
   },
+  {
+    key: "storm", label: "Thunderstorm / Hail",
+    check: (d) => {
+      const st = d.filter((x) => (x.precip || 0) >= 15 && (x.wind || 0) >= 30 && (x.tmax || 0) >= 25).length;
+      if (!st) return null;
+      const peakW = Math.max(...d.map((x) => x.wind || 0));
+      return {
+        severity: st >= 2 || peakW >= 55 ? "high" : "moderate",
+        detail: `${st} day(s) with convective storm signature (gusts to ${Math.round(peakW)} km/h)`,
+        confidence: clampConf(60 + st * 6 + (peakW - 30) * 0.6),
+      };
+    },
+  },
+  {
+    key: "disease_pressure", label: "Crop Disease Pressure",
+    check: (d) => {
+      const wet = d.filter((x) => (x.rh ?? 0) >= 80 && (x.tmax || 0) >= 18 && (x.tmax || 0) <= 30).length;
+      if (wet < 2) return null;
+      const avgRh = Math.round(sum(d, (x) => x.rh || 0) / d.length);
+      return {
+        severity: wet >= 3 ? "high" : "moderate",
+        detail: `${wet} day(s) of warm humid conditions (avg RH ${avgRh}%) favouring fungal outbreaks`,
+        confidence: clampConf(58 + wet * 6),
+      };
+    },
+  },
 ];
+
+// ---- Per-day risk scoring (0-100) used for graphs/heatmaps in the UI ----
+const norm = (v: number, lo: number, hi: number) =>
+  Math.max(0, Math.min(100, Math.round(((v - lo) / (hi - lo)) * 100)));
+
+const DAILY_SCORERS: Record<string, (x: Daily) => number> = {
+  flood_risk: (x) => norm(x.precip || 0, 5, 80) * (0.5 + (x.precipProb || 50) / 200),
+  heatwave: (x) => norm(x.tmax || 0, 30, 43),
+  drought: (x) => norm(4 - Math.min(4, x.precip || 0), 0, 4) * (0.6 + norm(x.tmax || 0, 25, 40) / 250),
+  frost: (x) => norm(6 - (x.tmin ?? 20), 0, 10),
+  wind_storm: (x) => norm(x.wind || 0, 25, 75),
+  cold_outbreak: (x) => norm(18 - (x.tmax ?? 30), 0, 14),
+  storm: (x) => Math.min(norm(x.precip || 0, 8, 45), 100) * 0.5 + norm(x.wind || 0, 25, 70) * 0.5,
+  disease_pressure: (x) =>
+    (x.tmax || 0) >= 18 && (x.tmax || 0) <= 32 ? norm(x.rh ?? 0, 60, 95) : norm(x.rh ?? 0, 60, 95) * 0.4,
+};
+
+const HAZARD_LABELS: Record<string, string> = {
+  flood_risk: "Flood",
+  heatwave: "Heat",
+  drought: "Drought",
+  frost: "Frost",
+  wind_storm: "Wind",
+  cold_outbreak: "Cold",
+  storm: "Storm",
+  disease_pressure: "Disease",
+};
+
 
 
 // Meteoblue daily outlook (primary provider). Returns the next 4 days in the
