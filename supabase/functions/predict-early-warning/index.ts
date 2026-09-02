@@ -366,6 +366,29 @@ serve(async (req) => {
     }
   }
 
+  // Per-day risk matrix for the graphs
+  const riskSeries = outlook.days.map((x) => {
+    const row: Record<string, any> = { date: x.date, tmax: x.tmax, tmin: x.tmin, precip: x.precip, wind: x.wind, rh: x.rh ?? null, precipProb: x.precipProb ?? null };
+    let worst = 0;
+    for (const [k, fn] of Object.entries(DAILY_SCORERS)) {
+      const v = Math.max(0, Math.min(100, Math.round(fn(x))));
+      row[k] = v;
+      if (v > worst) worst = v;
+    }
+    row.composite = worst;
+    return row;
+  });
+
+  const radar = Object.keys(DAILY_SCORERS).map((k) => ({
+    key: k,
+    hazard: HAZARD_LABELS[k] || k,
+    score: Math.round(Math.max(0, ...riskSeries.map((r) => r[k] || 0))),
+  }));
+
+  const riskIndex = riskSeries.length
+    ? Math.round(riskSeries.reduce((a, r) => a + r.composite, 0) / riskSeries.length)
+    : 0;
+
   return new Response(
     JSON.stringify({
       success: true,
@@ -374,8 +397,13 @@ serve(async (req) => {
       days: outlook.days,
       predictions,
       imminent,
+      riskSeries,
+      radar,
+      riskIndex,
+      hazardLabels: HAZARD_LABELS,
       generated_at: now.toISOString(),
     }),
+
     { headers: { ...corsHeaders, "Content-Type": "application/json" } }
   );
 });
