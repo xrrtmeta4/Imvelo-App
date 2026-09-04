@@ -49,6 +49,7 @@ const ScannerFeature = lazy(() => import("./pages/features/ScannerFeature"));
 const WeatherFeature = lazy(() => import("./pages/features/WeatherFeature"));
 const AnalysisFeature = lazy(() => import("./pages/features/AnalysisFeature"));
 const SecretDashboard = lazy(() => import("./pages/SecretDashboard"));
+const SatelliteMonitor = lazy(() => import("./pages/SatelliteMonitor"));
 import { SettingsProvider } from "./hooks/useSettings";
 import TalkBack from "./components/TalkBack";
 import AdBanner from "./components/AdBanner";
