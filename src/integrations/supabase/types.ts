@@ -314,6 +314,54 @@ export type Database = {
         }
         Relationships: []
       }
+      farm_zones: {
+        Row: {
+          created_at: string
+          crop: string | null
+          id: string
+          last_report: Json | null
+          last_scanned_at: string | null
+          latitude: number
+          longitude: number
+          monitoring_enabled: boolean
+          name: string
+          notes: string | null
+          radius_m: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          crop?: string | null
+          id?: string
+          last_report?: Json | null
+          last_scanned_at?: string | null
+          latitude: number
+          longitude: number
+          monitoring_enabled?: boolean
+          name: string
+          notes?: string | null
+          radius_m?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          crop?: string | null
+          id?: string
+          last_report?: Json | null
+          last_scanned_at?: string | null
+          latitude?: number
+          longitude?: number
+          monitoring_enabled?: boolean
+          name?: string
+          notes?: string | null
+          radius_m?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       harvests: {
         Row: {
           created_at: string

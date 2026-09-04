@@ -49,6 +49,7 @@ const ScannerFeature = lazy(() => import("./pages/features/ScannerFeature"));
 const WeatherFeature = lazy(() => import("./pages/features/WeatherFeature"));
 const AnalysisFeature = lazy(() => import("./pages/features/AnalysisFeature"));
 const SecretDashboard = lazy(() => import("./pages/SecretDashboard"));
+const SatelliteMonitor = lazy(() => import("./pages/SatelliteMonitor"));
 import { SettingsProvider } from "./hooks/useSettings";
 import TalkBack from "./components/TalkBack";
 import AdBanner from "./components/AdBanner";
@@ -173,6 +174,8 @@ const App = () => (
             <Route path="/campaigns" element={<ProtectedRoute><Campaigns /></ProtectedRoute>} />
             <Route path="/secret-dashboard" element={<ProtectedRoute><SecretDashboard /></ProtectedRoute>} />
             <Route path="/ai-chat" element={<ProtectedRoute><AIChat /></ProtectedRoute>} />
+            <Route path="/satellite-monitor" element={<ProtectedRoute><SatelliteMonitor /></ProtectedRoute>} />
+
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/contact" element={<Contact />} />
