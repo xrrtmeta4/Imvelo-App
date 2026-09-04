@@ -7,7 +7,7 @@ import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/lib/supabase';
-import { Sprout, Crown, Store, Users, Phone, Sparkles, AlertTriangle, GraduationCap, Mic, MicOff, Pause } from 'lucide-react';
+import { Sprout, Crown, Store, Users, Phone, Sparkles, AlertTriangle, GraduationCap, Mic, MicOff, Pause, Satellite } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
