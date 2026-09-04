@@ -132,6 +132,26 @@ const Index = () => {
 
         <div className="grid gap-5">
           <button
+            onClick={() => navigate('/satellite-monitor')}
+            className="w-full text-left rounded-xl border border-border bg-card p-4 hover:bg-accent/50 transition-colors"
+          >
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-primary/15">
+                <Satellite className="w-5 h-5 text-primary" />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-sm text-foreground">Satellite Farm Monitor</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  See your farm from above, mark sections to watch and track pests in real time.
+                </p>
+                <span className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-primary">
+                  Open monitor →
+                </span>
+              </div>
+            </div>
+          </button>
+
+          <button
             onClick={() => navigate('/ai-chat')}
             className="w-full text-left rounded-xl border border-border bg-card p-4 hover:bg-accent/50 transition-colors"
           >
@@ -150,6 +170,7 @@ const Index = () => {
               </div>
             </div>
           </button>
+
 
           <button
             onClick={() => window.open('https://imveloagriacademy.vercel.app', '_blank', 'noopener,noreferrer')}
