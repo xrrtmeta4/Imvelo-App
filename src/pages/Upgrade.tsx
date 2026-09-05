@@ -45,6 +45,10 @@ const Upgrade = () => {
   }, [success, refreshPremiumStatus]);
 
   const handleUpgrade = useCallback(async () => {
+    if (selectedPlan === 'enterprise') {
+      window.location.href = 'mailto:sales@imveloapp.xyz?subject=Imvelo%20Enterprise%20enquiry';
+      return;
+    }
     try {
       const customerEmail = user?.email;
       if (!customerEmail) {
@@ -57,6 +61,7 @@ const Upgrade = () => {
       toast.error(err?.message || 'Failed to start checkout. Please try again.');
     }
   }, [user, selectedPlan]);
+
 
   if (isPremium) {
     return (
@@ -138,7 +143,10 @@ const Upgrade = () => {
                     }`}
                   >
                     <span className="text-sm font-medium">{cfg.name}</span>
-                    <span className="block text-xs text-white/60">E{cfg.price.toFixed(2)}</span>
+                    <span className="block text-xs text-white/60">
+                      {plan === 'enterprise' ? 'Contact sales' : `E${cfg.price.toFixed(2)}`}
+                    </span>
+
                   </button>
                 );
               })}
@@ -168,9 +176,12 @@ const Upgrade = () => {
           ) : (
             <>
               <Crown className="w-4 h-4" />
-              {t('upgradeNow')} E{PLANS[selectedPlan].price.toFixed(2)}
+              {selectedPlan === 'enterprise'
+                ? 'Contact sales@imveloapp.xyz'
+                : `${t('upgradeNow')} E${PLANS[selectedPlan].price.toFixed(2)}`}
             </>
           )}
+
         </Button>
 
         {creatingPayment && (

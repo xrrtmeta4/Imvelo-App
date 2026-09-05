@@ -221,18 +221,24 @@ const SatelliteMonitor = () => {
           </Button>
         </div>
 
-        <div className="rounded-xl overflow-hidden border border-border">
+        <div className="relative z-0 isolate rounded-xl overflow-hidden border border-border [&_.leaflet-container]:z-0 [&_.leaflet-pane]:!z-[1] [&_.leaflet-top]:!z-[2] [&_.leaflet-bottom]:!z-[2]">
           <MapContainer
             center={center}
             zoom={zoom}
             scrollWheelZoom
+            maxZoom={24}
+            zoomSnap={0.25}
+            zoomDelta={0.5}
+            wheelPxPerZoomLevel={80}
             style={{ height: 320, width: '100%' }}
           >
             <TileLayer
               attribution="Imagery &copy; Esri, Maxar, Earthstar Geographics"
               url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-              maxZoom={19}
+              maxNativeZoom={19}
+              maxZoom={24}
             />
+
             <MapFocus center={center} zoom={zoom} />
             <MapClickHandler onPick={(lat, lng) => setDraft({ lat, lng })} />
             {zones.map((z) => (
