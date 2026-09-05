@@ -179,8 +179,9 @@ const Upgrade = () => {
               {selectedPlan === 'enterprise'
                 ? 'Contact sales@imveloapp.xyz'
                 : `${t('upgradeNow')} E${PLANS[selectedPlan].price.toFixed(2)}`}
-
+            </>
           )}
+
         </Button>
 
         {creatingPayment && (
