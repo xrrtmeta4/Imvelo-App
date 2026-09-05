@@ -300,6 +300,13 @@ export const useUsageLimits = () => {
         customerName: user?.user_metadata?.full_name || 'Customer',
         paymentMethods,
         returnUrl: window.location.origin + '/upgrade',
+        billingAddress: {
+          country: (user?.user_metadata?.country_code as string) || 'SZ',
+          city: (user?.user_metadata?.city as string) || 'Mbabane',
+          state: (user?.user_metadata?.state as string) || 'Hhohho',
+          street: (user?.user_metadata?.street as string) || 'N/A',
+          zipcode: (user?.user_metadata?.zipcode as string) || 'H100',
+        },
       });
 
       // Open the checkout IN-APP. The user never leaves the application and we
