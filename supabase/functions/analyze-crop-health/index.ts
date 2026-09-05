@@ -150,7 +150,7 @@ Use the ERA5 water balance to disambiguate observed stress:
  - Adequate water with high radiation and heat → heat/water demand stress.
 Ground any watering recommendation in the ERA5 numbers above.`
         : '## No weather context available (location not provided).'}
-`}
+
  
  Image URL: ${imageUrl}
  
