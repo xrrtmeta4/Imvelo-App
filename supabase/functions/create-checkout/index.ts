@@ -45,7 +45,7 @@ serve(async (req) => {
       });
     }
 
-    const { product_id, customer_email, customer_name, redirect_url, success_url, cancel_url, payment_methods } = payload;
+    const { product_id, customer_email, customer_name, redirect_url, success_url, cancel_url, payment_methods, billing_address } = payload as Record<string, any>;
 
     if (!product_id) {
       console.error('Missing product_id in payload');
@@ -73,7 +73,29 @@ serve(async (req) => {
       allowed_payment_method_types: methods,
     };
 
-    if (customer_email) body.customer = { email: customer_email, name: customer_name || undefined };
+    if (customer_email) {
+      body.customer = { email: customer_email, name: customer_name || 'Customer' };
+    }
+
+    // Prefill the billing address and disable optional collection so the
+    // hosted checkout skips the "Contact Information" step and opens straight
+    // on the payment methods screen.
+    body.billing_address = {
+      country: (billing_address?.country as string) || 'SZ',
+      city: (billing_address?.city as string) || 'Mbabane',
+      state: (billing_address?.state as string) || 'Hhohho',
+      street: (billing_address?.street as string) || 'N/A',
+      zipcode: (billing_address?.zipcode as string) || 'H100',
+    };
+    body.feature_flags = {
+      allow_phone_number_collection: false,
+      allow_tax_id: false,
+      allow_discount_code: false,
+      allow_currency_selection: false,
+      always_create_new_customer: false,
+    };
+    body.customization = { show_order_details: true };
+
     const returnUrl = redirect_url || success_url || cancel_url;
     if (returnUrl) body.return_url = returnUrl;
     body.metadata = { email: customer_email, name: customer_name, product_id };

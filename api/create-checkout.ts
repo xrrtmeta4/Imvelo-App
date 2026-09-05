@@ -63,6 +63,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       redirect_url,
       payment_methods,
       return_url,
+      billing_address,
     } = (req.body || {}) as Record<string, unknown>;
 
     // The backend is the authority on which products are valid and how much
@@ -99,7 +100,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       },
     };
 
-    if (customer_email) body.customer = { email: customer_email, name: customer_name || undefined };
+    if (customer_email) body.customer = { email: customer_email, name: (customer_name as string) || 'Customer' };
+
+    // Prefilled billing details + disabled optional fields so the checkout
+    // opens directly on the payment screen (no contact information step).
+    const addr = (billing_address || {}) as Record<string, string>;
+    body.billing_address = {
+      country: addr.country || 'SZ',
+      city: addr.city || 'Mbabane',
+      state: addr.state || 'Hhohho',
+      street: addr.street || 'N/A',
+      zipcode: addr.zipcode || 'H100',
+    };
+    body.feature_flags = {
+      allow_phone_number_collection: false,
+      allow_tax_id: false,
+      allow_discount_code: false,
+      allow_currency_selection: false,
+      always_create_new_customer: false,
+    };
+    body.customization = { show_order_details: true };
     if (returnUrl) body.return_url = returnUrl;
 
     const response = await fetch(`${apiBase}/checkouts`, {
