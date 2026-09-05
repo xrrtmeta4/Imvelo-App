@@ -49,40 +49,41 @@ export const PLANS: Record<PlanTier, {
     features: ['2 pest/disease scans per week', '3 Chloe AI chats per day', 'Basic weather info', '3-day weather outlook', 'Digital ledger (20 entries)', 'Spray calendar (10 entries)', 'Extension directory', 'Crop rotation planner', 'Fertilizer calculator', 'Market price ticker', 'Community knowledge graph'],
   },
   premium: {
-    name: 'Premium',
+    name: 'Pro',
     price: 37,
     weeklyDetections: 0,
     dailyDetections: 1,
-    dailyChats: 2,
+    dailyChats: 3,
     maxLedgerEntries: Infinity,
     maxSprayEntries: Infinity,
-    features: ['1 scan per day', '2 AI chats per day', 'AI financial advisory', '7-day weather forecast', 'Water & irrigation insight', 'Farming tips', 'Digital ledger (unlimited)', 'Produce estimation', 'Crop monitoring (phenotype)', 'Livestock manager', 'Harvest tracker', 'Market price alerts', 'Farm inventory', 'Carbon score', 'Post-harvest guide', 'Priority support'],
+    features: ['1 pest/disease scan per day', '3 Chloe AI chats per day', 'Smart irrigation planner', 'Disaster watch early warnings', 'Digital ledger (unlimited)', 'Spray calendar (unlimited)', 'AI financial advisory', '7-day weather forecast', 'Farming tips', 'Priority support'],
   },
   commercial: {
     name: 'Commercial',
-    price: 499,
+    price: 299,
     weeklyDetections: Infinity,
     dailyDetections: Infinity,
     dailyChats: Infinity,
     maxLedgerEntries: Infinity,
     maxSprayEntries: Infinity,
-    features: ['Unlimited pest, soil & disease scans', 'Unlimited AI chats & crop monitoring', 'Soil scanner (phenotype)', '7-day weather forecast', 'Water & irrigation insight', 'Digital ledger (unlimited)', 'Produce estimation', 'Livestock manager', 'Market price alerts', 'Priority support'],
+    features: ['Unlimited pest, soil & disease scans', 'Unlimited Chloe AI chats', 'Unlimited crop monitoring (phenotype)', 'Smart irrigation & disaster watch', 'Everything in Pro, unlimited', 'Livestock manager', 'Harvest tracker', 'Farm inventory', 'Carbon score', 'Market price alerts', 'Priority support'],
   },
   enterprise: {
     name: 'Enterprise',
-    price: 999,
+    price: 0,
     weeklyDetections: Infinity,
     dailyDetections: Infinity,
     dailyChats: Infinity,
     maxLedgerEntries: Infinity,
     maxSprayEntries: Infinity,
-    features: ['Everything in Commercial', 'AI financial advisory', 'Harvest tracker', 'Farm inventory', 'Carbon score & sustainability reporting', 'Post-harvest guide', 'Exportable analytics & CSV reports', 'Priority 24/7 support'],
+    features: ['Everything in Commercial', 'Custom onboarding & training', 'Multi-farm & team accounts', 'Exportable analytics & CSV reports', 'Dedicated account manager', 'Priority 24/7 support', 'Contact sales@imveloapp.xyz'],
   },
 };
 
 // Precise per-tier feature gates. Each tier is cumulative (higher includes lower).
 export const FEATURE_GATES: Record<string, PlanTier[]> = {
   irrigation: ['premium', 'commercial', 'enterprise'],
+  disasterWatch: ['premium', 'commercial', 'enterprise'],
   forecast: ['premium', 'commercial', 'enterprise'],
   forecast7day: ['premium', 'commercial', 'enterprise'],
   aiAdvisory: ['premium', 'commercial', 'enterprise'],
@@ -93,6 +94,7 @@ export const FEATURE_GATES: Record<string, PlanTier[]> = {
   export: ['enterprise'],
   farmingTips: ['free', 'starter', 'premium', 'commercial', 'enterprise'],
 };
+
 
 interface UsageData {
   detectionCount: number;
