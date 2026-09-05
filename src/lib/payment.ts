@@ -16,6 +16,13 @@ export interface CreatePaymentInput {
   customerName?: string;
   paymentMethods?: string[];
   returnUrl?: string;
+  billingAddress?: {
+    country: string;
+    city?: string;
+    state?: string;
+    street?: string;
+    zipcode?: string;
+  };
 }
 
 export interface CreatePaymentResult {
@@ -63,6 +70,7 @@ export async function createPayment(input: CreatePaymentInput): Promise<CreatePa
     customer_name: input.customerName,
     payment_methods: input.paymentMethods,
     return_url: input.returnUrl,
+    billing_address: input.billingAddress,
   };
 
   const opts: RequestInit = {
