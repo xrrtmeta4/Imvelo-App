@@ -143,7 +143,10 @@ const Upgrade = () => {
                     }`}
                   >
                     <span className="text-sm font-medium">{cfg.name}</span>
-                    <span className="block text-xs text-white/60">E{cfg.price.toFixed(2)}</span>
+                    <span className="block text-xs text-white/60">
+                      {plan === 'enterprise' ? 'Contact sales' : `E${cfg.price.toFixed(2)}`}
+                    </span>
+
                   </button>
                 );
               })}
