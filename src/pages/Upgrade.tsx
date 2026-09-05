@@ -176,8 +176,10 @@ const Upgrade = () => {
           ) : (
             <>
               <Crown className="w-4 h-4" />
-              {t('upgradeNow')} E{PLANS[selectedPlan].price.toFixed(2)}
-            </>
+              {selectedPlan === 'enterprise'
+                ? 'Contact sales@imveloapp.xyz'
+                : `${t('upgradeNow')} E${PLANS[selectedPlan].price.toFixed(2)}`}
+
           )}
         </Button>
 
