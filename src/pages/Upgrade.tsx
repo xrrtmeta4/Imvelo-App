@@ -45,6 +45,10 @@ const Upgrade = () => {
   }, [success, refreshPremiumStatus]);
 
   const handleUpgrade = useCallback(async () => {
+    if (selectedPlan === 'enterprise') {
+      window.location.href = 'mailto:sales@imveloapp.xyz?subject=Imvelo%20Enterprise%20enquiry';
+      return;
+    }
     try {
       const customerEmail = user?.email;
       if (!customerEmail) {
@@ -57,6 +61,7 @@ const Upgrade = () => {
       toast.error(err?.message || 'Failed to start checkout. Please try again.');
     }
   }, [user, selectedPlan]);
+
 
   if (isPremium) {
     return (
