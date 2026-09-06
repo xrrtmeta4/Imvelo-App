@@ -121,18 +121,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     };
     body.customization = { show_order_details: true };
     if (returnUrl) body.return_url = returnUrl;
+    // Tell Dodo the customer + billing details are complete so the checkout
+    // skips the Contact Information step and opens on the payment screen.
+    if (customer_email) body.confirm = true;
 
-    const response = await fetch(`${apiBase}/checkouts`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-      signal: AbortSignal.timeout(15000),
-    });
+    const callDodo = (payload: Record<string, unknown>) =>
+      fetch(`${apiBase}/checkouts`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(15000),
+      });
+
+    let response = await callDodo(body);
+    if (!response.ok && body.confirm) {
+      console.warn('[create-checkout] confirm=true rejected, retrying without it');
+      const { confirm: _drop, ...fallback } = body;
+      response = await callDodo(fallback);
+    }
 
     const data: Record<string, unknown> = await response.json().catch(() => ({}));
+
 
     if (!response.ok) {
       const errMsg =
