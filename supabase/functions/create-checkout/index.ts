@@ -100,17 +100,32 @@ serve(async (req) => {
     if (returnUrl) body.return_url = returnUrl;
     body.metadata = { email: customer_email, name: customer_name, product_id };
 
+    // `confirm: true` tells Dodo the customer + billing details are complete,
+    // so the hosted checkout skips the Contact Information step entirely and
+    // opens directly on the card / wallet payment screen.
+    if (customer_email) body.confirm = true;
+
     console.log('Creating Dodo checkout for product:', product_id, 'methods:', methods.length, 'env:', dodoEnvironment);
 
-    const response = await fetch(`${apiBase}/checkouts`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-      signal: AbortSignal.timeout(15000),
-    });
+    const callDodo = (payload: Record<string, unknown>) =>
+      fetch(`${apiBase}/checkouts`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(15000),
+      });
+
+    let response = await callDodo(body);
+    if (!response.ok && body.confirm) {
+      // Provider rejected the pre-confirmed session — retry the normal flow.
+      console.warn('[create-checkout] confirm=true rejected, retrying without it');
+      const { confirm: _drop, ...fallback } = body;
+      response = await callDodo(fallback);
+    }
+
 
     let data: any = {};
     try {
