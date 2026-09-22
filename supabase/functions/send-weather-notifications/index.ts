@@ -179,16 +179,6 @@ async function sendSMSNotification(phone: string, message: string): Promise<bool
   }
 }
 
-async function sendWebPush(endpoint: string, payload: any): Promise<boolean> {
-  try {
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'TTL': '86400' },
-      body: JSON.stringify(payload),
-    });
-    return response.ok || response.status === 201;
-  } catch { return false; }
-}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
