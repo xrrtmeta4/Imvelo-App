@@ -107,6 +107,8 @@ async function sendWebPush(subscription: { endpoint: string; p256dh_key: string;
     return false;
   }
 }
+
+interface WeatherData {
   temperature: number;
   temperatureMax: number;
   temperatureMin: number;
