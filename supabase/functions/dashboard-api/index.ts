@@ -63,6 +63,11 @@ serve(async (req) => {
     req.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ||
     url.searchParams.get("apiKey");
 
+  // Public, unauthenticated uptime probe so the dashboard can verify connectivity.
+  if (url.pathname.endsWith("/ping")) {
+    return json({ ok: true, service: "imvelo-dashboard-api", server_time: new Date().toISOString() });
+  }
+
   if (provided !== expected) return json({ error: "Unauthorized" }, 401);
 
   const supabase = createClient(
