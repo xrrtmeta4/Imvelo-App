@@ -40,6 +40,7 @@ const signupSchema = z.object({
   full_name: z.string().min(2, 'Name must be at least 2 characters'),
   phone: z.string().min(8, 'Phone number is required').regex(/^[+]?[0-9\s-]+$/, 'Invalid phone number format'),
   country: z.string().min(2, 'Country is required'),
+  age: z.coerce.number({ invalid_type_error: 'Age is required' }).int('Enter a whole number').min(13, 'You must be at least 13 years old').max(120, 'Enter a valid age'),
 });
 
 const Auth = () => {
@@ -54,6 +55,7 @@ const Auth = () => {
     full_name: '',
     phone: '',
     country: '',
+    age: '',
     role: 'farmer' as 'farmer' | 'trader',
   });
 
@@ -114,6 +116,7 @@ const Auth = () => {
           full_name: formData.full_name,
           phone: formData.phone,
           country: formData.country,
+          age: formData.age,
         });
 
         if (!validation.success) {
@@ -132,6 +135,7 @@ const Auth = () => {
               full_name: formData.full_name,
               phone: formData.phone,
               country: formData.country,
+              age: Number(formData.age),
               role: formData.role,
             },
           },
@@ -321,6 +325,22 @@ const Auth = () => {
                     required
                     disabled={loading}
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="age">Age *</Label>
+                  <Input
+                    id="age"
+                    type="number"
+                    inputMode="numeric"
+                    min={13}
+                    max={120}
+                    placeholder="e.g. 30"
+                    value={formData.age}
+                    onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+                    required
+                    disabled={loading}
+                  />
+                  <p className="text-xs text-muted-foreground">You must be at least 13 years old to use Imvelo.</p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="role">{t('role')}</Label>
