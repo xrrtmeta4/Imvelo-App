@@ -4,9 +4,9 @@ const config: CapacitorConfig = {
   appId: 'app.lovable.b4f47cfe1b284d6ea4df806ad32c6fc9',
   appName: 'imveloapp',
   webDir: 'dist',
+  // Production build: loads the bundled app from /dist (no dev hot-reload URL).
   server: {
-    url: 'https://b4f47cfe-1b28-4d6e-a4df-806ad32c6fc9.lovableproject.com?forceHideBadge=true',
-    cleartext: true
+    androidScheme: 'https'
   },
   plugins: {
     PushNotifications: {
