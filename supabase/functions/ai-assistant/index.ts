@@ -150,36 +150,63 @@ ${knowledgeContext}
 IMPORTANT: When the knowledge graph provides specific data about pests, treatments, soil compatibility, or regional information, incorporate it into your answer. Cite confidence levels when relevant. This data is from real farmer reports and local agricultural research.`;
     }
 
-    const response = await fetch(AI_URL, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: `${AI_MODEL_PREFIX}gemini-2.5-flash`,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          ...messages
-        ],
-      }),
-    });
-
-    if (!response.ok) {
-      const error = await response.text();
-      console.error('AI API error:', response.status, error);
-      
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      
-      throw new Error(`AI API error: ${error}`);
+    // Try models in order; on 429/503/5xx fall through to the next one.
+    const candidates: { url: string; key: string; model: string }[] = [];
+    if (GEMINI_KEY) {
+      candidates.push(
+        { url: AI_URL, key: GEMINI_KEY, model: 'gemini-2.5-flash' },
+        { url: AI_URL, key: GEMINI_KEY, model: 'gemini-2.5-flash-lite' },
+        { url: AI_URL, key: GEMINI_KEY, model: 'gemini-2.0-flash' },
+      );
+    }
+    if (LOVABLE_API_KEY_LOV) {
+      candidates.push(
+        { url: 'https://ai.gateway.lovable.dev/v1/chat/completions', key: LOVABLE_API_KEY_LOV, model: 'google/gemini-2.5-flash' },
+        { url: 'https://ai.gateway.lovable.dev/v1/chat/completions', key: LOVABLE_API_KEY_LOV, model: 'google/gemini-2.5-flash-lite' },
+      );
     }
 
-    const data = await response.json();
+    let data: any = null;
+    let lastError = '';
+    for (const c of candidates) {
+      const response = await fetch(c.url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${c.key}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: c.model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            ...messages
+          ],
+        }),
+      });
+
+      if (response.ok) {
+        data = await response.json();
+        console.log('AI response via', c.model);
+        break;
+      }
+
+      const error = await response.text();
+      console.error(`AI API error (${c.model}):`, response.status, error);
+      lastError = error;
+
+      if (response.status === 429) {
+        // Rate limited on every provider path — tell the user to retry shortly.
+        continue;
+      }
+      // 503/5xx or other transient: try next model
+    }
+
+    if (!data) {
+      return new Response(
+        JSON.stringify({ error: 'Chloe is busy right now. Please try again in a moment.' }),
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
     console.log('AI response received');
     
     const aiResponse = data.choices?.[0]?.message?.content || 'Unable to generate response';
