@@ -23,6 +23,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLocation } from '@/hooks/useLocation';
 import { toast } from 'sonner';
 import SEO from '@/components/SEO';
+import { farmCoordinatesSchema } from '@/lib/farmCoordinates';
 
 interface FarmZone {
   id: string;
@@ -67,6 +68,8 @@ const SatelliteMonitor = () => {
   const [zones, setZones] = useState<FarmZone[]>([]);
   const [loading, setLoading] = useState(true);
   const [locating, setLocating] = useState(false);
+  const [coordinates, setCoordinates] = useState({ latitude: '', longitude: '' });
+  const [coordinateError, setCoordinateError] = useState<string | null>(null);
   const [scanningId, setScanningId] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -118,6 +121,19 @@ const SatelliteMonitor = () => {
     } finally {
       setLocating(false);
     }
+  };
+
+  const locateCoordinates = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const parsed = farmCoordinatesSchema.safeParse(coordinates);
+    if (!parsed.success) {
+      setCoordinateError('Enter valid decimal coordinates: latitude −90 to 90, longitude −180 to 180.');
+      return;
+    }
+    setCoordinateError(null);
+    setCenter([parsed.data.latitude, parsed.data.longitude]);
+    setZoom(17);
+    toast.success('Map centered on your farm coordinates');
   };
 
   const saveZone = async () => {
@@ -220,6 +236,28 @@ const SatelliteMonitor = () => {
             Scan all zones
           </Button>
         </div>
+
+        <form onSubmit={locateCoordinates} className="space-y-2" aria-label="Locate farm by coordinates">
+          <h2 className="text-sm font-semibold">Farm coordinates</h2>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label htmlFor="farm-latitude">Latitude</Label>
+              <Input id="farm-latitude" inputMode="text" maxLength={24} placeholder="-26.3054"
+                value={coordinates.latitude} aria-invalid={!!coordinateError} aria-describedby={coordinateError ? 'coordinate-error' : undefined}
+                onChange={(e) => { setCoordinates({ ...coordinates, latitude: e.target.value }); setCoordinateError(null); }} />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="farm-longitude">Longitude</Label>
+              <Input id="farm-longitude" inputMode="text" maxLength={24} placeholder="31.1367"
+                value={coordinates.longitude} aria-invalid={!!coordinateError} aria-describedby={coordinateError ? 'coordinate-error' : undefined}
+                onChange={(e) => { setCoordinates({ ...coordinates, longitude: e.target.value }); setCoordinateError(null); }} />
+            </div>
+          </div>
+          {coordinateError && <p id="coordinate-error" role="alert" className="text-sm text-destructive">{coordinateError}</p>}
+          <Button type="submit" variant="outline" size="sm" className="w-full">
+            <MapPin className="w-4 h-4 mr-1" /> Locate coordinates
+          </Button>
+        </form>
 
         <div className="relative z-0 isolate rounded-xl overflow-hidden border border-border [&_.leaflet-container]:z-0 [&_.leaflet-pane]:!z-[1] [&_.leaflet-top]:!z-[2] [&_.leaflet-bottom]:!z-[2]">
           <MapContainer
