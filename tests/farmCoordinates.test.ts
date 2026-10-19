@@ -1,6 +1,6 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { farmCoordinatesSchema } from './farmCoordinates';
+import { farmCoordinatesSchema } from '../src/lib/farmCoordinates';
 
 describe('farm coordinate entry', () => {
   test('accepts decimal coordinates for an Eswatini farm', () => {
