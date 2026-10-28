@@ -52,15 +52,28 @@ npm run android:sync
 # Open the Android project in Android Studio
 npm run android:open
 
-# Build a release Android App Bundle (AAB) for Play Store / AppGallery
+# Build a signed release Android App Bundle (AAB) for Play Store
 npm run android:bundle
 
 # Alternatively build a release APK
 npm run android:apk
 
-Note: The Android build requires the Android SDK and Java toolchain to be installed and available via ANDROID_SDK_ROOT or ANDROID_HOME.
+Note: The Android build requires JDK 17 or 21 and Android SDK Platform 36, available via `ANDROID_SDK_ROOT` or `ANDROID_HOME`. The bundled Gradle version does not support Java 25.
 
-For Play Store and AppGallery, upload the generated AAB from `android/app/build/outputs/bundle/release/app-release.aab`. AppGallery may also accept the same release bundle.
+For Google Play, create `android/keystore.properties` locally before building. Do not commit this file or share its passwords:
+
+```properties
+storeFile=/absolute/path/to/your-play-upload-key.jks
+storePassword=your-keystore-password
+keyAlias=your-key-alias
+keyPassword=your-key-password
+```
+
+Use the upload key registered for this app in Play Console. The Android Gradle build reads these values only from the local properties file. Build the signed bundle with `npm run android:bundle`; upload `android/app/build/outputs/bundle/release/app-release.aab` to Play Console.
+
+If you generated a replacement upload key, first request an upload-key reset in Play Console and provide the public certificate at `android/play-upload-certificate.pem`. Wait for Google to approve the reset before uploading a bundle signed with that key. Keep `android/play-upload-key.jks` and `android/keystore.properties` backed up securely; they are ignored by Git.
+
+AppGallery may also accept the generated release bundle.
 
 App Gallery / Huawei signing certificates
 - AppGallery Connect does not expose the private app signing key. Register the public SHA-256 certificate fingerprint for the signing key that will be used to publish the app.

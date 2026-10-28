@@ -1,7 +1,16 @@
 import java.security.KeyStore
 import java.security.MessageDigest
+import java.util.Properties
 
 apply plugin: 'com.android.application'
+
+def releaseKeystorePropertiesFile = rootProject.file('keystore.properties')
+def releaseKeystoreProperties = new Properties()
+if (releaseKeystorePropertiesFile.isFile()) {
+    releaseKeystorePropertiesFile.withInputStream { stream ->
+        releaseKeystoreProperties.load(stream)
+    }
+}
 
 android {
     namespace = "app.lovable.b4f47cfe1b284d6ea4df806ad32c6fc9"
@@ -19,8 +28,30 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        if (releaseKeystorePropertiesFile.isFile()) {
+            release {
+                def requiredSigningProperties = ['storeFile', 'storePassword', 'keyAlias', 'keyPassword']
+                def missingSigningProperties = requiredSigningProperties.findAll {
+                    !releaseKeystoreProperties.getProperty(it)
+                }
+                if (!missingSigningProperties.isEmpty()) {
+                    throw new GradleException(
+                        "Missing ${missingSigningProperties.join(', ')} in android/keystore.properties."
+                    )
+                }
+                storeFile rootProject.file(releaseKeystoreProperties.getProperty('storeFile'))
+                storePassword releaseKeystoreProperties.getProperty('storePassword')
+                keyAlias releaseKeystoreProperties.getProperty('keyAlias')
+                keyPassword releaseKeystoreProperties.getProperty('keyPassword')
+            }
+        }
+    }
     buildTypes {
         release {
+            if (releaseKeystorePropertiesFile.isFile()) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
@@ -43,6 +74,21 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')
+    implementation "com.google.android.gms:play-services-ads:25.4.0"
+}
+
+tasks.matching { it.name == 'bundleRelease' }.configureEach {
+    doFirst {
+        if (!releaseKeystorePropertiesFile.isFile()) {
+            throw new GradleException(
+                'Play Store bundles must be signed. Create android/keystore.properties; see README.md.'
+            )
+        }
+        def keystorePath = releaseKeystoreProperties.getProperty('storeFile')
+        if (!keystorePath || !rootProject.file(keystorePath).isFile()) {
+            throw new GradleException('The storeFile in android/keystore.properties does not exist.')
+        }
+    }
 }
 
 apply from: 'capacitor.build.gradle'
