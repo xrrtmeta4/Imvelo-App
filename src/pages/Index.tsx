@@ -50,59 +50,37 @@ const Index = () => {
         path="/"
       />
       <WeatherTicker />
-      
-      <header className="relative overflow-hidden text-primary-foreground min-h-[45vh] flex flex-col">
-        <img
-          src={heroImage}
-          alt="Agriculture hero background"
-          className="absolute inset-0 w-full h-full object-cover"
-          loading="eager"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/30 to-black/85" />
-        <div className="relative flex-1 flex flex-col max-w-screen-sm mx-auto w-full px-4 pt-6 pb-10">
+
+      <header className="hero-forest text-primary-foreground rounded-b-[2rem] shadow-xl">
+        <div className="max-w-screen-sm mx-auto w-full px-4 pt-5 pb-6">
           <div className="flex justify-between items-center gap-3">
-            <div className="bg-white/10 backdrop-blur-sm p-1 rounded-full border border-white/20">
-              {avatarUrl ? (
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={avatarUrl} alt="User avatar" />
-                  <AvatarFallback>{userName ? userName.charAt(0) : 'U'}</AvatarFallback>
-                </Avatar>
-              ) : (
-                <div className="flex h-10 w-10 items-center justify-center">
-                  <Sprout className="w-7 h-7" />
-                </div>
-              )}
+            <div className="flex items-center gap-3">
+              <Avatar className="h-11 w-11 border border-primary-foreground/20">
+                {avatarUrl && <AvatarImage src={avatarUrl} alt="User avatar" />}
+                <AvatarFallback className="bg-primary-foreground/10 text-primary-foreground">
+                  {userName ? userName.charAt(0) : <Sprout className="w-5 h-5" />}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="text-xs opacity-80">Hi, {userName || 'Farmer'}</p>
+                <h1 className="text-lg font-semibold leading-tight">Welcome back!</h1>
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <NotificationBell />
               <LanguageSwitcher />
             </div>
           </div>
-          <div className="mt-auto">
-            <h1 className="text-4xl font-bold mb-2 drop-shadow-lg">
-              {userName ? `Hi, ${userName}!` : 'Imvelo'}
-            </h1>
-            <p className="text-white/90 text-base drop-shadow">{t('farmersBestFriend')}</p>
 
+          <div className="glass-forest mt-5 rounded-3xl p-4">
             <HeroWeather />
+          </div>
 
-            <div className="mt-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 p-3.5 text-white shadow-xl">
-              <div className="flex items-center gap-3">
-                <TalkBack aria-label="Read this page aloud" />
-                <div className="flex-1">
-                  <p className="font-semibold text-sm">TalkBack Reader</p>
-                  <p className="text-xs text-white/80">Tap to have this page read aloud (weather, tips, and more).</p>
-                </div>
-                <kbd className="text-[10px] text-white/50">Esc</kbd>
-              </div>
-            </div>
-
+          <div className="mt-3 flex items-center gap-3 glass-forest rounded-2xl p-3">
+            <TalkBack aria-label="Read this page aloud" />
+            <p className="flex-1 text-xs opacity-90">Tap to have this page read aloud.</p>
             {!isPremium && (
-              <Button
-                onClick={() => navigate('/upgrade')}
-                variant="secondary"
-                className="mt-5 gap-2"
-              >
+              <Button onClick={() => navigate('/upgrade')} size="sm" variant="secondary" className="gap-1 rounded-full">
                 <Crown className="w-4 h-4" />
                 {t('upgrade')}
               </Button>
@@ -113,105 +91,47 @@ const Index = () => {
 
       <main className="max-w-screen-sm mx-auto px-4 py-6 space-y-6">
         <UpgradeNudge />
-        <NativeAdCard />
+
+        <section>
+          <h2 className="text-xl font-bold text-foreground mb-3">My Farm Tools</h2>
+          <div className="flex gap-3 overflow-x-auto pb-1 -mx-4 px-4">
+            {[
+              { title: 'Satellite Farm Monitor', desc: 'See your farm from above and track pests in real time.', icon: Satellite, go: () => navigate('/satellite-monitor') },
+              { title: 'Ask Chloe AI', desc: 'Chat with your AI farming assistant — text or voice.', icon: Sparkles, go: () => navigate('/ai-chat') },
+              { title: 'Livestock Manager', desc: 'Health checks, breeding and feeding schedules.', icon: Beef, go: () => navigate('/livestock') },
+              { title: 'Imvelo Agri Academy', desc: 'Courses and certified training from Imvelo.', icon: GraduationCap, go: () => window.open('https://imveloagriacademy.vercel.app', '_blank', 'noopener,noreferrer') },
+            ].map(({ title, desc, icon: Icon, go }) => (
+              <button key={title} onClick={go} className="shrink-0 w-64 text-left rounded-3xl bg-card border border-border shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                <div className="relative h-32">
+                  <img src={heroImage} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+                  <div className="absolute top-2 right-2 rounded-full glass-forest p-2 text-primary-foreground">
+                    <Icon className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="p-4">
+                  <p className="font-bold text-foreground">{title}</p>
+                  <p className="text-sm text-muted-foreground mt-1">{desc}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </section>
+
         <button
           onClick={() => { window.location.href = 'https://imvelomarketplace.vercel.app'; }}
-          className="w-full flex items-center justify-between rounded-xl border border-border bg-card p-4 hover:bg-accent/50 transition-colors"
+          className="w-full flex items-center justify-between rounded-3xl hero-forest text-primary-foreground p-4"
         >
           <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-primary/10 p-3">
-              <Store className="w-5 h-5 text-primary" />
-            </div>
+            <div className="rounded-full glass-forest p-3"><Store className="w-5 h-5" /></div>
             <div className="text-left">
-              <p className="font-semibold text-sm text-foreground">Access Imvelo Marketplace</p>
-              <p className="text-xs text-muted-foreground">Shop and sell farm goods with the Imvelo marketplace.</p>
+              <p className="font-semibold text-sm">Imvelo Marketplace</p>
+              <p className="text-xs opacity-80">Shop and sell farm goods.</p>
             </div>
           </div>
-          <span className="text-xs font-medium text-primary">Go</span>
+          <span className="rounded-full bg-primary-foreground text-foreground text-xs font-semibold px-3 py-1">Go</span>
         </button>
 
-        <div className="grid gap-5">
-          <button
-            onClick={() => navigate('/satellite-monitor')}
-            className="w-full text-left rounded-xl border border-border bg-card p-4 hover:bg-accent/50 transition-colors"
-          >
-            <div className="flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-primary/15">
-                <Satellite className="w-5 h-5 text-primary" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-sm text-foreground">Satellite Farm Monitor</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  See your farm from above, mark sections to watch and track pests in real time.
-                </p>
-                <span className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-primary">
-                  Open monitor →
-                </span>
-              </div>
-            </div>
-          </button>
-
-          <button
-            onClick={() => navigate('/ai-chat')}
-            className="w-full text-left rounded-xl border border-border bg-card p-4 hover:bg-accent/50 transition-colors"
-          >
-            <div className="flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-primary/15">
-                <Sparkles className="w-5 h-5 text-primary" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-sm text-foreground">Ask Imvelo AI</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Chat with your AI farming assistant — text or voice.
-                </p>
-                <span className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-primary">
-                  Open chat →
-                </span>
-              </div>
-            </div>
-          </button>
-
-
-          <button
-            onClick={() => navigate('/livestock')}
-            className="w-full text-left rounded-xl border border-border bg-card p-4 hover:bg-accent/50 transition-colors"
-          >
-            <div className="flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-primary/15">
-                <Beef className="w-5 h-5 text-primary" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-sm text-foreground">Livestock Manager</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Track your animals, health checks, breeding and feeding schedules.
-                </p>
-                <span className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-primary">
-                  Open livestock →
-                </span>
-              </div>
-            </div>
-          </button>
-
-          <button
-            onClick={() => window.open('https://imveloagriacademy.vercel.app', '_blank', 'noopener,noreferrer')}
-            className="w-full text-left rounded-xl border border-border bg-card p-4 hover:bg-accent/50 transition-colors"
-          >
-            <div className="flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-primary/15">
-                <GraduationCap className="w-5 h-5 text-primary" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-sm text-foreground">Imvelo Agri Academy</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Learn farming with courses and certified training from Imvelo.
-                </p>
-                <span className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-primary">
-                  Open academy →
-                </span>
-              </div>
-            </div>
-          </button>
-        </div>
+        <NativeAdCard />
       </main>
     </div>
   );
