@@ -42,6 +42,49 @@ async function fetchMeteoblue(lat: number, lon: number, key: string) {
   } catch (e) { console.error('mb err', e); return []; }
 }
 
+const CAUTIONS: Record<string, string[]> = {
+  flood: ['Clear drains and furrows around fields', 'Move livestock and stored grain to higher ground', 'Do not cross flooded rivers or bridges'],
+  drought: ['Irrigate priority crops early morning', 'Mulch to keep soil moisture', 'Provide extra water and shade for livestock'],
+  heatwave: ['Water crops before 8am or after 5pm', 'Shade and water livestock frequently', 'Avoid field work 11am–3pm and drink water'],
+  frost: ['Cover seedlings and sensitive crops overnight', 'Irrigate lightly before sunset to hold heat', 'House young animals'],
+  wind: ['Stake tall crops and secure tunnels', 'Delay spraying chemicals', 'Secure roofing, tanks and loose equipment'],
+};
+
+async function sendCautionEmail(supabase: any, uid: string, w: { type: string; severity: string; title: string; message: string }) {
+  const lovKey = Deno.env.get('LOVABLE_API_KEY');
+  const brevoKey = Deno.env.get('BREVO_API_KEY');
+  if (!lovKey || !brevoKey) return;
+  const { data } = await supabase.auth.admin.getUserById(uid);
+  const email = data?.user?.email;
+  if (!email) return;
+  const name = data.user.user_metadata?.full_name || 'Farmer';
+  const tips = (CAUTIONS[w.type] || []).map((t) => `<li style="margin:6px 0">${t}</li>`).join('');
+  const color = w.severity === 'high' ? '#b42318' : '#b54708';
+  const html = `<div style="font-family:Arial,sans-serif;background:#ffffff;padding:24px;max-width:560px;margin:auto">
+    <div style="background:#1f5130;color:#ffffff;border-radius:16px;padding:20px">
+      <p style="margin:0;font-size:13px;opacity:.85">Imvelo Early Warning</p>
+      <h1 style="margin:6px 0 0;font-size:22px">${w.title}</h1>
+    </div>
+    <p style="font-size:15px;color:#1a2e1f">Hi ${name},</p>
+    <p style="font-size:15px;color:#1a2e1f">${w.message}</p>
+    <p style="font-weight:bold;color:${color};margin-bottom:4px">Severity: ${w.severity.toUpperCase()} — Cautions:</p>
+    <ul style="color:#1a2e1f;font-size:14px;padding-left:18px">${tips}</ul>
+    <a href="https://imveloapp.lovable.app/weather" style="display:inline-block;background:#1f5130;color:#ffffff;padding:12px 20px;border-radius:999px;text-decoration:none;margin-top:8px">Open forecast</a>
+    <p style="font-size:12px;color:#667085;margin-top:24px">You receive this because severe weather is expected at your farm location. Stay safe — Imvelo.</p>
+  </div>`;
+  const res = await fetch('https://connector-gateway.lovable.dev/brevo/smtp/email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${lovKey}`, 'X-Connection-Api-Key': brevoKey },
+    body: JSON.stringify({
+      sender: { name: 'Imvelo Alerts', email: Deno.env.get('BREVO_SENDER_EMAIL') || 'alerts@imveloapp.xyz' },
+      to: [{ email, name }],
+      subject: `${w.title} — take precautions`,
+      htmlContent: html,
+    }),
+  });
+  if (!res.ok) console.error('brevo email failed', res.status, await res.text());
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
   try {
@@ -63,7 +106,8 @@ Deno.serve(async (req) => {
       .select('user_id')
       .limit(1000);
     if (subErr) throw subErr;
-    const userIds = Array.from(new Set((subs || []).map((s: any) => s.user_id).filter(Boolean)));
+    const { data: profs } = await supabase.from('profiles').select('id').limit(1000);
+    const userIds = Array.from(new Set([...(subs || []).map((s: any) => s.user_id), ...(profs || []).map((p: any) => p.id)].filter(Boolean)));
     const targets = singleUser ? [singleUser] : userIds;
 
     const results: any[] = [];
@@ -110,6 +154,8 @@ Deno.serve(async (req) => {
         await supabase.functions.invoke('brevo-sms', {
           body: { user_id: uid, message: w.message, category: 'early_warning' },
         }).catch((e) => console.error('brevo-sms invoke err', e));
+        // Caution email via Brevo
+        await sendCautionEmail(supabase, uid, w).catch((e) => console.error('email err', e));
         sent++;
       }
       results.push({ uid, sent });
