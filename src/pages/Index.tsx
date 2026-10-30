@@ -52,7 +52,7 @@ const Index = () => {
       <WeatherTicker />
 
       <header className="hero-forest text-primary-foreground rounded-b-[2rem] shadow-xl">
-        <div className="max-w-screen-sm mx-auto w-full px-4 pt-5 pb-6">
+        <div className="max-w-screen-sm mx-auto w-full px-4 pt-[max(1.25rem,env(safe-area-inset-top))] pb-6">
           <div className="flex justify-between items-center gap-3">
             <div className="flex items-center gap-3">
               <Avatar className="h-11 w-11 border border-primary-foreground/20">
@@ -89,19 +89,19 @@ const Index = () => {
         </div>
       </header>
 
-      <main className="max-w-screen-sm mx-auto px-4 py-6 space-y-6">
+      <main className="max-w-screen-sm mx-auto px-4 py-5 space-y-5 pb-28">
         <UpgradeNudge />
 
         <section>
           <h2 className="text-xl font-bold text-foreground mb-3">My Farm Tools</h2>
-          <div className="flex gap-3 overflow-x-auto pb-1 -mx-4 px-4">
+          <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 [scrollbar-width:none]">
             {[
               { title: 'Satellite Farm Monitor', desc: 'See your farm from above and track pests in real time.', icon: Satellite, go: () => navigate('/satellite-monitor') },
               { title: 'Ask Chloe AI', desc: 'Chat with your AI farming assistant — text or voice.', icon: Sparkles, go: () => navigate('/ai-chat') },
               { title: 'Livestock Manager', desc: 'Health checks, breeding and feeding schedules.', icon: Beef, go: () => navigate('/livestock') },
               { title: 'Imvelo Agri Academy', desc: 'Courses and certified training from Imvelo.', icon: GraduationCap, go: () => window.open('https://imveloagriacademy.vercel.app', '_blank', 'noopener,noreferrer') },
             ].map(({ title, desc, icon: Icon, go }) => (
-              <button key={title} onClick={go} className="shrink-0 w-64 text-left rounded-3xl bg-card border border-border shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+              <button key={title} onClick={go} className="snap-start shrink-0 w-[78vw] max-w-[18rem] text-left active:scale-[0.98] rounded-3xl bg-card border border-border shadow-sm overflow-hidden hover:shadow-md transition-shadow">
                 <div className="relative h-32">
                   <img src={heroImage} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
                   <div className="absolute top-2 right-2 rounded-full glass-forest p-2 text-primary-foreground">
@@ -118,14 +118,14 @@ const Index = () => {
         </section>
 
         <button
-          onClick={() => { window.location.href = 'https://imvelomarketplace.vercel.app'; }}
+          onClick={() => { window.open('https://imveloagriandclimate.vercel.app/index.html', '_blank', 'noopener,noreferrer'); }}
           className="w-full flex items-center justify-between rounded-3xl hero-forest text-primary-foreground p-4"
         >
           <div className="flex items-center gap-3">
-            <div className="rounded-full glass-forest p-3"><Store className="w-5 h-5" /></div>
+            <div className="rounded-full glass-forest p-3"><Sprout className="w-5 h-5" /></div>
             <div className="text-left">
-              <p className="font-semibold text-sm">Imvelo Marketplace</p>
-              <p className="text-xs opacity-80">Shop and sell farm goods.</p>
+              <p className="font-semibold text-sm">Imvelo Agri & Climate</p>
+              <p className="text-xs opacity-80">Climate insights and agri resources.</p>
             </div>
           </div>
           <span className="rounded-full bg-primary-foreground text-foreground text-xs font-semibold px-3 py-1">Go</span>
