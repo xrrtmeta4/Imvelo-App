@@ -120,3 +120,14 @@ All colors MUST be HSL.
   .scrollbar-none::-webkit-scrollbar { display: none; }
   .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
 }
+
+@layer components {
+  .hero-forest {
+    background: linear-gradient(160deg, hsl(100 30% 30%), hsl(115 35% 18%));
+  }
+  .glass-forest {
+    background: hsl(100 25% 40% / 0.35);
+    border: 1px solid hsl(90 30% 70% / 0.18);
+    backdrop-filter: blur(12px);
+  }
+}
