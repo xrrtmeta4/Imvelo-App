@@ -57,29 +57,32 @@ const Scanner = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <header className="bg-primary text-primary-foreground py-4 px-4">
-        <h1 className="text-xl font-bold">{t('identifyPestsDiseases')}</h1>
+      <header className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground rounded-b-3xl px-5 pt-[max(env(safe-area-inset-top),1.25rem)] pb-6">
+        <div className="max-w-screen-sm mx-auto">
+          <p className="text-sm opacity-90">Chloe AI Scanner</p>
+          <h1 className="text-2xl font-bold">{t('identifyPestsDiseases')}</h1>
+        </div>
       </header>
 
       <div className="max-w-screen-sm mx-auto px-4 py-6 space-y-6">
         <UpgradeNudge />
         <Tabs defaultValue="pest" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="pest" className="flex items-center gap-1">
+          <TabsList className="grid w-full grid-cols-4 h-auto rounded-2xl p-1">
+            <TabsTrigger value="pest" className="flex flex-col items-center gap-1 rounded-xl py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Bug className="w-4 h-4" />
-              <span className="hidden sm:inline">{t('pests')}</span>
+              <span className="text-[11px]">{t('pests')}</span>
             </TabsTrigger>
-            <TabsTrigger value="animal" className="flex items-center gap-1">
+            <TabsTrigger value="animal" className="flex flex-col items-center gap-1 rounded-xl py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Stethoscope className="w-4 h-4" />
-              <span className="hidden sm:inline">{t('animal')}</span>
+              <span className="text-[11px]">{t('animal')}</span>
             </TabsTrigger>
-            <TabsTrigger value="soil" className="flex items-center gap-1">
+            <TabsTrigger value="soil" className="flex flex-col items-center gap-1 rounded-xl py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Mountain className="w-4 h-4" />
-              <span className="hidden sm:inline">{t('soil')}</span>
+              <span className="text-[11px]">{t('soil')}</span>
             </TabsTrigger>
-            <TabsTrigger value="produce" className="flex items-center gap-1">
+            <TabsTrigger value="produce" className="flex flex-col items-center gap-1 rounded-xl py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Wheat className="w-4 h-4" />
-              <span className="hidden sm:inline">{t('yield')}</span>
+              <span className="text-[11px]">{t('yield')}</span>
             </TabsTrigger>
           </TabsList>
           
@@ -101,13 +104,13 @@ const Scanner = () => {
         </Tabs>
 
         {reports.length > 0 && (
-          <Card>
+          <Card className="rounded-3xl">
             <CardHeader>
-              <CardTitle>{t('detectionHistory')}</CardTitle>
+              <CardTitle className="text-base">{t('detectionHistory')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {reports.map((report) => (
-                <div key={report.id} className="p-3 rounded-lg bg-accent/50 flex items-center justify-between">
+                <div key={report.id} className="p-3 rounded-2xl bg-muted border-l-4 border-primary flex items-center justify-between">
                   <div>
                     <p className="font-medium text-sm">{report.pest_name}</p>
                     <p className="text-xs text-muted-foreground mt-1">
