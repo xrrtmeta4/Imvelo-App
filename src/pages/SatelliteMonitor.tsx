@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { MapContainer, TileLayer, Circle, useMapEvents, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Circle, Tooltip, useMapEvents, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -211,7 +211,7 @@ const SatelliteMonitor = () => {
         path="/satellite-monitor"
       />
 
-      <header className="bg-primary text-primary-foreground px-4 py-4">
+      <header className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground rounded-b-3xl px-5 pt-[max(env(safe-area-inset-top),1rem)] pb-5">
         <div className="max-w-screen-sm mx-auto">
           <button onClick={() => navigate('/')} className="flex items-center gap-1 text-sm opacity-90 mb-2">
             <ArrowLeft className="w-4 h-4" /> Home
@@ -259,7 +259,7 @@ const SatelliteMonitor = () => {
           </Button>
         </form>
 
-        <div className="relative z-0 isolate rounded-xl overflow-hidden border border-border [&_.leaflet-container]:z-0 [&_.leaflet-pane]:!z-[1] [&_.leaflet-top]:!z-[2] [&_.leaflet-bottom]:!z-[2]">
+        <div className="relative z-0 isolate rounded-3xl overflow-hidden shadow-lg border border-border [&_.leaflet-container]:z-0 [&_.leaflet-pane]:!z-[1] [&_.leaflet-top]:!z-[2] [&_.leaflet-bottom]:!z-[2]">
           <MapContainer
             center={center}
             zoom={zoom}
@@ -268,7 +268,7 @@ const SatelliteMonitor = () => {
             zoomSnap={0.25}
             zoomDelta={0.5}
             wheelPxPerZoomLevel={80}
-            style={{ height: 320, width: '100%' }}
+            style={{ height: 380, width: '100%' }}
           >
             <TileLayer
               attribution="Imagery &copy; Esri, Maxar, Earthstar Geographics"
@@ -290,7 +290,11 @@ const SatelliteMonitor = () => {
                   fillOpacity: 0.2,
                 }}
                 eventHandlers={{ click: () => setSelectedId(z.id) }}
-              />
+              >
+                <Tooltip permanent direction="top" offset={[0, -8]} className="farm-label">
+                  {z.name}{z.crop ? ` · ${z.crop}` : ''} · {(Math.PI * Number(z.radius_m) ** 2 / 10000).toFixed(1)}ha
+                </Tooltip>
+              </Circle>
             ))}
             {draft && (
               <Circle
@@ -300,7 +304,43 @@ const SatelliteMonitor = () => {
               />
             )}
           </MapContainer>
+          <div className="pointer-events-none absolute top-3 left-3 z-[3] rounded-full bg-background/80 backdrop-blur px-3 py-1 text-sm font-semibold text-foreground shadow">
+            My Farm ({zones.length} {zones.length === 1 ? 'zone' : 'zones'})
+          </div>
+          <div className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 z-[3] rounded-full bg-background/80 backdrop-blur px-3 py-1 text-[11px] text-foreground flex items-center gap-1">
+            <Satellite className="w-3 h-3 text-primary" /> Live satellite imagery
+          </div>
         </div>
+
+        {zones.length > 0 && (() => {
+          const lvl = (z: FarmZone) => {
+            const h = Number(z.last_report?.vegetation_health?.index);
+            if (!Number.isFinite(h)) return 'Not scanned';
+            const v = h <= 1 ? h * 100 : h;
+            return v >= 75 ? 'Very High' : v >= 55 ? 'High' : v >= 35 ? 'Average' : 'Low';
+          };
+          const groups = ['Very High', 'High', 'Average', 'Low'].map((name) => {
+            const list = zones.filter((z) => lvl(z) === name);
+            const ha = list.reduce((a, z) => a + Math.PI * Number(z.radius_m) ** 2 / 10000, 0);
+            return { name, count: list.length, ha };
+          });
+          const dot: Record<string, string> = { 'Very High': 'bg-primary', High: 'bg-primary/60', Average: 'bg-accent-foreground/50', Low: 'bg-muted-foreground' };
+          return (
+            <Card className="rounded-3xl">
+              <CardHeader className="pb-2"><CardTitle className="text-base">Productivity Zones</CardTitle></CardHeader>
+              <CardContent className="grid grid-cols-2 gap-2">
+                {groups.map((g) => (
+                  <div key={g.name} className="rounded-2xl bg-muted p-3">
+                    <p className="text-xs text-muted-foreground flex items-center gap-1.5"><span className={`w-2 h-2 rounded-full ${dot[g.name]}`} />{g.name}</p>
+                    <div className="flex justify-between mt-1 text-sm font-semibold">
+                      <span>{g.count} {g.count === 1 ? 'zone' : 'zones'}</span><span>{g.count ? `${g.ha.toFixed(1)}ha` : '-'}</span>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          );
+        })()}
         <p className="text-xs text-muted-foreground">
           Tip: pinch to zoom into your field, then tap the exact block you want monitored.
         </p>
@@ -318,7 +358,7 @@ const SatelliteMonitor = () => {
             </Card>
           ) : (
             zones.map((z) => (
-              <Card key={z.id} className={z.id === selectedId ? 'border-primary' : ''}>
+              <Card key={z.id} className={`rounded-3xl ${z.id === selectedId ? 'border-primary' : ''}`}>
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between gap-2">
                     <button className="text-left" onClick={() => { setSelectedId(z.id); setCenter([Number(z.latitude), Number(z.longitude)]); }}>
