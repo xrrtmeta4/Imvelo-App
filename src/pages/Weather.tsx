@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Cloud, CloudRain, Sun, Thermometer, Wind, Droplets, Loader2 } from 'lucide-react';
+import { Cloud, CloudRain, Sun, Thermometer, Wind, Droplets, Loader2, Sunrise, Sunset, MapPin, Sprout, StickyNote } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation } from '@/hooks/useLocation';
@@ -95,137 +95,134 @@ const Weather = () => {
     );
   }
 
+  const fmtTime = (v?: string | null) => {
+    if (!v) return '--:--';
+    const d = new Date(v);
+    return isNaN(d.getTime()) ? String(v).slice(-5) : format(d, 'HH:mm');
+  };
+
+  const tips: string[] = [];
+  if (weather) {
+    if (weather.current.temperature > 30) tips.push(t('tipHighTemp'));
+    if (weather.daily.precipitation_probability > 50) tips.push(t('tipRain'));
+    if (weather.current.wind_speed > 20) tips.push(t('tipWind'));
+    if (weather.current.humidity > 80) tips.push(t('tipHumidity'));
+    if (!tips.length) tips.push(t('tipGoodConditions'));
+  }
+
+  const notes: string[] = [];
+  if (weather) {
+    const rainy = weather.forecast?.findIndex((d: any) => d.precipitation_probability > 60);
+    if (rainy > 0) notes.push(`Rain likely ${getDayName(rainy).toLowerCase()} — plan spraying and harvesting before then.`);
+    if ((weather.daily.uv_index ?? 0) >= 8) notes.push('Very high UV today — protect workers and young seedlings at midday.');
+    if (weather.daily.min_temp <= 3) notes.push('Frost risk overnight — cover sensitive crops.');
+    if (!notes.length) notes.push('No severe weather expected. You will get an email and push alert if that changes.');
+  }
+
   return (
-    <div className="min-h-screen bg-background pb-20">
-      <header
-        className="text-primary-foreground py-8 px-4 bg-center bg-cover bg-no-repeat"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.55)), url('/78f900962723d82d797116f367942994.jpg')",
-        }}
-      >
-        <div className="max-w-screen-sm mx-auto text-center">
-          <Cloud className="w-12 h-12 mx-auto mb-4" />
-          <h1 className="text-3xl font-bold">{t('weather')}</h1>
-          {locationName && <p className="text-sm opacity-80 mt-1">📍 {locationName}</p>}
+    <div className="min-h-screen bg-background pb-24">
+      <header className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground rounded-b-3xl px-5 pt-[max(env(safe-area-inset-top),1.5rem)] pb-6">
+        <div className="max-w-screen-sm mx-auto">
+          <h1 className="text-2xl font-bold">{t('weather')}</h1>
+          {locationName && (
+            <p className="text-sm opacity-90 mt-1 flex items-center gap-1"><MapPin className="w-4 h-4" />{locationName}</p>
+          )}
         </div>
       </header>
 
-      <div className="max-w-screen-sm mx-auto px-4 py-6 space-y-6">
+      <div className="max-w-screen-sm mx-auto px-4 -mt-2 py-4 space-y-4">
         {weather ? (
           <>
-            <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">{t('today')}</p>
-                    <p className="text-5xl font-bold text-foreground">{weather.current.temperature}°C</p>
-                    <p className="text-lg text-muted-foreground mt-2">{weather.current.weather_description}</p>
-                    <p className="text-sm text-muted-foreground">{t('feelsLike')} {weather.current.feels_like}°C</p>
-                  </div>
-                  <div className="text-right">
-                    {getWeatherIcon(weather.current.weather_description, 'w-20 h-20')}
-                  </div>
+            <div className="rounded-3xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground p-5 shadow-lg">
+              <p className="text-sm opacity-90">Today's Weather · {format(new Date(), 'EEE, MMM d')}</p>
+              <div className="flex items-center justify-between mt-2">
+                <div>
+                  <p className="text-6xl font-bold leading-none">{weather.current.temperature}°</p>
+                  <p className="mt-2 font-medium">{weather.current.weather_description}</p>
+                  <p className="text-sm opacity-80">{t('feelsLike')} {weather.current.feels_like}°C</p>
                 </div>
-                
-                <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-border">
-                  <div className="text-center">
-                    <Thermometer className="w-5 h-5 mx-auto mb-1 text-orange-500" />
-                    <p className="text-xs text-muted-foreground">{t('highLow')}</p>
-                    <p className="text-sm font-medium">{weather.daily.max_temp}° / {weather.daily.min_temp}°</p>
+                <div className="bg-primary-foreground/15 rounded-2xl p-3">
+                  {getWeatherIcon(weather.current.weather_description, 'w-16 h-16')}
+                </div>
+              </div>
+              <div className="grid grid-cols-4 gap-2 mt-5">
+                {[
+                  { icon: Thermometer, label: t('highLow'), value: `${weather.daily.max_temp}°/${weather.daily.min_temp}°` },
+                  { icon: Droplets, label: t('humidity'), value: `${weather.current.humidity}%` },
+                  { icon: Wind, label: t('wind'), value: `${weather.current.wind_speed} km/h` },
+                  { icon: CloudRain, label: 'Rain', value: `${weather.daily.precipitation_probability ?? 0}%` },
+                ].map(({ icon: I, label, value }) => (
+                  <div key={label} className="bg-primary-foreground/15 backdrop-blur rounded-2xl py-2 text-center">
+                    <I className="w-4 h-4 mx-auto mb-1" />
+                    <p className="text-[10px] opacity-80">{label}</p>
+                    <p className="text-xs font-semibold">{value}</p>
                   </div>
-                  <div className="text-center">
-                    <Droplets className="w-5 h-5 mx-auto mb-1 text-blue-500" />
-                    <p className="text-xs text-muted-foreground">{t('humidity')}</p>
-                    <p className="text-sm font-medium">{weather.current.humidity}%</p>
+                ))}
+              </div>
+            </div>
+
+            {hasFeature('farmingTips') && (
+              <Card className="rounded-3xl border-primary/20 bg-accent/30">
+                <CardContent className="p-4 flex gap-3">
+                  <div className="bg-primary/15 rounded-2xl p-2 h-fit"><Sprout className="w-6 h-6 text-primary" /></div>
+                  <div>
+                    <p className="font-semibold text-foreground">Farming Tip</p>
+                    <p className="text-sm text-muted-foreground mt-1">{tips[0]}</p>
                   </div>
-                  <div className="text-center">
-                    <Wind className="w-5 h-5 mx-auto mb-1 text-gray-500" />
-                    <p className="text-xs text-muted-foreground">{t('wind')}</p>
-                    <p className="text-sm font-medium">{weather.current.wind_speed} km/h</p>
-                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            <div className="grid grid-cols-2 gap-3">
+              <Card className="rounded-3xl">
+                <CardContent className="p-4 flex items-center gap-3">
+                  <Sunrise className="w-8 h-8 text-primary" />
+                  <div><p className="text-xs text-muted-foreground">Sunrise</p><p className="text-lg font-bold">{fmtTime(weather.daily.sunrise)}</p></div>
+                </CardContent>
+              </Card>
+              <Card className="rounded-3xl">
+                <CardContent className="p-4 flex items-center gap-3">
+                  <Sunset className="w-8 h-8 text-primary" />
+                  <div><p className="text-xs text-muted-foreground">Sunset</p><p className="text-lg font-bold">{fmtTime(weather.daily.sunset)}</p></div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card className="rounded-3xl">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2"><Cloud className="w-5 h-5 text-primary" />{t('sevenDayForecast')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex gap-2 overflow-x-auto snap-x pb-1">
+                  {weather.forecast?.map((day: any, index: number) => (
+                    <div key={index} className={`snap-start shrink-0 w-20 rounded-2xl p-3 text-center ${index === 0 ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                      <p className="text-xs font-semibold truncate">{index < 2 ? getDayName(index) : format(addDays(new Date(), index), 'EEE')}</p>
+                      <div className="my-2 flex justify-center">
+                        {day.precipitation_probability > 30 ? <CloudRain className="w-6 h-6" /> : <Sun className="w-6 h-6" />}
+                      </div>
+                      <p className="text-sm font-bold">{day.max_temp}°</p>
+                      <p className="text-xs opacity-70">{day.min_temp}°</p>
+                      <p className="text-[10px] mt-1 opacity-80">💧{day.precipitation_probability ?? 0}%</p>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Cloud className="w-5 h-5" />
-                    {t('sevenDayForecast')}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {weather.forecast?.map((day: any, index: number) => (
-                    <div 
-                      key={index} 
-                      className={`flex items-center justify-between py-3 ${
-                        index !== weather.forecast.length - 1 ? 'border-b border-border' : ''
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-20">
-                          <p className={`text-sm ${index === 0 ? 'font-bold' : ''}`}>
-                            {getDayName(index)}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {format(addDays(new Date(), index), 'MMM d')}
-                          </p>
-                        </div>
-                        {day.precipitation_probability > 30 ? (
-                          <CloudRain className="w-6 h-6 text-blue-500" />
-                        ) : (
-                          <Sun className="w-6 h-6 text-yellow-500" />
-                        )}
-                      </div>
-                      
-                      <div className="flex items-center gap-4">
-                        {day.precipitation_probability > 0 && (
-                          <div className="flex items-center gap-1 text-blue-500">
-                            <Droplets className="w-4 h-4" />
-                            <span className="text-sm">{day.precipitation_probability}%</span>
-                          </div>
-                        )}
-                        <div className="text-right">
-                          <span className="font-medium">{day.max_temp}°</span>
-                          <span className="text-muted-foreground text-sm ml-1">/ {day.min_temp}°</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-
-            {hasFeature('farmingTips') && (
-              <Card className="bg-muted/50">
-                <CardHeader>
-                  <CardTitle className="text-lg">{t('farmingTipsToday')}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2 text-sm">
-                  {weather.current.temperature > 30 && (
-                    <p className="text-orange-600">🌡️ {t('tipHighTemp')}</p>
-                  )}
-                  {weather.daily.precipitation_probability > 50 && (
-                    <p className="text-blue-600">🌧️ {t('tipRain')}</p>
-                  )}
-                  {weather.current.wind_speed > 20 && (
-                    <p className="text-gray-600">💨 {t('tipWind')}</p>
-                  )}
-                  {weather.current.humidity > 80 && (
-                    <p className="text-teal-600">💧 {t('tipHumidity')}</p>
-                  )}
-                  {weather.daily.precipitation_probability < 20 && weather.current.temperature < 30 && (
-                    <p className="text-green-600">🌱 {t('tipGoodConditions')}</p>
-                  )}
-                </CardContent>
-              </Card>
-            )}
+            <Card className="rounded-3xl">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2"><StickyNote className="w-5 h-5 text-primary" />Notes</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {notes.map((n) => (
+                  <p key={n} className="text-sm text-muted-foreground border-l-4 border-primary pl-3">{n}</p>
+                ))}
+              </CardContent>
+            </Card>
           </>
         ) : (
           <Card>
-            <CardContent className="py-8 text-center text-muted-foreground">
-              {t('unableLoadWeather')}
-            </CardContent>
+            <CardContent className="py-8 text-center text-muted-foreground">{t('unableLoadWeather')}</CardContent>
           </Card>
         )}
       </div>
