@@ -1,4 +1,5 @@
 import { Suspense, lazy, useEffect } from "react";
+import { GuidesIndex, GuideArticle } from "./pages/Guides";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -180,6 +181,8 @@ const App = () => (
             <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/about" element={<About />} />
+            <Route path="/guides" element={<GuidesIndex />} />
+            <Route path="/guides/:slug" element={<GuideArticle />} />
             <Route path="/features/scanner" element={<ScannerFeature />} />
             <Route path="/features/weather" element={<WeatherFeature />} />
             <Route path="/features/analysis" element={<AnalysisFeature />} />

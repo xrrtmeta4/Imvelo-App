@@ -171,6 +171,7 @@ const About = () => {
               Contact Us
             </Button>
           </Link>
+          <Link to="/guides" className="block mt-3 text-primary underline">Read our free farming guides</Link>
         </div>
       </main>
     </div>
