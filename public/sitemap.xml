@@ -45,4 +45,28 @@
     <changefreq>yearly</changefreq>
     <priority>0.40</priority>
   </url>
+  <url>
+    <loc>https://imveloapp.xyz/guides</loc>
+    <lastmod>2026-11-01</lastmod>
+  </url>
+  <url>
+    <loc>https://imveloapp.xyz/guides/fall-armyworm-maize</loc>
+    <lastmod>2026-11-01</lastmod>
+  </url>
+  <url>
+    <loc>https://imveloapp.xyz/guides/when-to-plant-maize-eswatini</loc>
+    <lastmod>2026-11-01</lastmod>
+  </url>
+  <url>
+    <loc>https://imveloapp.xyz/guides/tomato-early-late-blight</loc>
+    <lastmod>2026-11-01</lastmod>
+  </url>
+  <url>
+    <loc>https://imveloapp.xyz/guides/drought-farming-tips</loc>
+    <lastmod>2026-11-01</lastmod>
+  </url>
+  <url>
+    <loc>https://imveloapp.xyz/guides/soil-health-small-farms</loc>
+    <lastmod>2026-11-01</lastmod>
+  </url>
 </urlset>
