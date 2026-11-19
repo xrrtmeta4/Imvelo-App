@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const message = String(body?.message || '').trim();
-    const sender = String(body?.sender || 'IMVELO').slice(0, 11);
+    const sender = isService ? String(body?.sender || 'IMVELO').slice(0, 11) : 'IMVELO';
     const category = String(body?.category || 'advisory'); // 'early_warning' | 'advisory'
     if (!message) return new Response(JSON.stringify({ error: 'message is required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
@@ -74,11 +74,13 @@ Deno.serve(async (req) => {
     let targets: Array<{ user_id?: string; phone: string; country?: string | null }> = [];
 
     if (body?.phone) {
-      if (!isService && !callerIsOfficer) return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      // Free-form numbers are only allowed for trusted server code.
+      if (!isService) return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
       targets = [{ phone: String(body.phone) }];
     } else if (body?.user_id) {
       const uid = String(body.user_id);
-      if (!isService && !callerIsOfficer && uid !== callerId) {
+      // Individual profiles can only be targeted by trusted server code or the user themselves.
+      if (!isService && uid !== callerId) {
         return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
       }
       const { data: p } = await admin.from('profiles').select('id, phone_number, country').eq('id', uid).maybeSingle();
@@ -105,7 +107,7 @@ Deno.serve(async (req) => {
       const phone = normalizePhone(t.phone, t.country);
       if (!phone) continue;
       const r = await sendSms(phone, prefix + message, sender);
-      if (r.ok) sent++; else failures.push({ phone, error: r.error, status: r.status });
+      if (r.ok) sent++; else failures.push({ phone: `***${phone.slice(-3)}`, status: r.status });
     }
 
     return new Response(JSON.stringify({ ok: true, sent, failed: failures.length, failures: failures.slice(0, 5) }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });

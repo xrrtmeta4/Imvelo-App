@@ -73,7 +73,7 @@ async function sendSMS(phone: string, message: string): Promise<boolean> {
       }
     }
 
-    console.log(`Sending SMS via Africa's Talking to ${formattedPhone}`);
+    console.log(`Sending SMS via Africa's Talking to ***${formattedPhone.slice(-3)}`);
     
     // Africa's Talking SMS API with alphanumeric sender ID
     const response = await fetch('https://api.africastalking.com/version1/messaging', {
@@ -92,14 +92,14 @@ async function sendSMS(phone: string, message: string): Promise<boolean> {
     });
 
     const result = await response.json();
-    console.log(`SMS result for ${formattedPhone}:`, result);
+    console.log(`SMS result for ***${formattedPhone.slice(-3)}: ok`);
     
     // Check Africa's Talking response format
     const recipients = result.SMSMessageData?.Recipients || [];
     const success = recipients.length > 0 && recipients[0].status === 'Success';
     return success;
   } catch (error) {
-    console.error(`SMS error for ${phone}:`, error);
+    console.error(`SMS error for ***${String(phone).slice(-3)}:`, error instanceof Error ? error.message : 'unknown');
     return false;
   }
 }

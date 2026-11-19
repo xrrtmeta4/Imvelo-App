@@ -410,6 +410,24 @@ export type Database = {
         }
         Relationships: []
       }
+      internal_job_secrets: {
+        Row: {
+          created_at: string
+          name: string
+          secret: string
+        }
+        Insert: {
+          created_at?: string
+          name: string
+          secret: string
+        }
+        Update: {
+          created_at?: string
+          name?: string
+          secret?: string
+        }
+        Relationships: []
+      }
       knowledge_contributions: {
         Row: {
           context: Json | null
@@ -1168,6 +1186,7 @@ export type Database = {
         Returns: undefined
       }
       is_extension_officer: { Args: { _user_id: string }; Returns: boolean }
+      verify_cron_secret: { Args: { _secret: string }; Returns: boolean }
     }
     Enums: {
       app_role: "farmer" | "trader" | "extension_officer"

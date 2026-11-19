@@ -119,7 +119,7 @@ async function sendPremiumEmail(email: string, name: string, planName: string): 
     });
 
     if (response.ok) {
-      console.log('Premium activation email sent to:', email);
+      console.log('Premium activation email sent');
     } else {
       const errorData = await response.text();
       console.error('Failed to send email:', errorData);
@@ -180,7 +180,7 @@ serve(async (req) => {
         status: 400
       });
     }
-    console.log('Dodo Payment webhook received:', JSON.stringify(payloadJson, null, 2));
+    console.log('Dodo Payment webhook received:', (payloadJson as any)?.type ?? 'unknown');
 
     const eventType: string = payloadJson.type || payloadJson.event_type || 'unknown';
 
@@ -245,7 +245,7 @@ serve(async (req) => {
     }
     const user = authUsers.users.find((u: any) => u.email === customerEmail);
     if (!user) {
-      console.log('User not found for email:', customerEmail);
+      console.log('User not found for webhook customer');
       return new Response(JSON.stringify({ success: false, message: 'User not found for email' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,

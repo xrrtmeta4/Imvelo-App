@@ -1,3 +1,5 @@
+import { consumeUsage, limitResponse } from "../_shared/usage.ts";
+import { getRequestUser } from "../_shared/auth.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -22,6 +24,14 @@ serve(async (req) => {
   void apiKey;
 
   try {
+    const caller = await getRequestUser(req);
+    if (!caller) {
+      return new Response(JSON.stringify({ error: 'Please sign in to continue.' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    const usage = await consumeUsage(req, 'scan', 2);
+    if (!usage.allowed) return limitResponse('scan', usage, corsHeaders);
     const { indices, imageUrl, imageBase64, cropType, growthStage } = (await req.json()) as {
       indices?: VegIndexInput;
       imageUrl?: string;

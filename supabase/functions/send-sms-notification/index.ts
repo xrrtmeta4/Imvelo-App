@@ -20,7 +20,7 @@ async function sendSMS(phone: string, message: string): Promise<{ success: boole
       return { success: false, error: 'SMS service not configured' };
     }
 
-    console.log(`Sending SMS via Televite to ${phone}: ${message.substring(0, 50)}...`);
+    console.log(`Sending SMS via Televite to ***${phone.slice(-3)} (${message.length} chars)`);
     
     // Televite API endpoint
     const response = await fetch('https://api.televite.com/v1/sms/send', {
@@ -37,7 +37,7 @@ async function sendSMS(phone: string, message: string): Promise<{ success: boole
     });
 
     const result = await response.json();
-    console.log('Televite response:', result);
+    console.log('Televite response status:', response.status);
 
     if (response.ok && (result.success || result.status === 'sent' || result.id)) {
       return { success: true };
@@ -92,7 +92,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    console.log(`Formatted phone: ${formattedPhone}`);
+    console.log(`Formatted phone: ***${formattedPhone.slice(-3)}`);
 
     const result = await sendSMS(formattedPhone, message);
 

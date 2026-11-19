@@ -34,11 +34,22 @@ serve(async (req) => {
     }
     const user_id = userData.user.id;
 
-    const { amount, currency, phone_number, payer_message, payee_note, plan } = await req.json();
+    const reqBody = await req.json();
+    const { phone_number, payer_message, payee_note } = reqBody;
 
-    if (!amount || !phone_number) {
+    // Price is decided on the server only; anything the caller sends for amount/currency is ignored.
+    const MOMO_PLANS: Record<string, { amount: string; currency: string }> = {
+      premium: {
+        amount: Deno.env.get('MOMO_PREMIUM_AMOUNT') || '6',
+        currency: Deno.env.get('MOMO_CURRENCY') || 'EUR',
+      },
+    };
+    const plan = typeof reqBody?.plan === 'string' && reqBody.plan in MOMO_PLANS ? reqBody.plan : 'premium';
+    const { amount, currency } = MOMO_PLANS[plan];
+
+    if (typeof phone_number !== 'string' || !/^\+?[0-9 ()-]{8,20}$/.test(phone_number)) {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields: amount, phone_number' }),
+        JSON.stringify({ error: 'A valid phone_number is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -87,14 +98,14 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         amount: String(amount),
-        currency: currency || 'EUR',
+        currency,
         externalId: referenceId,
         payer: {
           partyIdType: 'MSISDN',
           partyId: phone_number.replace(/[^0-9]/g, ''),
         },
-        payerMessage: payer_message || 'Imvelo Premium Subscription',
-        payeeNote: payee_note || 'Premium plan payment',
+        payerMessage: String(payer_message || 'Imvelo Premium Subscription').slice(0, 80),
+        payeeNote: String(payee_note || 'Premium plan payment').slice(0, 80),
       }),
     });
 
@@ -135,7 +146,7 @@ serve(async (req) => {
       await supabaseAdmin.from('premium_subscriptions').upsert({
         user_id,
         status: 'active',
-        plan: plan || 'premium',
+        plan,
         payment_reference: `momo_${referenceId}`,
         expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       }, { onConflict: 'user_id' });

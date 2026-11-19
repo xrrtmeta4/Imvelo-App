@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { safeLabel } from "../_shared/auth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -20,8 +21,9 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
     const { user_currency, user_country } = await req.json();
-    const currency = user_currency || 'USD';
-    const country = user_country || 'General';
+    // Only plain values are allowed in the prompt, so callers cannot inject instructions.
+    const currency = typeof user_currency === 'string' && /^[A-Za-z]{3}$/.test(user_currency) ? user_currency.toUpperCase() : 'USD';
+    const country = safeLabel(user_country, 'General', 60);
 
     const response = await fetch(AI_URL, {
       method: "POST",

@@ -26,6 +26,22 @@ function newPaymentReference(): string {
   return `pay_${uuid}`;
 }
 
+// Only send shoppers back to Imvelo's own sites after checkout.
+const DEFAULT_RETURN_URL = 'https://imveloapp.lovable.app/upgrade';
+function safeReturnUrl(raw: unknown): string {
+  if (typeof raw !== 'string' || !raw) return DEFAULT_RETURN_URL;
+  try {
+    const u = new URL(raw);
+    const h = u.hostname.toLowerCase();
+    const ok =
+      (u.protocol === 'https:' && (h === 'imveloapp.lovable.app' || h.endsWith('.lovable.app') || h.endsWith('.lovableproject.com') || h === 'imveloapp.xyz' || h.endsWith('.imveloapp.xyz'))) ||
+      ((u.protocol === 'http:' || u.protocol === 'https:') && (h === 'localhost' || h === '127.0.0.1'));
+    return ok ? u.toString() : DEFAULT_RETURN_URL;
+  } catch {
+    return DEFAULT_RETURN_URL;
+  }
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'OPTIONS') {
     res.setHeader('Content-Type', 'application/json');
@@ -85,8 +101,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // The return URL is where Dodo sends the user after the (in-app) checkout
     // completes. It must NOT contain any "success" flag — activation is driven
     // exclusively by the verified webhook, never by the redirect target.
-    const returnUrl =
-      (return_url || redirect_url || success_url || cancel_url || `${req.headers.origin || ''}/upgrade`) as string;
+    const returnUrl = safeReturnUrl(return_url || redirect_url || success_url || cancel_url);
 
     const body: Record<string, unknown> = {
       product_cart: [{ product_id, quantity: 1 }],

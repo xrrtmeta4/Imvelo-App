@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { isTrustedCaller } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,7 +12,24 @@ serve(async (req) => {
   }
 
   try {
+    // Only trusted server code may send these emails; the app itself uses the built-in reset flow.
+    if (!(await isTrustedCaller(req))) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
     const { email, resetLink } = await req.json();
+    let linkOk = false;
+    try {
+      const u = new URL(String(resetLink));
+      const supa = new URL(Deno.env.get("SUPABASE_URL")!).host;
+      linkOk = u.protocol === "https:" && (u.host === "imveloapp.lovable.app" || u.host === supa);
+    } catch { linkOk = false; }
+    if (typeof email !== "string" || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || !linkOk) {
+      return new Response(JSON.stringify({ error: "Invalid request" }), {
+        status: 400, headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
     
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     if (!RESEND_API_KEY) {
@@ -81,7 +99,7 @@ serve(async (req) => {
       throw new Error(data.message || "Failed to send email");
     }
 
-    console.log("Password reset email sent:", data);
+    console.log("Password reset email sent");
 
     return new Response(JSON.stringify(data), {
       status: 200,

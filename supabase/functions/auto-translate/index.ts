@@ -49,7 +49,8 @@ serve(async (req) => {
   const reqClone = req.clone();
   try {
     const { texts, targetLang } = await req.json();
-    if (!Array.isArray(texts) || !targetLang) {
+    // Only known language codes are accepted, so callers cannot inject prompt instructions.
+    if (!Array.isArray(texts) || typeof targetLang !== "string" || !(targetLang in LANG_NAMES)) {
       return new Response(JSON.stringify({ error: "texts[] and targetLang required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -62,7 +63,7 @@ serve(async (req) => {
       });
     }
 
-    const langName = LANG_NAMES[targetLang] || targetLang;
+    const langName = LANG_NAMES[targetLang];
     const system = `You are a professional agricultural translator. Translate UI strings into ${langName}. Use natural, mobile-friendly language familiar to African farmers. For siSwati specifically: use "Simo selitulu" for weather, "Balimisi" for extension officer/services. Return ONLY a valid JSON object mapping each input English string to its translation. No explanations.`;
     const prompt = `Translate these UI strings to ${langName}. Return JSON: {"english string": "translation", ...}\n\nStrings:\n${JSON.stringify(texts)}`;
 

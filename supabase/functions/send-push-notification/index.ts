@@ -1,3 +1,4 @@
+import { isAllowedPushEndpoint } from "../_shared/auth.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -292,6 +293,7 @@ Deno.serve(async (req) => {
 
     for (const subscription of subscriptions) {
       try {
+        if (!isAllowedPushEndpoint(subscription.endpoint)) { failedEndpoints.push(subscription.endpoint); continue; }
         const audience = getAudience(subscription.endpoint);
         
         const jwt = await createVapidJwt(

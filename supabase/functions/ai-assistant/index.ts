@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.80.0";
 import { consumeUsage, limitResponse } from "../_shared/usage.ts";
+import { getRequestUser, hasActivePremium } from "../_shared/auth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,11 +14,32 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, preferredLanguage = 'en', countAsChat = false } = await req.json();
-    console.log('AI Assistant request:', messages, 'Language:', preferredLanguage);
+    const caller = await getRequestUser(req);
+    if (!caller) {
+      return new Response(JSON.stringify({ error: 'Please sign in to continue.' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    const raw = await req.json();
+    const preferredLanguage = typeof raw?.preferredLanguage === 'string' ? raw.preferredLanguage : 'en';
+    const countAsChat = raw?.countAsChat === true;
+    // Only accept user/assistant turns with plain text; callers can never inject system instructions.
+    const messages = (Array.isArray(raw?.messages) ? raw.messages : [])
+      .filter((m: any) => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
+      .slice(-30)
+      .map((m: any) => ({ role: m.role, content: m.content.slice(0, 8000) }));
+    if (!messages.length) {
+      return new Response(JSON.stringify({ error: 'messages required' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    console.log('AI Assistant request:', messages.length, 'messages, language:', preferredLanguage);
 
-    // Server-side free-tier enforcement: 3 Chloe chats per day
+    // Server-side enforcement: chats count against the free quota; other uses need Premium.
     if (countAsChat) {
+      const usage = await consumeUsage(req, 'chat', 3);
+      if (!usage.allowed) return limitResponse('chat', usage, corsHeaders);
+    } else if (!(await hasActivePremium(caller.id))) {
       const usage = await consumeUsage(req, 'chat', 3);
       if (!usage.allowed) return limitResponse('chat', usage, corsHeaders);
     }

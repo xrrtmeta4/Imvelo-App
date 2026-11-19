@@ -1,3 +1,4 @@
+import { getRequestUser, hasActivePremium } from "../_shared/auth.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { consumeUsage, limitResponse } from "../_shared/usage.ts";
@@ -13,8 +14,17 @@ serve(async (req) => {
   }
 
   try {
-    const { imageUrl, quantum = false } = await req.json();
-    console.log('Identifying pest from image:', imageUrl, 'quantum:', quantum);
+    const caller = await getRequestUser(req);
+    if (!caller) {
+      return new Response(JSON.stringify({ error: 'Please sign in to continue.' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    const body = await req.json();
+    const imageUrl = body?.imageUrl;
+    // Multi-model scans are a Premium feature, checked on the server.
+    const quantum = body?.quantum === true && (await hasActivePremium(caller.id));
+    console.log('Identifying pest, quantum:', quantum);
 
     // Server-side free-tier enforcement: 2 scans per week
     const usage = await consumeUsage(req, 'scan', 2);

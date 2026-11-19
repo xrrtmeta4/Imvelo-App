@@ -180,7 +180,7 @@ export async function activateSubscription(email: string, plan: string, referenc
     const listData: any = await listRes.json();
     const user = (listData.users || []).find((u: any) => u.email === email);
     if (!user) {
-      console.warn('[payment] No Supabase user found for email:', email);
+      console.warn('[payment] No Supabase user found for payment customer');
       return false;
     }
 

@@ -17,7 +17,6 @@ export default function Campaigns() {
   const { user, loading } = useAuth();
   const [busy, setBusy] = useState<string | null>(null);
   const [listId, setListId] = useState("");
-  const [senderEmail, setSenderEmail] = useState("");
   const [subject, setSubject] = useState("");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -51,8 +50,8 @@ export default function Campaigns() {
   };
 
   const sendCampaign = async (send: boolean) => {
-    if (!subject || !content || !listId || !senderEmail) {
-      toast.error("Subject, message, list ID and sender email are required");
+    if (!subject || !content || !listId) {
+      toast.error("Subject, message and list ID are required");
       return;
     }
     const d = await call(
@@ -62,9 +61,8 @@ export default function Campaigns() {
         name: `Imvelo — ${subject}`.slice(0, 100),
         subject,
         title: title || subject,
-        content: content.replace(/\n/g, "<br/>"),
+        content,
         listId: Number(listId),
-        senderEmail,
         ctaLabel,
         ctaUrl,
       },
@@ -132,10 +130,6 @@ export default function Campaigns() {
           <CardDescription>Sent with the Imvelo brand template.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="space-y-1">
-            <Label htmlFor="senderEmail">Sender email (verified in Brevo)</Label>
-            <Input id="senderEmail" type="email" value={senderEmail} onChange={(e) => setSenderEmail(e.target.value)} placeholder="hello@yourdomain.com" />
-          </div>
           <div className="space-y-1">
             <Label htmlFor="subject">Subject</Label>
             <Input id="subject" value={subject} onChange={(e) => setSubject(e.target.value)} />

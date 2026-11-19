@@ -1,3 +1,4 @@
+import { getRequestUser, hasActivePremium } from "../_shared/auth.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
@@ -11,7 +12,16 @@ serve(async (req) => {
   }
 
   try {
-    const { latitude, longitude, crops, soilType, quantum = false } = await req.json();
+    const caller = await getRequestUser(req);
+    if (!caller) {
+      return new Response(JSON.stringify({ error: 'Please sign in to continue.' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    const body = await req.json();
+    const { latitude, longitude, crops, soilType } = body;
+    // Multi-model analysis is a Premium feature, checked on the server.
+    const quantum = body?.quantum === true && (await hasActivePremium(caller.id));
     const LOVABLE_API_KEY_LOV = Deno.env.get('LOVABLE_API_KEY');
     const GEMINI_KEY = Deno.env.get('Gemini');
     const USE_LOVABLE = !GEMINI_KEY && !!LOVABLE_API_KEY_LOV;

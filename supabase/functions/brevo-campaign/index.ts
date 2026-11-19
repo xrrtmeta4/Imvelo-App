@@ -50,6 +50,14 @@ ${ctaUrl ? `<div style="text-align:center;margin-top:28px;"><a href="${ctaUrl}" 
 </td></tr></table></td></tr></table></body></html>`;
 }
 
+function esc(s: string) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function safeCta(u: unknown): string | undefined {
+  if (typeof u !== 'string') return undefined;
+  try { const x = new URL(u); return x.protocol === 'https:' ? x.toString() : undefined; } catch { return undefined; }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
   try {
@@ -112,14 +120,20 @@ Deno.serve(async (req) => {
       const name = String(body?.name || 'Imvelo Campaign').slice(0, 120);
       const subject = String(body?.subject || '').slice(0, 200);
       const title = String(body?.title || subject).slice(0, 200);
-      const content = String(body?.content || '');
+      const content = String(body?.content || '').slice(0, 10000);
       const listId = Number(body?.listId);
-      const senderName = String(body?.senderName || 'Imvelo');
-      const senderEmail = String(body?.senderEmail || '');
-      if (!subject || !content || !listId || !senderEmail) {
-        return new Response(JSON.stringify({ error: 'subject, content, listId and senderEmail are required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      // Sender is fixed to Imvelo's approved address; callers cannot impersonate other senders.
+      const senderName = 'Imvelo';
+      const senderEmail = Deno.env.get('BREVO_SENDER_EMAIL') || 'alerts@imveloapp.xyz';
+      if (!subject || !content || !Number.isInteger(listId) || listId <= 0) {
+        return new Response(JSON.stringify({ error: 'subject, content and listId are required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
       }
-      const htmlContent = brandedEmail({ title, body: content, ctaLabel: body?.ctaLabel, ctaUrl: body?.ctaUrl });
+      const htmlContent = brandedEmail({
+        title: esc(title),
+        body: esc(content).replace(/\n/g, '<br>'),
+        ctaLabel: body?.ctaLabel ? esc(String(body.ctaLabel).slice(0, 60)) : undefined,
+        ctaUrl: safeCta(body?.ctaUrl),
+      });
       const campaign = await brevo('emailCampaigns', {
         method: 'POST',
         body: JSON.stringify({

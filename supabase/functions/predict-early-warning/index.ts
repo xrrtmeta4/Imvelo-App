@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getRequestUser } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -281,12 +282,22 @@ serve(async (req) => {
   const hasAuth = !!(supabaseUrl && supabaseKey);
   const supabase = hasAuth ? createClient(supabaseUrl, supabaseKey) : null;
 
+  const caller = await getRequestUser(req);
+  if (!caller) {
+    return new Response(JSON.stringify({ error: "Please sign in to continue." }), {
+      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   let body: any = {};
   try { body = await req.json(); } catch {}
-  const { latitude, longitude, user_id } = body || {};
+  const { latitude, longitude } = body || {};
+  // Alerts only ever go to the signed-in caller
+  const user_id = caller.id;
 
-  const lat = latitude ?? -26.3054;
-  const lon = longitude ?? 31.1367;
+  const latN = Number(latitude), lonN = Number(longitude);
+  const lat = Number.isFinite(latN) && latN >= -90 && latN <= 90 && latitude !== null && latitude !== '' ? latN : -26.3054;
+  const lon = Number.isFinite(lonN) && lonN >= -180 && lonN <= 180 && longitude !== null && longitude !== '' ? lonN : 31.1367;
 
   const outlook = await fetchOutlook(lat, lon);
   if (!outlook) {

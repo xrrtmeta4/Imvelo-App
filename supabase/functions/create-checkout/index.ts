@@ -5,6 +5,23 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+
+// Only send shoppers back to Imvelo's own sites after checkout.
+const DEFAULT_RETURN_URL = 'https://imveloapp.lovable.app/upgrade';
+function safeReturnUrl(raw: unknown): string {
+  if (typeof raw !== 'string' || !raw) return DEFAULT_RETURN_URL;
+  try {
+    const u = new URL(raw);
+    const h = u.hostname.toLowerCase();
+    const ok =
+      (u.protocol === 'https:' && (h === 'imveloapp.lovable.app' || h.endsWith('.lovable.app') || h.endsWith('.lovableproject.com') || h === 'imveloapp.xyz' || h.endsWith('.imveloapp.xyz'))) ||
+      ((u.protocol === 'http:' || u.protocol === 'https:') && (h === 'localhost' || h === '127.0.0.1'));
+    return ok ? u.toString() : DEFAULT_RETURN_URL;
+  } catch {
+    return DEFAULT_RETURN_URL;
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -96,8 +113,7 @@ serve(async (req) => {
     };
     body.customization = { show_order_details: true };
 
-    const returnUrl = redirect_url || success_url || cancel_url;
-    if (returnUrl) body.return_url = returnUrl;
+    body.return_url = safeReturnUrl(redirect_url || success_url || cancel_url);
     body.metadata = { email: customer_email, name: customer_name, product_id };
 
     // `confirm: true` tells Dodo the customer + billing details are complete,

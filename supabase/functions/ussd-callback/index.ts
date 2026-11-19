@@ -406,7 +406,7 @@ serve(async (req) => {
     // Validate phone number format (E.164: + followed by 7-15 digits)
     const e164Regex = /^\+[1-9]\d{6,14}$/;
     if (!e164Regex.test(phoneNumber)) {
-      console.error('USSD request rejected: invalid phone number format', phoneNumber);
+      console.error('USSD request rejected: invalid phone number format');
       return new Response('END Invalid phone number', { status: 400, headers: { 'Content-Type': 'text/plain' } });
     }
 

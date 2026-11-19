@@ -1,3 +1,4 @@
+import { isAllowedPushEndpoint } from "../_shared/auth.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -84,6 +85,7 @@ function buildAes128gcmBody(encrypted: Uint8Array, salt: Uint8Array, publicKey: 
 
 async function sendWebPush(subscription: { endpoint: string; p256dh_key: string; auth_key: string }, payload: Record<string, unknown>, vapidPublicKey: string, vapidPrivateKey: string): Promise<boolean> {
   try {
+    if (!isAllowedPushEndpoint(subscription.endpoint)) return false;
     const audience = getAudience(subscription.endpoint);
     if (!audience) return false;
     const jwt = await createVapidJwt(audience, 'mailto:support@imveloapp.com', vapidPrivateKey, vapidPublicKey);

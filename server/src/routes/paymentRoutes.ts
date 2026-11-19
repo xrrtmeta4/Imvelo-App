@@ -4,6 +4,23 @@ import { createPayment, getPaymentStatus } from '../payment/paymentService.js';
 
 const router = Router();
 
+// Only send shoppers back to Imvelo's own sites after checkout.
+const DEFAULT_RETURN_URL = 'https://imveloapp.lovable.app/upgrade';
+function safeReturnUrl(raw: unknown): string {
+  if (typeof raw !== 'string' || !raw) return DEFAULT_RETURN_URL;
+  try {
+    const u = new URL(raw);
+    const h = u.hostname.toLowerCase();
+    const ok =
+      (u.protocol === 'https:' && (h === 'imveloapp.lovable.app' || h.endsWith('.lovable.app') || h.endsWith('.lovableproject.com') || h === 'imveloapp.xyz' || h.endsWith('.imveloapp.xyz'))) ||
+      ((u.protocol === 'http:' || u.protocol === 'https:') && (h === 'localhost' || h === '127.0.0.1'));
+    return ok ? u.toString() : DEFAULT_RETURN_URL;
+  } catch {
+    return DEFAULT_RETURN_URL;
+  }
+}
+
+
 const checkoutSchema = z.object({
   product_id: z.string().min(1),
   customer_email: z.string().email().optional(),
@@ -25,7 +42,7 @@ router.post('/checkout', async (req: any, res: any) => {
       customerEmail: input.customer_email,
       customerName: input.customer_name,
       paymentMethods: input.payment_methods,
-      returnUrl: input.return_url,
+      returnUrl: safeReturnUrl(input.return_url),
     });
 
     res.status(200).json({

@@ -1,8 +1,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getRequestUser, isTrustedCaller } from "../_shared/auth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-cron-secret',
 };
 
 interface MBDay {
@@ -88,6 +89,14 @@ async function sendCautionEmail(supabase: any, uid: string, w: { type: string; s
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
   try {
+    // Only the scheduler/server may run for everyone; a signed-in user may only check themselves.
+    const trusted = await isTrustedCaller(req);
+    const caller = trusted ? null : await getRequestUser(req);
+    if (!trusted && !caller) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
@@ -98,7 +107,7 @@ Deno.serve(async (req) => {
     // Optional single-user override
     let body: any = {};
     try { body = await req.json(); } catch {}
-    const singleUser: string | undefined = body?.user_id;
+    const singleUser: string | undefined = caller ? caller.id : undefined;
 
     // Get distinct users with push subscriptions + last known location from climate_observations
     const { data: subs, error: subErr } = await supabase

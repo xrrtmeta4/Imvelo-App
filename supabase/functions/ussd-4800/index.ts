@@ -88,6 +88,15 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Verify the request comes from the USSD provider using a shared key (same as ussd-callback)
+  const ussdApiKey = Deno.env.get("USSD_API_KEY");
+  if (ussdApiKey) {
+    const providedKey = req.headers.get("x-ussd-api-key") || new URL(req.url).searchParams.get("apiKey");
+    if (providedKey !== ussdApiKey) {
+      return tplain("END Unauthorized", 401);
+    }
+  }
+
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -184,8 +193,8 @@ serve(async (req) => {
 
     // ---- 3. MY PROFILE ----
     if (root === "3") {
-      const name = await lookupProfileName(supabase, phoneNumber);
-      const greeting = name ? `Hello ${name}!` : "Hello, Imvelo Farmer!";
+      // Do not reveal stored profile details: the phone number in a USSD request can be spoofed.
+      const greeting = "Hello, Imvelo Farmer!";
       return tplain(
         `END ${greeting}\nPhone: ${phoneNumber}\nDial *4800# anytime for help.`,
       );

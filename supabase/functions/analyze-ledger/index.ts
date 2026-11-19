@@ -1,3 +1,4 @@
+import { getRequestUser, hasActivePremium } from "../_shared/auth.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
@@ -11,7 +12,18 @@ serve(async (req) => {
   }
 
   try {
+    const caller = await getRequestUser(req);
+    if (!caller) {
+      return new Response(JSON.stringify({ error: 'Please sign in to continue.' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
     const { entries, action, advisorPrompt, currency } = await req.json();
+    if (action === 'advisor' && !(await hasActivePremium(caller.id))) {
+      return new Response(JSON.stringify({ error: 'This feature needs Premium.', code: 'premium_required' }), {
+        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
     console.log('Ledger analysis request:', action, 'Entries:', entries?.length);
 
     const LOVABLE_API_KEY_LOV = Deno.env.get('LOVABLE_API_KEY');
